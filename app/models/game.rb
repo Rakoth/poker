@@ -14,9 +14,9 @@ class Game < ActiveRecord::Base
       :stack => kind.start_stack
     ) if wait? and verify_level(user.level)
     if player
+      max_players = kind.max_players
       self.reload
-      update_attribute(:status, 'start') if players_count == kind.max_players
-      user.update_attribute(:cash, user.cash - kind.pay_for_play)
+      update_attribute(:status, 'start') if players_count == max_players
     end
     player
   end
