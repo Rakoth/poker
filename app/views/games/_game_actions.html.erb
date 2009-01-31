@@ -1,2 +1,2 @@
 <%= link_to("Подробнее", game_path(game))%>
-<%= link_to("Присоединиться", game_players_path(game), :method => :post) if game.wait? %>
+<%= link_to("Присоединиться", game_players_path(game), :method => :post) if game.wait? and @current_user.can_join?(game) %>

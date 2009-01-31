@@ -1,0 +1,6 @@
+<tr>
+  <td><%= player.user.login %></td>
+  <td><%= player.stack %></td>
+  <td><%= player.action_time %></td>
+  <td><%= render :partial => 'player_actions', :locals => { :player => player } %> </td>
+</tr>

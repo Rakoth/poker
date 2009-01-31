@@ -1,10 +1,25 @@
 <h2>Игра</h2>
-<div>
+<div class="singleGame">
   <h3><%=h @game.kind.title %> / <%= human_status @game.status %></h3>
   <div>
     Игроков : <%= players_stat @game %><br />
     Блайнды : <%= @game.blind_size %> / <%= @game.blind_size / 2 %><br />
     Начальный  стэк : <%= @game.kind.start_stack %><br />
+    Подходяще уровни : <%= levels_stat @game.kind %><br />
     Призовой фонд : <%= number_to_currency @game.kind.prize %>
-  </div><table></table>
+  </div>
+  <h4>Игроки</h4>
+  <table class="gamePlayers">
+    <thead>
+      <tr>
+        <th>Логин</th>
+        <th>Стэк</th>
+        <th>Активность</th>
+        <th>Действия</th>
+      </tr>
+    </thead>
+    <tbody>
+      <%= render :partial => 'player', :collection => @game.players %>
+    </tbody>
+  </table>
 </div>

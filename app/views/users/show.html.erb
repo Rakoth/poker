@@ -1,0 +1,19 @@
+<h3>Пользователь <%= @user.login %></h3>
+<table class="userInfo">
+  <tr>
+    <td>Имя</td>
+    <td><%= @user.info.name %></td>
+  </tr>
+  <tr>
+    <td>Дата рождения</td>
+    <td><%= @user.info.birthday %></td>
+  </tr>
+  <tr>
+    <td>Страна</td>
+    <td><%= @user.info.country %></td>
+  </tr>
+  <tr>
+    <td>Уровень</td>
+    <td><%= @user.level %></td>
+  </tr>
+</table>

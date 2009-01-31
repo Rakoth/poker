@@ -19,4 +19,8 @@ module GamesHelper
     "#{game.players_count} / #{game.kind.max_players}"
   end
 
+  def levels_stat kind
+    "#{kind.min_level} - #{kind.max_level}"
+  end
+
 end
