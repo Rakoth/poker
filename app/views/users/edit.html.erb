@@ -1,0 +1,17 @@
+<h2>Изменение данных пользователя</h2>
+<%- if @current_user.errors -%>
+  <div id="madelErrors">
+    <%- @current_user.errors.each do |error| -%>
+      <%= error %><br/>
+    <%- end -%>
+  </div>
+<%- end -%>
+<%- form_for @current_user do |form| -%>
+  <%= render :partial => "user_info", :locals => { :user => @current_user } %>
+  <div class="formTitle">Пароль: </div>
+  <%= form.password_field :password, :value => nil %>
+  <div class="formTitle">Повтор пароля: </div>
+  <%= form.password_field :password_confirmation, :value => nil %>
+  <br /><br />
+  <%= form.submit "Зарегистрироваться!" %>
+<%- end -%>

@@ -1,0 +1,30 @@
+<table class="userInfo">
+  <thead>
+    <tr>
+      <th>id</th>
+      <th>login</th>
+      <th>email</th>
+      <th>cash</th>
+      <th>level</th>
+      <th>info</th>
+    </tr>
+  </thead>
+  <%- if @users.any? -%>
+      <%- @users.each do |user| -%>
+        <tr>
+          <td><%=h user.id %></td>
+          <td><%=h user.login %></td>
+          <td><%=h user.email %></td>
+          <td><%=h user.cash %></td>
+          <td><%=h user.level %></td>
+          <td>
+            <%- if user.info -%>
+              <%=h user.info.name %>
+            <%- else -%>
+              Не задано
+            <%- end -%>
+          </td>
+        </tr>
+      <%- end -%>
+  <%- end -%>
+</table>

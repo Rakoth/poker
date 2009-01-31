@@ -1,0 +1,35 @@
+<h3>Просмотр типа игры</h3>
+<table id="gameTypeTable">
+  <tr>
+    <td>Заголовок</td>
+    <td><%= @game_type.title %></td>
+  </tr>
+  <tr>
+    <td>Количество игроков</td>
+    <td><%= @game_type.max_players %></td>
+  </tr>
+  <tr>
+    <td>Плата за вход</td>
+    <td><%= @game_type.start_cash + @game_type.additional_cash %></td>
+  </tr>
+  <tr>
+    <td>Стартовый стэк</td>
+    <td><%= @game_type.start_stack %></td>
+  </tr>
+  <tr>
+    <td>Начальный блайнд</td>
+    <td><%= @game_type.start_blind %></td>
+  </tr>
+  <tr>
+    <td>Время роста блайнда (мин)</td>
+    <td><%= @game_type.raise_blind_time %></td>
+  </tr>
+  <tr>
+    <td>Рост блайнда (%)</td>
+    <td><%= @game_type.raise_blind_size %></td>
+  </tr>
+  <tr>
+    <td>Уровень для входа</td>
+    <td><%= @game_type.min_level %> - <%= @game_type.max_level %></td>
+  </tr>
+</table>

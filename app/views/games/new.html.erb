@@ -1,0 +1,6 @@
+<h2>Создать новую игру</h2>
+<%- form_for @game do |form| -%>
+  <p>Выберите тип игры: </p>
+  <%= collection_select :game , :kind, @kinds, :id, :title %><br />
+  <%= form.submit "Создать!" %>
+<%- end -%>

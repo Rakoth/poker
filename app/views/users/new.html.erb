@@ -1,0 +1,24 @@
+<h2>Введите данные для регистраци</h2>
+<%- if @user.errors -%>
+  <div id="madelErrors">
+    <%- @user.errors.each do |error| -%>
+      <%= error %><br/>
+    <%- end -%>
+  </div>
+<%- end -%>
+<%- form_for @user do |form| -%>
+  <h3>Обязательно: </h3>
+  <div class="formTitle">Логин: </div>
+  <%= form.text_field :login %>
+  <div class="formTitle">Пароль: </div>
+  <%= form.password_field :password %>
+  <div class="formTitle">Повтор пароля: </div>
+  <%= form.password_field :password_confirmation %>
+  <div class="formTitle">Почта: </div>
+  <%= form.text_field :email %>
+  <h3>Дополнительно: </h3>
+  <%= render :partial => "user_info", :locals => { :user => @user } %>
+  <br /><br />
+
+  <%= form.submit "Зарегистрироваться!" %>
+<%- end -%>

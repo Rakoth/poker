@@ -1,0 +1,10 @@
+<h2>Игра</h2>
+<div>
+  <h3><%=h @game.kind.title %> / <%= human_status @game.status %></h3>
+  <div>
+    Игроков : <%= players_stat @game %><br />
+    Блайнды : <%= @game.blind_size %> / <%= @game.blind_size / 2 %><br />
+    Начальный  стэк : <%= @game.kind.start_stack %><br />
+    Призовой фонд : <%= number_to_currency @game.kind.prize %>
+  </div><table></table>
+</div>

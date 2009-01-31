@@ -1,0 +1,21 @@
+<% content_for :games_menu do %>
+  <ul>
+    <li><%= link_to "Создать", new_game_path %></li>
+  </ul>
+<% end %>
+<table>
+  <thead>
+    <tr>
+      <th>Состояние</th>
+      <th>Тип</th>
+      <th>Стартовый взнос</th>
+      <th>Стартовый стэк</th>
+      <th>Начальный блайнд</th>
+      <th>Игроков</th>
+      <th>Действия</th>
+    </tr>
+  </thead>
+  <tbody>
+      <%= render :partial => 'game', :collection => @games %>
+  </tbody>
+</table>

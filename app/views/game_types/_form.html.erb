@@ -1,0 +1,49 @@
+<%- form_for @game_type, :html => { :method => method } do |form| -%>
+  <table id="gameTypeTable">
+    <tr>
+      <td>Заголовок</td>
+      <td><%= form.text_field :title %></td>
+    </tr>
+    <tr>
+      <td>Количество игроков</td>
+      <td><%= select_tag('game_type[max_players]', options_for_select([2, 3, 4, 5, 6, 7, 8, 9, 10], @game_type.max_players)) %></td>
+    </tr>
+    <tr>
+      <td>Стартовый стэк</td>
+      <td><%= form.text_field :start_stack %></td>
+    </tr>
+    <tr>
+      <td>Стартовый взнос</td>
+      <td><%= form.text_field :start_cash %></td>
+    </tr>
+    <tr>
+      <td>Плата за игру</td>
+      <td><%= form.text_field :additional_cash %></td>
+    </tr>
+    <tr>
+      <td>Начальный блайнд</td>
+      <td><%= form.text_field :start_blind %></td>
+    </tr>
+    <tr>
+      <td>Время роста блайндов (мин)</td>
+      <td><%= select_tag('game_type[raise_blind_time]', options_for_select([1, 2, 3, 4, 5], @game_type.raise_blind_time)) %></td>
+    </tr>
+    <tr>
+      <td>Увеличение блайнда в %</td>
+      <td><%= select_tag('game_type[raise_blind_size]', options_for_select([100, 150, 200, 250], @game_type.raise_blind_size)) %></td>
+    </tr>
+    <tr>
+      <td>Макет стола</td>
+      <td><%= form.text_field :template %></td>
+    </tr>
+    <tr>
+      <td>Минимальный уровень игрока</td>
+      <td><%= select_tag('game_type[min_level]', options_for_select([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], @game_type.min_level)) %></td>
+    </tr>
+    <tr>
+      <td>Максимальный уровень игрока</td>
+      <td><%= select_tag('game_type[max_level]', options_for_select([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], @game_type.max_level)) %></td>
+    </tr>
+  </table>
+  <%= form.submit "Сохранить" %>
+<%- end -%>

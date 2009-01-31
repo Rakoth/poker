@@ -1,0 +1,23 @@
+<h3>Просмотр типов покера</h3>
+<%- content_for :game_types_menu do -%>
+  <ul>
+    <li><%= link_to "Создать", new_game_type_path %></li>
+  </ul>
+<%- end -%>
+<table id="gameTypesTable">
+  <thead>
+    <tr>
+      <th>Заголовок</th>
+      <th>Игроков</th>
+      <th>Плата за вход</th>
+      <th>Стартовый стэк</th>
+      <th>Начальный блайнд</th>
+      <th>Время роста блайнда (мин)</th>
+      <th>Рост блайнда (%)</th>
+      <th>Уровень для участия</th>
+    </tr>
+  </thead>
+  <tbody>
+    <%= render :partial => "type", :collection => @game_types %>
+  </tbody>
+</table>
