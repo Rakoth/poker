@@ -1,3 +1,3 @@
 <%= link_to("Подробнее", game_path(game))%>
-<%= link_to("Присоединиться", game_players_path(game), :method => :post) if game.wait? and @current_user.can_join?(game) %>
+<%= link_to("Присоединиться", game_players_path(game), :method => :post) if @current_user and game.wait? and @current_user.can_join?(game) %>
 <%= link_to("Покинуть", leave_game_path(game), :method => :delete, :confirm => "Вы собираетесь покинуть игру #{game.kind.title}?") if game.wait? and game.users.include?(@current_user) %>

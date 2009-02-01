@@ -5,8 +5,8 @@ class Player < ActiveRecord::Base
   belongs_to :user
   belongs_to :game, :counter_cache => :players_count
 
-  before_destroy :return_money
-  before_create :get_money
+  before_destroy :return_money, :destroy_game_if_last
+  before_create :take_money
 
   named_scope :current, lambda { |game_id, user_id| { :conditions => ["game_id = ? AND user_id = ?", game_id, user_id] } }
 
@@ -17,8 +17,12 @@ class Player < ActiveRecord::Base
     user.update_attribute(:cash, user.cash + game.kind.pay_for_play)
   end
 
-  def get_money
+  def take_money
     user.update_attribute(:cash, user.cash - game.kind.pay_for_play)
+  end
+
+  def destroy_game_if_last
+    game.destroy if 1 == game.players_count and Game.count(:conditions => ['status = "wait" AND type_id = ?', game.type_id]) > 1
   end
 
 end

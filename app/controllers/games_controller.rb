@@ -16,7 +16,7 @@ class GamesController < ApplicationController
   end
 
   def create
-    if @kind = GameType.find_by_id(params[:game][:kind]) and @current_user.have_money?(@kind)
+    if @kind = GameType.find_by_id(params[:game][:kind]) and @current_user.can_create?(@kind)
       if @game = Game.create( :kind => @kind, :blind_size => @kind.start_blind )
         if @game.add_player(@current_user)
           flash[:notice] = "Игра создана!"

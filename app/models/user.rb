@@ -17,6 +17,7 @@ class User < ActiveRecord::Base
   
   has_one :info, :dependent => :destroy, :class_name => "UserInfo", :foreign_key => "user_id"
   has_many :players
+  has_many :user_balance_logs
   has_many :games, :through => :players
 
   before_save :crypt_password
@@ -30,7 +31,11 @@ class User < ActiveRecord::Base
   end
   
   def can_join? game
-    have_money?(game.kind) and game.verify_level(level) and not game.users.include?(self)
+    can_create?(game.kind) and not game.users.include?(self)
+  end
+
+  def can_create? kind
+    have_money?(kind) and kind.verify_level(level)
   end
 
 

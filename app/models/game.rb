@@ -3,16 +3,12 @@ class Game < ActiveRecord::Base
   has_many :players
   has_many :users, :through => :players
 
-  def verify_level level
-    level >= kind.min_level and level <= kind.max_level
-  end
-
   def add_player user
     player = players.create(
       :user => user,
       :sit => players_count,
       :stack => kind.start_stack
-    ) if wait? and verify_level(user.level)
+    ) if wait? and kind.verify_level(user.level)
     if player
       max_players = kind.max_players
       self.reload

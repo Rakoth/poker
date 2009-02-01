@@ -11,4 +11,8 @@ class GameType < ActiveRecord::Base
     start_cash * max_players
   end
 
+  def verify_level level
+    level >= min_level and level <= max_level
+  end
+
 end
