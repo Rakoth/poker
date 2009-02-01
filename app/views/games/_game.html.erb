@@ -1,8 +1,8 @@
 <tr>
   <td><%= human_status game.status %></td>
-  <td><%= game.kind.title %></td>
-  <td><%= number_to_currency game.kind.pay_for_play %></td>
-  <td><%= game.kind.start_stack %></td>
+  <td><%= game.type.title %></td>
+  <td><%= number_to_currency game.type.pay_for_play %></td>
+  <td><%= game.type.start_stack %></td>
   <td><%= game.blind_size %></td>
   <td><%= players_stat game %></td>
   <td><%= render :partial => 'game_actions', :locals => { :game => game } %></td>

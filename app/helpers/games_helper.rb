@@ -16,11 +16,11 @@ module GamesHelper
   end
 
   def players_stat game
-    "#{game.players_count} / #{game.kind.max_players}"
+    "#{game.players_count} / #{game.type.max_players}"
   end
 
-  def levels_stat kind
-    "#{kind.min_level} - #{kind.max_level}"
+  def levels_stat type
+    "#{type.min_level} - #{type.max_level}"
   end
 
 end

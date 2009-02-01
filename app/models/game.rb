@@ -1,16 +1,17 @@
 class Game < ActiveRecord::Base
-  belongs_to :kind, :class_name => 'GameType', :foreign_key => 'type_id'
-  has_many :players
+  self.inheritance_column = "class"
+  belongs_to :type, :class_name => 'GameType'
+  has_many :players, :dependent => :delete_all
   has_many :users, :through => :players
 
   def add_player user
     player = players.create(
       :user => user,
       :sit => players_count,
-      :stack => kind.start_stack
-    ) if wait? and kind.verify_level(user.level)
+      :stack => type.start_stack
+    ) if wait? and type.verify_level(user.level)
     if player
-      max_players = kind.max_players
+      max_players = type.max_players
       self.reload
       update_attribute(:status, 'start') if players_count == max_players
     end

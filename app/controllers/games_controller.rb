@@ -3,21 +3,21 @@ class GamesController < ApplicationController
   before_filter :check_authorization, :except => :index
 
   def index
-    @games = Game.find :all, :include => [:kind]
+    @games = Game.find :all, :include => [:type]
   end
 
   def show
-    @game = Game.find params[:id], :include => [:kind]
+    @game = Game.find params[:id], :include => [:type]
   end
 
   def new
     @game = Game.new
-    @kinds = GameType.for_create
+    @types = GameType.for_create
   end
 
   def create
-    if @kind = GameType.find_by_id(params[:game][:kind]) and @current_user.can_create?(@kind)
-      if @game = Game.create( :kind => @kind, :blind_size => @kind.start_blind )
+    if @type = GameType.find_by_id(params[:game][:type]) and @current_user.can_create?(@type)
+      if @game = Game.create( :type => @type, :blind_size => @type.start_blind )
         if @game.add_player(@current_user)
           flash[:notice] = "Игра создана!"
           redirect_to game_url(@game)
@@ -32,7 +32,7 @@ class GamesController < ApplicationController
     else
       flash[:error] = "Вы не можете создать игру такого типа!"
       @game = Game.new
-      @kinds = GameType.for_create
+      @types = GameType.for_create
       render :action => :new
     end
   end

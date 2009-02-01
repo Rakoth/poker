@@ -4,8 +4,8 @@ class PlayerObserver < ActiveRecord::Observer
     UserBalanceLog.create(
       :user => player.user,
       :direction => 'out',
-      :value => player.game.kind.pay_for_play,
-      :comment => "Присоединился к игре '#{player.game.kind.title}'"
+      :value => player.game.type.pay_for_play,
+      :comment => "Присоединился к игре '#{player.game.type.title}'"
     )
   end
 
@@ -13,8 +13,8 @@ class PlayerObserver < ActiveRecord::Observer
     UserBalanceLog.create(
       :user => player.user,
       :direction => 'in',
-      :value => player.game.kind.pay_for_play,
-      :comment => "Покинул игру '#{player.game.kind.title}' до старта"
+      :value => player.game.type.pay_for_play,
+      :comment => "Покинул игру '#{player.game.type.title}' до старта"
     ) if player.game.wait?
   end
 end

@@ -14,11 +14,11 @@ class Player < ActiveRecord::Base
   protected
 
   def return_money
-    user.update_attribute(:cash, user.cash + game.kind.pay_for_play)
+    user.update_attribute(:cash, user.cash + game.type.pay_for_play) if game.wait?
   end
 
   def take_money
-    user.update_attribute(:cash, user.cash - game.kind.pay_for_play)
+    user.update_attribute(:cash, user.cash - game.type.pay_for_play)
   end
 
   def destroy_game_if_last

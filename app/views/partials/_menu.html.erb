@@ -2,7 +2,6 @@
   <%- if @current_user -%>
     <li><%= link_to "Игры", games_path %><%= yield :games_menu %></li>
     <li><%= link_to "Типы игр", game_types_path %><%= yield :game_types_menu %></li>
-    <li><%= link_to "Инфо", users_path %></li>
     <li><%= link_to "Выход", session_path, :method => :delete, :confirm => 'Вы действительно желаете выйти?' %></li>
   <%- else -%>
     <li><%= link_to "Вход", login_path %></li>

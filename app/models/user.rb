@@ -26,16 +26,16 @@ class User < ActiveRecord::Base
     password.crypt(salt) == self.crypted_password
   end
 
-  def have_money? kind
-    cash >= kind.pay_for_play
+  def have_money? type
+    cash >= type.pay_for_play
   end
   
   def can_join? game
-    can_create?(game.kind) and not game.users.include?(self)
+    can_create?(game.type) and not game.users.include?(self)
   end
 
-  def can_create? kind
-    have_money?(kind) and kind.verify_level(level)
+  def can_create? type
+    have_money?(type) and type.verify_level(level)
   end
 
 
