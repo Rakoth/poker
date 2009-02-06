@@ -5,7 +5,9 @@ class CreateGames < ActiveRecord::Migration
       t.integer :turn, :default => 0
       t.integer :blind, :default => 0
       t.integer :blind_size
-      t.datetime :change_status_time
+      t.integer :ante
+      t.integer :blind_level, :default => 0
+      t.datetime :next_level_time
       t.integer :players_count, :default => 0
       t.integer :bank, :default => 0
       t.references :type

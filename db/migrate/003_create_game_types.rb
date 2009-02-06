@@ -4,11 +4,10 @@ class CreateGameTypes < ActiveRecord::Migration
       t.string  :title
       t.integer :max_players
       t.integer :start_stack
-      t.integer :start_cash
-      t.float   :additional_cash
+      t.decimal :start_cash, :precision => 10, :scale => 2
+      t.decimal :additional_cash, :precision => 10, :scale => 2
       t.integer :start_blind
-      t.integer :raise_blind_time
-      t.integer :raise_blind_size
+      t.integer :change_level_time
       t.string  :template
       t.integer :min_level
       t.integer :max_level

@@ -1,7 +1,7 @@
 class GameTypesController < ApplicationController
 
   def index
-    @game_types = GameType.find :all
+    @game_types = GameType.all
   end
 
   def show

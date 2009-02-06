@@ -1,20 +1,10 @@
 class PlayerObserver < ActiveRecord::Observer
 
   def after_create player
-    UserBalanceLog.create(
-      :user => player.user,
-      :direction => 'out',
-      :value => player.game.type.pay_for_play,
-      :comment => "Присоединился к игре '#{player.game.type.title}'"
-    )
+    UserBalanceAction.out(player.user, player.game.type.pay_for_play, player.game.type.title)
   end
 
   def before_destroy player
-    UserBalanceLog.create(
-      :user => player.user,
-      :direction => 'in',
-      :value => player.game.type.pay_for_play,
-      :comment => "Покинул игру '#{player.game.type.title}' до старта"
-    ) if player.game.wait?
+    UserBalanceAction.in(player.user, player.game.type.pay_for_play, player.game.type.title) if player.game.wait?
   end
 end

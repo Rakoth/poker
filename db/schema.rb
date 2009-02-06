@@ -9,17 +9,23 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20090201194409) do
+ActiveRecord::Schema.define(:version => 20090206182009) do
+
+  create_table "blind_values", :id => false, :force => true do |t|
+    t.integer "level"
+    t.integer "value"
+    t.integer "ante"
+    t.integer "game_type_id"
+  end
 
   create_table "game_types", :force => true do |t|
     t.string   "title"
     t.integer  "max_players"
     t.integer  "start_stack"
-    t.integer  "start_cash"
-    t.float    "additional_cash"
+    t.decimal  "start_cash",        :precision => 10, :scale => 2
+    t.decimal  "additional_cash",   :precision => 10, :scale => 2
     t.integer  "start_blind"
-    t.integer  "raise_blind_time"
-    t.integer  "raise_blind_size"
+    t.integer  "change_level_time"
     t.string   "template"
     t.integer  "min_level"
     t.integer  "max_level"
@@ -28,13 +34,15 @@ ActiveRecord::Schema.define(:version => 20090201194409) do
   end
 
   create_table "games", :force => true do |t|
-    t.string   "status",             :default => "wait"
-    t.integer  "turn",               :default => 0
-    t.integer  "blind",              :default => 0
+    t.string   "status",          :default => "wait"
+    t.integer  "turn",            :default => 0
+    t.integer  "blind",           :default => 0
     t.integer  "blind_size"
-    t.datetime "change_status_time"
-    t.integer  "players_count",      :default => 0
-    t.integer  "bank",               :default => 0
+    t.integer  "ante"
+    t.integer  "blind_level",     :default => 0
+    t.datetime "next_level_time"
+    t.integer  "players_count",   :default => 0
+    t.integer  "bank",            :default => 0
     t.integer  "type_id"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -54,7 +62,7 @@ ActiveRecord::Schema.define(:version => 20090201194409) do
   end
 
   create_table "sessions", :force => true do |t|
-    t.string   "session_id", :default => "", :null => false
+    t.string   "session_id", :null => false
     t.text     "data"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -63,7 +71,7 @@ ActiveRecord::Schema.define(:version => 20090201194409) do
   add_index "sessions", ["session_id"], :name => "index_sessions_on_session_id"
   add_index "sessions", ["updated_at"], :name => "index_sessions_on_updated_at"
 
-  create_table "user_balance_logs", :id => false, :force => true do |t|
+  create_table "user_balance_actions", :id => false, :force => true do |t|
     t.integer  "user_id"
     t.string   "direction"
     t.float    "value"
@@ -87,8 +95,9 @@ ActiveRecord::Schema.define(:version => 20090201194409) do
     t.string   "salt"
     t.integer  "type"
     t.string   "email"
-    t.float    "cash",             :default => 0.0
-    t.integer  "level",            :default => 0
+    t.decimal  "cash",             :precision => 10, :scale => 2, :default => 0.0
+    t.integer  "chips",                                           :default => 1000
+    t.integer  "level",                                           :default => 0
     t.datetime "created_at"
     t.datetime "updated_at"
   end

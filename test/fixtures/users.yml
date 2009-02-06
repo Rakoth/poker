@@ -2,7 +2,7 @@
 
 one:
   login: MyString
-  password: MyString
+  crypted_password: MyString
   type: 1
   email: MyString
   cash: 1
@@ -10,7 +10,7 @@ one:
 
 two:
   login: MyString
-  password: MyString
+  crypted_password: MyString
   type: 1
   email: MyString
   cash: 1

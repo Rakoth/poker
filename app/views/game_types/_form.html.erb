@@ -26,11 +26,7 @@
     </tr>
     <tr>
       <td>Время роста блайндов (мин)</td>
-      <td><%= select_tag('game_type[raise_blind_time]', options_for_select([1, 2, 3, 4, 5], @game_type.raise_blind_time)) %></td>
-    </tr>
-    <tr>
-      <td>Увеличение блайнда в %</td>
-      <td><%= select_tag('game_type[raise_blind_size]', options_for_select([100, 150, 200, 250], @game_type.raise_blind_size)) %></td>
+      <td><%= select_tag('game_type[change_level_time]', options_for_select([1, 2, 3, 4, 5], @game_type.change_level_time)) %></td>
     </tr>
     <tr>
       <td>Макет стола</td>

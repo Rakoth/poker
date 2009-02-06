@@ -13,7 +13,7 @@ class User < ActiveRecord::Base
   EMAIL_DOMAIN_IP = /((\d{1,2}|1\d{2}|2[0-4]\d|25[0-5])\.){3}(\d{1,2}|1\d{2}|2[0-4]\d|25[0-5])/
   validates_format_of :email, :with => /^#{EMAIL_USER}@(#{EMAIL_DOMAIN}|#{EMAIL_DOMAIN_IP})$/i, :message => " неверного формата"
 
-  attr_accessible :crypted_password
+  attr_accessible :crypted_password, :password, :password_confirmation
   
   has_one :info, :dependent => :destroy, :class_name => "UserInfo", :foreign_key => "user_id"
   has_many :players

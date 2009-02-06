@@ -13,7 +13,7 @@ class Game < ActiveRecord::Base
     if player
       max_players = type.max_players
       self.reload
-      update_attribute(:status, 'start') if players_count == max_players
+      start if players_count == max_players
     end
     player
   end
@@ -22,8 +22,23 @@ class Game < ActiveRecord::Base
     'wait' == status
   end
 
-  def change_status_time
-    self[:change_status_time] or Time.now
+  def next_level
+    if next_level_time and Time.now >= next_level_time
+      if new_blind_size = type.get_blind_size(level + 1)
+        update_attributes(
+          :level => level + 1,
+          :blind_size => new_blind_size.value,
+          :ante => new_blind_size.ante,
+          :next_level_time => Time.now + type.change_level_time.minutes
+        )
+      else
+        update_attribute(:next_level_time, nil)
+      end
+    end
+  end
+
+  def start
+    update_attributes(:status => 'start', :next_level_time => Time.now + type.change_level_time.minutes)
   end
   
 end
