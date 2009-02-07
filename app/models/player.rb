@@ -8,7 +8,7 @@ class Player < ActiveRecord::Base
   before_destroy :return_money, :destroy_game_if_last
   before_create :take_money
 
-  named_scope :current, lambda { |game_id, user_id| { :conditions => ["game_id = ? AND user_id = ?", game_id, user_id] } }
+  # named_scope :current, lambda { |game_id, user_id| { :conditions => ["game_id = ? AND user_id = ?", game_id, user_id] } }
 
 
   protected

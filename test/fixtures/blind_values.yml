@@ -2,10 +2,11 @@
 
 one:
   level: 1
-  value: 1
-  ante: 1
+  value: 100
+  ante: 0
+  game_type_id: 1
 
 two:
-  level: 1
-  value: 1
-  ante: 1
+  level: 2
+  value: 150
+  ante: 10

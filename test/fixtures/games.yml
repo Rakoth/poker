@@ -1,17 +1,47 @@
 # Read about fixtures at http://ar.rubyonrails.org/classes/Fixtures.html
 
-one:
+wait:
   status: wait
   turn: 0
   blind: 0
-  change_status_time: 
-  players_count: 1
-  bank: 1
+  blind_size: 50
+  ante:
+  blind_level: 0
+  next_level_time:
+  players_count: 0
+  bank: 0
 
-two:
+start:
   status: start
-  turn: 1
-  blind: 2
-  change_status_time: 
+  turn: 0
+  blind: 0
+  blind_size: 50
+  ante:
+  blind_level: 0
+  next_level_time:
+  players_count: 2
+  bank: 0
+
+max_level:
+  type_id: 1
+  status: start
+  turn: 0
+  blind: 0
+  blind_size: 500
+  ante: 100
+  blind_level: 100
+  next_level_time:
+  players_count: 2
+  bank: 0
+
+pre_start:
+  type_id: 1
+  status: wait
+  turn: 0
+  blind: 0
+  blind_size: 50
+  ante:
+  blind_level: 0
+  next_level_time:
   players_count: 1
-  bank: 1
+  bank: 0

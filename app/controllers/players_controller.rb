@@ -4,7 +4,7 @@ class PlayersController < ApplicationController
 
   def create
     @game = Game.find params[:game_id]
-    if @game and @current_user.can_join?(@game) and @game.add_player(@current_user)
+    if @game and @game.add_player(@current_user)
       flash[:notice] = "Вы успешно присоединились к игре!"
       redirect_to game_url(@game)
     else
@@ -15,8 +15,8 @@ class PlayersController < ApplicationController
 
   def destroy
     return unless request.delete?
-    @player = Player.current(params[:game_id], @current_user.id).first
-    if @player and @current_user.id == @player.user_id and @player.game.wait?
+    @player = @current_user.players.find_by_game_id params[:game_id]
+    if @player and @player.game.wait?
       @player.destroy
       flash[:notice] = "Вы успешно вышли из игры"
     else

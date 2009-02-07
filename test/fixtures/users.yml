@@ -1,17 +1,17 @@
 # Read about fixtures at http://ar.rubyonrails.org/classes/Fixtures.html
 
-one:
-  login: MyString
+reach:
+  login: reach
   crypted_password: MyString
-  type: 1
-  email: MyString
-  cash: 1
+  type:
+  email: reach@mail.ru
+  cash: 1000
   level: 1
 
-two:
+poor:
   login: MyString
   crypted_password: MyString
-  type: 1
+  type:
   email: MyString
-  cash: 1
+  cash: 0
   level: 1

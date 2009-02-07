@@ -1,0 +1,22 @@
+## YAML Template.
+
+one:
+    id: 1
+    change_level_time: 5
+    max_players: 2
+    start_stack: 1000
+    start_blind: 50
+    start_cash: 10
+    additional_cash: 1
+    min_level: 0
+    max_level: 10
+
+two:
+    id: 2
+    change_level_time: 5
+    start_stack: 1000
+    start_blind: 50
+    start_cash: 10
+    additional_cash: 1
+    min_level: 5
+    max_level: 10

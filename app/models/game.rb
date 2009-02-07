@@ -9,7 +9,7 @@ class Game < ActiveRecord::Base
       :user => user,
       :sit => players_count,
       :stack => type.start_stack
-    ) if wait? and type.verify_level(user.level)
+    ) if wait? and user.can_join?(self)
     if player
       max_players = type.max_players
       self.reload
@@ -23,18 +23,16 @@ class Game < ActiveRecord::Base
   end
 
   def next_level
-    if next_level_time and Time.now >= next_level_time
-      if new_blind_size = type.get_blind_size(level + 1)
+    if new_blind_size = type.get_blind_size(blind_level + 1)
         update_attributes(
-          :level => level + 1,
+          :blind_level => blind_level + 1,
           :blind_size => new_blind_size.value,
           :ante => new_blind_size.ante,
           :next_level_time => Time.now + type.change_level_time.minutes
         )
-      else
-        update_attribute(:next_level_time, nil)
-      end
-    end
+    else
+      update_attribute(:next_level_time, nil)
+    end if next_level_time and Time.now >= next_level_time
   end
 
   def start
