@@ -1,5 +1,7 @@
 class GameTypesController < ApplicationController
 
+  before_filter :check_authorization, :except => :index
+  
   def index
     @game_types = GameType.all
   end
@@ -10,11 +12,14 @@ class GameTypesController < ApplicationController
 
   def new
     @game_type = GameType.new
+    @blind_value = BlindValue.new
   end
 
   def create
     @game_type = GameType.new params[:game_type]
     if @game_type.save
+      params[:blind_value] = params[:blind_value].delete_if {|level| level[:value].empty? }
+      @game_type.blind_values.create params[:blind_value]
       flash[:notice] = "Новый вид игры создан"
       redirect_to
     else

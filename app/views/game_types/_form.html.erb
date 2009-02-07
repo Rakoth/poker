@@ -26,7 +26,7 @@
     </tr>
     <tr>
       <td>Время роста блайндов (мин)</td>
-      <td><%= select_tag('game_type[change_level_time]', options_for_select([1, 2, 3, 4, 5], @game_type.change_level_time)) %></td>
+      <td><%= select_tag('game_type[change_level_time]', options_for_select([1, 2, 3, 4, 5, 6, 7, 8], @game_type.change_level_time)) %></td>
     </tr>
     <tr>
       <td>Макет стола</td>
@@ -40,6 +40,25 @@
       <td>Максимальный уровень игрока</td>
       <td><%= select_tag('game_type[max_level]', options_for_select([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], @game_type.max_level)) %></td>
     </tr>
+  </table>
+  <h3>Значения блайндов</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Уровень</th>
+        <th>Блайнд</th>
+        <th>Анте</th>
+      </tr>
+    </thead>
+    <% fields_for 'blind_value[]' do |blind_value| %>
+      <%- for level in 1..10 do -%>
+        <tr>
+          <td><%= level %><%= blind_value.hidden_field :level, :value => level %></td>
+          <td><%= blind_value.text_field :value, :size => 5 %></td>
+          <td><%= blind_value.text_field :ante, :size => 3 %></td>
+        </tr>
+      <%- end -%>
+    <%- end -%>
   </table>
   <%= form.submit "Сохранить" %>
 <%- end -%>
