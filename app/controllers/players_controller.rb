@@ -1,4 +1,4 @@
-class PlayersController < ApplicationController
+﻿class PlayersController < ApplicationController
 
   before_filter :check_authorization
 
@@ -18,7 +18,7 @@ class PlayersController < ApplicationController
     @player = @current_user.players.find_by_game_id params[:game_id]
     if @player and @player.game.wait?
       @player.destroy
-      flash[:notice] = "Вы успешно вышли из игры"
+      flash[:notice] = "Вы успешно вышли из игры!"
     else
       flash[:error] = "Невозможно покинуть эту игру"
     end
