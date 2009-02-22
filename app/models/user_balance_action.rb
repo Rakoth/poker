@@ -7,7 +7,7 @@ class UserBalanceAction < ActiveRecord::Base
       :direction => 'in',
       :user => user,
       :value => value,
-      :comment => "Присоединился к игре '#{title}'"
+      :comment => "Покинул игру '#{title}' до старта"
     )
   end
 
@@ -16,7 +16,7 @@ class UserBalanceAction < ActiveRecord::Base
       :direction => 'out',
       :user => user,
       :value => value,
-      :comment => "Покинул игру '#{title}' до старта"
+      :comment => "Присоединился к игре '#{title}'"
     )
   end
   
