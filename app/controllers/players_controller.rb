@@ -1,4 +1,4 @@
-﻿class PlayersController < ApplicationController
+class PlayersController < ApplicationController
 
   before_filter :check_authorization
 

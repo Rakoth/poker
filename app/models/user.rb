@@ -6,7 +6,7 @@ class User < ActiveRecord::Base
   validates_length_of :login, :within => 2..25
   validates_length_of :password, :within => 4..40
   validates_confirmation_of :password, :message => " должен совпадать с подтверждением"
-  validates_uniqueness_of :login, :email, :on => :create, :case_sensitive => false, :message => " должен быть уникальным в системе"
+  validates_uniqueness_of :login, :email, :on => :create, :case_sensitive => false, :message => " уже зарегистрирован в системе"
 	
   EMAIL_USER = /[a-z]([\w+-_]*\.?[\w+-_]+)?/
   EMAIL_DOMAIN = /[a-z]\w*(\.\w+)?/
