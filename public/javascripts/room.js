@@ -34,6 +34,7 @@ var Messages = {
 	NetworkError: 'При получении данных возникла ошибка'
 }
 var Room = {
+    GameId: 0,
 	ElementId: 'room',
 	this_user_position: 0,
 	time_for_turn: 3,
@@ -41,6 +42,7 @@ var Room = {
 	positions: [{x:100, y:100}, {x:300, y:100}, {x:100, y:200}, {x:300, y:200}],
 	image: 'room_1.gif',
 	active_player: 0,
+    last_action_id: 0,
 	players: [],
 
 // Добавляет одного игрока на первое свободное место и возвращает true
@@ -54,7 +56,6 @@ var Room = {
 			return false;
 		}
 	},
-
 	_get_free_sit: function(){
 		for(var i=0; i < this.players_count; i++){
 			if(Object.isUndefined(this.players[i]))
@@ -68,7 +69,7 @@ var Room = {
 		new Ajax.Request(GetPlayersUrl, {
 			method: 'get',
 			parameters: {
-				game: $('game').value
+				game: Room.GameId
 			},
 			onSuccess: function(transport){
 				this.clear();
@@ -110,12 +111,13 @@ var Room = {
 				this.active_player++;
 		}
 	},
-
 	delete_player: function(player_position){
 		this.players[player_position].remove();
 		delete this.players[player_position];
-	}
-
+	},
+    start: function(){
+        this.Actions.start_synchronizer();
+    }
 };
 
 Room.Effects = {
@@ -135,13 +137,15 @@ Room.Effects = {
             'class': 'message ' + type
         }, [Builder.node('div', {'class': 'text'}, string),
             Builder.node('input', {
+                id: 'alert_button',
                 type: 'image',
                 'class': 'button',
                 src: '/images/alert/' + image + '.gif',
                 alt: image,
-                onclick: "this.src = '/images/alert/" + image + "_press.gif'; Room.Effects._hide_alert();"
+                onclick: "this.src = '/images/alert/" + image + "_press.gif';"
             })]));
-          new Effect.Parallel([
+        $('alert_button').observe('click', Room.Effects._hide_alert);
+        new Effect.Parallel([
             new Effect.Opacity('layer', { from: 0.0, to: 0.7}),
             new Effect.Move('message', {
                 x: 0,
@@ -159,7 +163,8 @@ Room.Effects = {
     error: function(string){
         this.alert(string, 'error');
     },
-    _hide_alert: function(){
+    _hide_alert: function(event){
+        event.stop();
         new Effect.Parallel([
             new Effect.DropOut('message'),
             new Effect.Opacity('layer', { from: 0.7, to: 0.0})
@@ -175,6 +180,29 @@ Room.Chips = {
 	pot: 0,
 	call: 0,
 	bet: 0
+};
+Room.Actions = {
+    last_id: 0,
+    query_delay: 5,
+    name_by_id: ['pass', 'check', 'call', 'bet', 'raise', 'reraise'],
+
+    _build_path: function(){
+        return 'actions/' + this.last_id;
+    },
+    start_synchronizer: function(){
+        this.synchronizer = new PeriodicalExecuter(function(){
+            new Ajax.Request(this._build_path(), {
+                onSuccess: function(transport){
+                    var actions = transport.responseText.evalJSON();
+                    actions.map(function(action, id){this._execute(action, id);}.bind(this));
+                }.bind(this)
+            });}.bind(this), this.query_delay);
+    },
+    _execute: function(action_array, uniq_id){
+        var action_name = this.name_by_id[action_array[0]];
+        Room.players[Room.active_player][action_name](action_array[1]);
+        this.last_id = uniq_id;
+    }
 };
 var Timer = Class.create({
 	initialize: function(player_position){
@@ -301,7 +329,6 @@ var Player = Class.create({
         this._say_action(type);
     },
     check: function(){
-
     },
 	pass: function(){
 		this.pass = true;
@@ -309,9 +336,11 @@ var Player = Class.create({
 	call: function(){
 		this.stack -= Room.Chips.call;
 	},
-	_send_action: function(action_type){
+	_send_action: function(action_type, value){
+        var params = {action: action_type};
+        if(value) params.value = value;
 		new Ajax.Request(PlayerActionUrl, {
-			parameters: {action: action_type},
+			parameters: params,
 			onFailure: Room.Effects.network_error
 		});
 	},
@@ -319,8 +348,8 @@ var Player = Class.create({
 		Room.Effects.say(action_type, this.position);
 	},
 	_do_action: function(action_type, value){
-		this._send_action(action_type);
-        this[action_type];
+		this._send_action(action_type, value);
+        this[action_type](value);
 		Room.next_turn();
 	}
 });
