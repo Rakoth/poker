@@ -19,6 +19,7 @@ class User < ActiveRecord::Base
   has_many :players
   has_many :user_balance_logs
   has_many :games, :through => :players
+  has_many :notes
 
   before_save :crypt_password
 

@@ -38,6 +38,9 @@ ActionController::Routing::Routes.draw do |map|
   map.resources :games, :has_many => 'players'
   map.resources :players
   map.resources :game_types
+  map.create_note 'notes', :controller => 'notes', :action => 'create'
+  map.update_note 'notes/:about_user_id', :controller => 'notes', :action => 'update'
+  map.show_note 'note/:about_user_id', :controller => 'notes', :action => 'show'
   map.resource :session
   map.connect ':controller/:action/:id'
   map.connect ':controller/:action/:id.:format'

@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20090206182009) do
+ActiveRecord::Schema.define(:version => 20090222204154) do
 
   create_table "blind_values", :id => false, :force => true do |t|
     t.integer "level"
@@ -48,6 +48,13 @@ ActiveRecord::Schema.define(:version => 20090206182009) do
     t.datetime "updated_at"
   end
 
+  create_table "notes", :id => false, :force => true do |t|
+    t.integer "user_id"
+    t.integer "about_user_id"
+    t.integer "color"
+    t.string  "description"
+  end
+
   create_table "players", :force => true do |t|
     t.integer  "sit"
     t.integer  "stack"
@@ -62,7 +69,7 @@ ActiveRecord::Schema.define(:version => 20090206182009) do
   end
 
   create_table "sessions", :force => true do |t|
-    t.string   "session_id", :null => false
+    t.string   "session_id", :default => "", :null => false
     t.text     "data"
     t.datetime "created_at"
     t.datetime "updated_at"

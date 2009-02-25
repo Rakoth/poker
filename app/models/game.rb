@@ -1,5 +1,5 @@
 class Game < ActiveRecord::Base
-  self.inheritance_column = "class!"
+  self.inheritance_column = "class"
   belongs_to :type, :class_name => 'GameType'
   has_many :players, :dependent => :delete_all
   has_many :users, :through => :players
