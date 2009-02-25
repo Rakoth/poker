@@ -13,7 +13,7 @@ class SessionsController < ApplicationController
       flash[:notice] = "Привет, #{@user.login}!"
       redirect_to games_url
     else
-      flash[:error] = "Неверное сочетание логин-пароль!"
+      flash[:error] = "Неверное сочетание логин-пароль!!"
       @user.password = nil if @user
       render :action => :new
     end
