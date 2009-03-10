@@ -9,7 +9,15 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20090222204154) do
+ActiveRecord::Schema.define(:version => 20090306133032) do
+
+  create_table "actions", :force => true do |t|
+    t.integer  "game_id"
+    t.integer  "player_id"
+    t.integer  "kind"
+    t.integer  "value"
+    t.datetime "created_at"
+  end
 
   create_table "blind_values", :id => false, :force => true do |t|
     t.integer "level"
@@ -31,6 +39,7 @@ ActiveRecord::Schema.define(:version => 20090222204154) do
     t.integer  "max_level"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.integer  "turn_time"
   end
 
   create_table "games", :force => true do |t|

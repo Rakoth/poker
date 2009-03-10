@@ -3,6 +3,7 @@ class Game < ActiveRecord::Base
   belongs_to :type, :class_name => 'GameType'
   has_many :players, :dependent => :delete_all
   has_many :users, :through => :players
+  has_many :actions
 
   def add_player user
     player = players.create(

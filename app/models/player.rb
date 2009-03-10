@@ -4,6 +4,7 @@ class Player < ActiveRecord::Base
 
   belongs_to :user
   belongs_to :game, :counter_cache => :players_count
+  has_many :actions
 
   before_destroy :return_money, :destroy_game_if_last
   before_create :take_money

@@ -1,7 +1,8 @@
 class NotesController < ApplicationController
 
   before_filter :check_authorization
-  
+
+  # POST notes
   def create
     render :nothing => true and return unless request.post?
     params[:user] = @current_user.id
