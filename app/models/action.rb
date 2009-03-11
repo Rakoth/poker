@@ -9,11 +9,11 @@ class Action < ActiveRecord::Base
     {:conditions => ["game_id = ? AND id > ?", game_id, last_id]} }
 
   def has_value?
-    this.kind >= 3
+    self.kind >= 3
   end
 
   def time_handler 
-    this.game.type.action_time - (Time.now - this.created_at).to_i
+    self.game.type.action_time - (Time.now - self.created_at).to_i
   end
 
 end
