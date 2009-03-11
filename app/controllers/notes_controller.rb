@@ -7,7 +7,6 @@ class NotesController < ApplicationController
     render :nothing => true and return unless request.post?
     params[:user] = @current_user.id
     Note.create params
-    # проверить статус ответа
     render :nothing => true
   end
 

@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20090306133032) do
+ActiveRecord::Schema.define(:version => 20090226132804) do
 
   create_table "actions", :force => true do |t|
     t.integer  "game_id"
@@ -33,13 +33,14 @@ ActiveRecord::Schema.define(:version => 20090306133032) do
     t.decimal  "start_cash",        :precision => 10, :scale => 2
     t.decimal  "additional_cash",   :precision => 10, :scale => 2
     t.integer  "start_blind"
+    t.integer  "bet_multiplier"
     t.integer  "change_level_time"
+    t.integer  "action_time"
     t.string   "template"
     t.integer  "min_level"
     t.integer  "max_level"
     t.datetime "created_at"
     t.datetime "updated_at"
-    t.integer  "turn_time"
   end
 
   create_table "games", :force => true do |t|
@@ -48,6 +49,7 @@ ActiveRecord::Schema.define(:version => 20090306133032) do
     t.integer  "blind",           :default => 0
     t.integer  "blind_size"
     t.integer  "ante"
+    t.integer  "current_bet"
     t.integer  "blind_level",     :default => 0
     t.datetime "next_level_time"
     t.integer  "players_count",   :default => 0
@@ -67,9 +69,11 @@ ActiveRecord::Schema.define(:version => 20090306133032) do
   create_table "players", :force => true do |t|
     t.integer  "sit"
     t.integer  "stack"
+    t.integer  "for_call"
+    t.string   "state"
     t.string   "hand"
     t.datetime "action_time"
-    t.datetime "our_action_time"
+    t.datetime "control_action_time"
     t.integer  "action"
     t.integer  "user_id"
     t.integer  "game_id"

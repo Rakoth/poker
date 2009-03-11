@@ -3,7 +3,7 @@ class CreateActions < ActiveRecord::Migration
     create_table :actions do |t|
       t.references :game
       t.references :player
-      t.integer :kind #хорошо было бы type,но слишком много мороки
+      t.integer :kind # 0 => pass, 1 => check, 2 => call, 3 => bet, 4 => raise
       t.integer :value
       t.timestamp :created_at
     end

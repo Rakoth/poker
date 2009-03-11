@@ -1,29 +1,39 @@
 class ActionsController < ApplicationController
 
-  skip_before_filter :find_user
+  skip_before_filter :find_user, :only => :show
+  before_filter :check_authorization, :exept => :show
 
   def show
-
     respond_to do |format|
       format.html {render :text => 'Здесь ничего нет..неверный формат!!!'}
       format.json {
-        @actions = Action.fit  params[:game_id], params[:last_id]
+        @actions = Action.omitted params[:game_id], params[:last_id]
         j_array = []
 
-        @actions.each do |variable|
+        @actions.each do |action|
 
-          if variable.has_value?
-            j_array.push [variable.kind , variable.value]
+          if action.has_value?
+            j_array.push [action.kind , action.value]
           else
-            j_array.push variable.kind
+            j_array.push action.kind
           end
 
         end
         @action = @actions[@actions.count-1]
         j_array.push @action.id
-        j_array.push(Action.time_handler(@action))
+        j_array.push(@action.time_handler)
         render(:text => j_array.to_json, :layout => false)        
       }
     end
   end
+
+  def create
+    game = @current_user.games.find(params[:game])
+    if game and  player = game.wait_action_from(@current_user) and player.do_action(params)
+      render :nothing => true
+    else
+      render :nothing => true, :status => 401
+    end
+  end
+    
 end

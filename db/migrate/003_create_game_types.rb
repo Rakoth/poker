@@ -7,7 +7,9 @@ class CreateGameTypes < ActiveRecord::Migration
       t.decimal :start_cash, :precision => 10, :scale => 2
       t.decimal :additional_cash, :precision => 10, :scale => 2
       t.integer :start_blind
+      t.integer :bet_multiplier
       t.integer :change_level_time
+      t.integer :action_time
       t.string  :template
       t.integer :min_level
       t.integer :max_level
