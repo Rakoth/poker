@@ -49,5 +49,18 @@ class Game < ActiveRecord::Base
   def start
     update_attributes(:status => 'start', :next_level_time => Time.now + type.change_level_time.minutes)
   end
-  
+
+  def next_turn
+    active_players = players.find_all{ |player| player.active? }
+    current_player = Player.find self.turn
+    player = active_players.find(:first,:sit > current_player.sit)
+      if player
+        self.turn = player.id
+      else
+        player = active_players.find(:first,:sit >= 0)
+        self.turn = player.id
+      end
+    player
+  end
+
 end
