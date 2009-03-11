@@ -35,12 +35,12 @@ class Game < ActiveRecord::Base
 
   def next_level
     if new_blind_size = type.get_blind_size(blind_level + 1)
-        update_attributes(
-          :blind_level => blind_level + 1,
-          :blind_size => new_blind_size.value,
-          :ante => new_blind_size.ante,
-          :next_level_time => Time.now + type.change_level_time.minutes
-        )
+      update_attributes(
+        :blind_level => blind_level + 1,
+        :blind_size => new_blind_size.value,
+        :ante => new_blind_size.ante,
+        :next_level_time => Time.now + type.change_level_time.minutes
+      )
     else
       update_attribute(:next_level_time, nil)
     end if next_level_time and Time.now >= next_level_time
@@ -53,14 +53,9 @@ class Game < ActiveRecord::Base
   def next_turn
     active_players = players.find_all{ |player| player.active? }
     current_player = Player.find self.turn
-    player = active_players.find(:first,:sit > current_player.sit)
-      if player
-        self.turn = player.id
-      else
-        player = active_players.find(:first,:sit >= 0)
-        self.turn = player.id
-      end
-    player
+    player = active_players.find(:first, :conditions => ['sit > ?', current_player.sit])
+    player = active_players.find(:first, :conditions => 'sit >= 0') unless player
+    update_attribute :turn, player.id
   end
 
 end
