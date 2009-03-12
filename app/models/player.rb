@@ -67,6 +67,10 @@ class Player < ActiveRecord::Base
     stack >= for_call + value and value > game.current_bet
   end
 
+  def steck_empty?
+    0 == stack
+  end
+
   def do_pass value = nil
     update_attribute :state, :pass
   end
@@ -78,6 +82,7 @@ class Player < ActiveRecord::Base
   def do_call value = nil
     game.update_attribute(:bank, game.bank + for_call)
     update_attributes(:for_call => 0, :stack => stack - for_call)
+    uppdate_attribute(:state,:allin) if stack_empty?
   end
 
   def do_bet value = nil
@@ -86,10 +91,11 @@ class Player < ActiveRecord::Base
     game.update_attributes(:bank => game.bank + full_value, :current_bet => value)
     Players.update_all "for_call = for_call + #{full_value}", ["game_id = ? AND NOT id = ?", game_id, id]
     update_attributes(:for_call => 0, :stack => stack - full_value)
+    uppdate_attribute(:state ,:allin) if stack_empty?
   end
 
   def do_raise value
-    self.bet value
+    self.do_bet value
   end
 
 end
