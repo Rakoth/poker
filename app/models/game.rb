@@ -74,7 +74,7 @@ class Game < ActiveRecord::Base
     update_attribute :turn, player_id
   end
 
-  def get_first_player_from sit, params = {}
+  def get_first_player_from sit, params = {} # Ищет первое не пустое место начиная с sit в направлении :direction
     params[:out] ||= :id
     params[:direction] ||= :asc
     conditions = case params[:direction]
