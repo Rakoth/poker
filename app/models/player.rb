@@ -8,7 +8,7 @@ class Player < ActiveRecord::Base
 
   before_destroy :return_money, :destroy_game_if_last
   before_create :take_money
-
+  
   # named_scope :current, lambda { |game_id, user_id| { :conditions => ["game_id = ? AND user_id = ?", game_id, user_id] } }
 
   def do_action params
@@ -21,7 +21,7 @@ class Player < ActiveRecord::Base
   end
 
   def active?
-    "active" == state
+    :active == state
   end
 
   def has_called?
@@ -67,6 +67,10 @@ class Player < ActiveRecord::Base
     stack >= for_call + value and value > game.current_bet
   end
 
+  def steck_empty?
+    0 == stack
+  end
+
   def do_pass value = nil
     update_attribute :state, :pass
   end
@@ -76,8 +80,15 @@ class Player < ActiveRecord::Base
   end
 
   def do_call value = nil
+    #TODO take_chips
+    params = {:for_call => 0, :stack => stack - for_call}
+    if for_call >= stack
+      params[:state] = :allin
+      params[:stack] = 0
+      self.for_call = stack
+    end
     game.update_attribute(:bank, game.bank + for_call)
-    update_attributes(:for_call => 0, :stack => stack - for_call)
+    update_attributes(params)
   end
 
   def do_bet value = nil
@@ -85,11 +96,13 @@ class Player < ActiveRecord::Base
     full_value = value + for_call
     game.update_attributes(:bank => game.bank + full_value, :current_bet => value)
     Players.update_all "for_call = for_call + #{full_value}", ["game_id = ? AND NOT id = ?", game_id, id]
+    #TODO убрать лишний запрос
     update_attributes(:for_call => 0, :stack => stack - full_value)
+    uppdate_attribute(:state ,:allin) if stack_empty?
   end
 
   def do_raise value
-    self.bet value
+    self.do_bet value
   end
 
 end

@@ -23,7 +23,8 @@ class ActionsController < ApplicationController
         @action = @actions[@actions.count-1]
         j_array.push @action.id
         j_array.push(@action.time_handler)
-        render(:text => j_array.to_json, :layout => false)        
+        #TODO проверить
+        render(:json => j_array.to_json, :layout => false)
       }
     end
   end
