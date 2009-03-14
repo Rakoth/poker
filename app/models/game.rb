@@ -47,15 +47,55 @@ class Game < ActiveRecord::Base
   end
 
   def start
-    update_attributes(:status => 'start', :next_level_time => Time.now + type.change_level_time.minutes)
+    random_blind_sit = rand(type.max_players)
+    params = {
+      :status => :start,
+      :next_level_time => Time.now + type.change_level_time.minutes,
+      :blind => random_blind_sit,
+      :turn => get_first_player_from(random_blind_sit)
+    }
+    update_attributes(params)
+    distribution
   end
 
   def next_turn
-    active_players = players.find_all{ |player| player.active? }
     current_player = Player.find self.turn
-    player = active_players.find(:first, :conditions => ['sit > ?', current_player.sit])
-    player = active_players.find(:first, :conditions => 'sit >= 0') unless player
-    update_attribute :turn, player.id
+    player_id = get_first_player_from current_player.sit
+    update_attribute :turn, player_id
+  end
+
+  def get_first_player_from sit, params = {:out => :id, :direction => :asc}
+    players_set = active_players
+    conditions = case params[:direction]
+    when :asc
+      {:first => ['sit > ?', sit], :second => 'sit >= 0'}
+    when :desc
+      {:first => ['sit < ?', sit], :second => ['sit < ?', type.max_players]}
+    end
+    player = players_set.find(:first, :conditions => conditions[:first])
+    player = players_set.find(:first, :conditions => conditions[:second]) unless player
+    player.send(params[:out])
+  end
+
+  def active_players
+    players.find_all{ |player| player.active? }
+  end
+
+  def distribution # раздача карт
+    take_blinds
+    #TODO генерация карт
+  end
+
+  def take_blinds
+    update_attribute(:bank, blind_size * 1.5 + ante * players_count)
+    players.each do |player|
+      #TODO use take_chips
+      params = {
+        :stack => player.stack - ante,
+        :for_call => 2
+      }
+      player.update_attributes(params)
+    end
   end
 
 end
