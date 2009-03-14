@@ -2,6 +2,8 @@ class Game < ActiveRecord::Base
 
   self.inheritance_column = "class"
 
+  STATUS = {:wait => 'wait', :start => 'start'}
+  
   belongs_to :type, :class_name => 'GameType'
   has_many :players, :dependent => :delete_all
   has_many :users, :through => :players
@@ -9,6 +11,14 @@ class Game < ActiveRecord::Base
 
   def minimal_bet
     blind_value * type.bet_multiplier
+  end
+
+  def small_blind_size
+    blind_size / 2
+  end
+
+  def small_blind_position
+    get_first_player_from blind_position, :out => :sit, :direction => :desc
   end
 
   def add_player user
@@ -26,7 +36,7 @@ class Game < ActiveRecord::Base
   end
 
   def wait?
-    'wait' == status
+    STATUS[:wait] == status
   end
 
   def wait_action_from user
@@ -49,9 +59,9 @@ class Game < ActiveRecord::Base
   def start
     random_blind_sit = rand(type.max_players)
     params = {
-      :status => :start,
+      :status => STATUS[:start],
       :next_level_time => Time.now + type.change_level_time.minutes,
-      :blind => random_blind_sit,
+      :blind_position => random_blind_sit,
       :turn => get_first_player_from(random_blind_sit)
     }
     update_attributes(params)
@@ -64,16 +74,19 @@ class Game < ActiveRecord::Base
     update_attribute :turn, player_id
   end
 
-  def get_first_player_from sit, params = {:out => :id, :direction => :asc}
-    players_set = active_players
+  def get_first_player_from sit, params = {}
+    params[:out] ||= :id
+    params[:direction] ||= :asc
     conditions = case params[:direction]
     when :asc
-      {:first => ['sit > ?', sit], :second => 'sit >= 0'}
-    when :desc
-      {:first => ['sit < ?', sit], :second => ['sit < ?', type.max_players]}
+      first_sit = players.map{ |p| p.sit }.min
+      {:first => ['sit > ?', sit], :second => ['sit = ?', first_sit]}
+    else
+      last_sit = players.map{ |p| p.sit }.max
+      {:first => ['sit < ?', sit], :second => ['sit = ?', last_sit]}
     end
-    player = players_set.find(:first, :conditions => conditions[:first])
-    player = players_set.find(:first, :conditions => conditions[:second]) unless player
+    player = players.first :conditions => conditions[:first]
+    player = players.first(:conditions => conditions[:second]) unless player
     player.send(params[:out])
   end
 
@@ -81,7 +94,7 @@ class Game < ActiveRecord::Base
     players.find_all{ |player| player.active? }
   end
 
-  def distribution # раздача карт
+  def distribution # раздача
     take_blinds
     #TODO генерация карт
   end
@@ -89,13 +102,31 @@ class Game < ActiveRecord::Base
   def take_blinds
     update_attribute(:bank, blind_size * 1.5 + ante * players_count)
     players.each do |player|
-      #TODO use take_chips
-      params = {
-        :stack => player.stack - ante,
-        :for_call => 2
-      }
-      player.update_attributes(params)
+      player.take_ante if ante > 0
+      player.take_chips blind_size if blind_position == player.sit
+      player.take_chips small_blind_size if small_blind_position == player.sit
     end
   end
 
+  def completion_distribution
+    (players.sort_by {|p| p.hand}).each { |player|
+      if player.in_pot > 0
+        player.stack += players.inject(0){ |result, elem|
+          if elem.in_pot > 0
+            if elem.in_pot >= player.in_pot
+              elem.in_pot -= player.in_pot
+              result + player.in_pot
+            else
+              elem.in_pot = 0
+              result + elem.in_pot
+            end
+          else
+            result
+          end
+        }
+      end
+    }
+    self.save
+  end
+  
 end

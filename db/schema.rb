@@ -46,11 +46,11 @@ ActiveRecord::Schema.define(:version => 20090226132804) do
   create_table "games", :force => true do |t|
     t.string   "status",          :default => "wait"
     t.integer  "turn",            :default => 0
-    t.integer  "blind",           :default => 0
+    t.integer  "blind_position",  :default => 0
     t.integer  "blind_size"
-    t.integer  "ante"
-    t.integer  "current_bet"
     t.integer  "blind_level",     :default => 0
+    t.integer  "ante",            :default => 0
+    t.integer  "current_bet"
     t.datetime "next_level_time"
     t.integer  "players_count",   :default => 0
     t.integer  "bank",            :default => 0
@@ -69,12 +69,12 @@ ActiveRecord::Schema.define(:version => 20090226132804) do
   create_table "players", :force => true do |t|
     t.integer  "sit"
     t.integer  "stack"
-    t.integer  "for_call"
-    t.string   "state"
+    t.integer  "for_call",            :default => 0
+    t.integer  "in_pot",              :default => 0
+    t.string   "state",               :default => "active"
     t.string   "hand"
     t.datetime "action_time"
     t.datetime "control_action_time"
-    t.integer  "action"
     t.integer  "user_id"
     t.integer  "game_id"
     t.datetime "created_at"
@@ -115,6 +115,7 @@ ActiveRecord::Schema.define(:version => 20090226132804) do
     t.string   "salt"
     t.integer  "type"
     t.string   "email"
+    t.string   "locate"
     t.decimal  "cash",             :precision => 10, :scale => 2, :default => 0.0
     t.integer  "chips",                                           :default => 1000
     t.integer  "level",                                           :default => 0

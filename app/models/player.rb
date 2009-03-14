@@ -1,5 +1,7 @@
 class Player < ActiveRecord::Base
 
+  STATE = {:active => 'active', :allin => 'allin', :pass => 'pass', :away => 'away'}
+
   validates_presence_of :user_id, :game_id, :sit, :stack
 
   belongs_to :user
@@ -20,8 +22,29 @@ class Player < ActiveRecord::Base
     end
   end
 
+  def take_chips value
+    return 0 unless value
+    params = {}
+    if value >= stack
+      params[:state] = STATE[:allin]
+      params[:stack] = 0
+      value = stack
+    else
+      params[:stack] = stack - value
+    end
+    params[:in_pot] = in_pot + value
+    params[:for_call] = for_call - value if must_call?
+    update_attributes params
+    value
+  end
+
+  def take_ante
+    update_attribure :stack, stack - game.ante
+    game.update_attibute :bank, game.bank + game.ante
+  end
+
   def active?
-    :active == state
+    STATE[:active] == state
   end
 
   def has_called?
@@ -64,15 +87,15 @@ class Player < ActiveRecord::Base
   end
 
   def can_do_raise? value
-    stack >= for_call + value and value > game.current_bet
+    stack >= for_call + value and in_pot + for_call + value > game.current_bet
   end
 
-  def steck_empty?
+  def stack_empty?
     0 == stack
   end
 
   def do_pass value = nil
-    update_attribute :state, :pass
+    update_attribute :state, STATE[:pass]
   end
 
   def do_check value = nil
@@ -80,29 +103,18 @@ class Player < ActiveRecord::Base
   end
 
   def do_call value = nil
-    #TODO take_chips
-    params = {:for_call => 0, :stack => stack - for_call}
-    if for_call >= stack
-      params[:state] = :allin
-      params[:stack] = 0
-      self.for_call = stack
-    end
-    game.update_attribute(:bank, game.bank + for_call)
-    update_attributes(params)
+    game.update_attribute(:bank, game.bank + take_chips(for_call))
   end
 
   def do_bet value = nil
     value ||= game.minimal_bet
-    full_value = value + for_call
-    game.update_attributes(:bank => game.bank + full_value, :current_bet => value)
-    Players.update_all "for_call = for_call + #{full_value}", ["game_id = ? AND NOT id = ?", game_id, id]
-    #TODO убрать лишний запрос
-    update_attributes(:for_call => 0, :stack => stack - full_value)
-    uppdate_attribute(:state ,:allin) if stack_empty?
+    full_value = take_chips(value + for_call)
+    game.update_attributes(:bank => game.bank + full_value, :current_bet => game.current_bet + value)
+    Players.update_all "for_call = for_call + #{value}", ["game_id = ? AND NOT id = ?", game_id, id]
   end
 
   def do_raise value
-    self.do_bet value
+    do_bet value
   end
 
 end

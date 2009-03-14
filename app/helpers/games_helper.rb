@@ -2,13 +2,13 @@ module GamesHelper
 
   def human_status status
     case status
-      when 'wait'
+      when Game::STATUS[:wait]
         "Ожидание игроков"
-      when 'start'
+      when Game::STATUS[:start]
         "Игра началась"
-      when 'fin'
+      when Game::STATUS[:fin]
         "Игра окончена"
-      when 'error'
+      when Game::STATUS[:error]
         "Ошибка в игре"
       else
         "Чета со статусом косяг"
