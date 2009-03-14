@@ -2,16 +2,16 @@ class User < ActiveRecord::Base
 
   attr_accessor :password
 
-  validates_presence_of :login, :password, :email, :message => " не может быть пустым"
-  validates_length_of :login, :within => 2..25
-  validates_length_of :password, :within => 4..40
-  validates_confirmation_of :password, :message => " должен совпадать с подтверждением"
-  validates_uniqueness_of :login, :email, :on => :create, :case_sensitive => false, :message => " уже зарегистрирован в системе"
-	
   EMAIL_USER = /[a-z]([\w+-_]*\.?[\w+-_]+)?/
   EMAIL_DOMAIN = /[a-z]\w*(\.\w+)?/
   EMAIL_DOMAIN_IP = /((\d{1,2}|1\d{2}|2[0-4]\d|25[0-5])\.){3}(\d{1,2}|1\d{2}|2[0-4]\d|25[0-5])/
-  validates_format_of :email, :with => /^#{EMAIL_USER}@(#{EMAIL_DOMAIN}|#{EMAIL_DOMAIN_IP})$/i, :message => " неверного формата"
+
+  validates_presence_of :login, :password, :email
+  validates_length_of :login, :within => 2..25
+  validates_length_of :password, :within => 4..40
+  validates_confirmation_of :password
+  validates_uniqueness_of :login, :email, :on => :create, :case_sensitive => false
+  validates_format_of :email, :with => /^#{EMAIL_USER}@(#{EMAIL_DOMAIN}|#{EMAIL_DOMAIN_IP})$/i
 
   attr_accessible :crypted_password, :password, :password_confirmation
   
@@ -20,6 +20,7 @@ class User < ActiveRecord::Base
   has_many :user_balance_logs
   has_many :games, :through => :players
   has_many :notes
+
   before_save :crypt_password
 
   def authorize? password

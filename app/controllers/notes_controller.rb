@@ -1,6 +1,7 @@
 class NotesController < ApplicationController
 
   before_filter :check_authorization
+  skip_before_filter :set_locate
 
   # POST notes
   def create

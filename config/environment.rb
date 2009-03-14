@@ -57,6 +57,10 @@ Rails::Initializer.run do |config|
   # Make Active Record use UTC-base instead of local time
   # config.active_record.default_timezone = :utc
 
+  # Log
   config.active_record.colorize_logging = false
+
+  # Locate
+  config.i18n.default_locale = :ru
 
 end

@@ -1,6 +1,7 @@
 class ActionsController < ApplicationController
 
   skip_before_filter :find_user, :only => :show
+  skip_before_filter :set_locate
   before_filter :check_authorization, :exept => :show
 
   def show
@@ -32,7 +33,7 @@ class ActionsController < ApplicationController
     if game and  player = game.wait_action_from(@current_user) and player.do_action(params)
       render :nothing => true
     else
-      render :nothing => true, :status => 401
+      render :nothing => true, :status => 400
     end
   end
     

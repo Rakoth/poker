@@ -1,8 +1,8 @@
 <%- fields_for :info, @user.info do |info| -%>
-  <div class="formTitle">Имя: </div>
+  <div class="formTitle"><%= info.label :name %></div>
   <%= info.text_field :name %>
-  <div class="formTitle">Дата рождения: </div>
-  <%= info.date_select :birthday, :start_year => 1950, :end_year => 2000, :order => [:year, :month, :day], :default => 20.year.ago%>
-  <div class="formTitle">Страна: </div>
+  <div class="formTitle"><%= info.label :birthday %></div>
+  <%= info.date_select :birthday, :start_year => 1950, :end_year => 2000, :order => [:day, :month, :year], :default => 21.year.ago%>
+  <div class="formTitle"><%= info.label :country %></div>
   <%= info.text_field :country %>
 <%- end -%>
