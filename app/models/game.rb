@@ -79,14 +79,12 @@ class Game < ActiveRecord::Base
     params[:direction] ||= :asc
     conditions = case params[:direction]
     when :asc
-      first_sit = players.map{ |p| p.sit }.min
-      {:first => ['sit > ?', sit], :second => ['sit = ?', first_sit]}
+      {:first => ['sit > ?', sit], :order => 'sit ASC'}
     else
-      last_sit = players.map{ |p| p.sit }.max
-      {:first => ['sit < ?', sit], :second => ['sit = ?', last_sit]}
+      {:first => ['sit < ?', sit], :order => 'sit DESC'}
     end
-    player = players.first :conditions => conditions[:first]
-    player = players.first(:conditions => conditions[:second]) unless player
+    player = players.first :conditions => conditions[:first], :order => conditions[:order]
+    player = players.first(:order => conditions[:order]) unless player
     player.send(params[:out])
   end
 
@@ -100,12 +98,9 @@ class Game < ActiveRecord::Base
   end
 
   def take_blinds
-    update_attribute(:bank, blind_size * 1.5 + ante * players_count)
-    players.each do |player|
-      player.take_ante if ante > 0
-      player.take_chips blind_size if blind_position == player.sit
-      player.take_chips small_blind_size if small_blind_position == player.sit
-    end
+    players.each { |player| player.take_ante } if ante > 0
+    players.select { |player| player.sit == blind_position }.first.take_chips blind_size
+    players.select { |player| player.sit == small_blind_position }.first.take_chips small_blind_size
   end
 
   def completion_distribution

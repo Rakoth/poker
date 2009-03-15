@@ -10,32 +10,38 @@ class Player < ActiveRecord::Base
 
   before_destroy :return_money, :destroy_game_if_last
   before_create :take_money
-  
-  # named_scope :current, lambda { |game_id, user_id| { :conditions => ["game_id = ? AND user_id = ?", game_id, user_id] } }
 
   def do_action params
     action_name = Action::NAME_BY_KIND[params[:kind]]
     params[:value] ||= nil
     if self.send("can_do_#{action_name}?", params[:value]) and self.send("do_#{action_name}", params[:value])
       game.next_turn
+      params[:game_id] = game.id
       self.actions.create params
     end
   end
 
   def take_chips value
     return 0 unless value
+    self.reload
     params = {}
     if value >= stack
       params[:state] = STATE[:allin]
-      params[:stack] = 0
       value = stack
-    else
-      params[:stack] = stack - value
     end
+    params[:stack] = stack - value
     params[:in_pot] = in_pot + value
-    params[:for_call] = for_call - value if must_call?
+    params[:for_call] = (for_call - value > 0 ? for_call - value : 0) if must_call?
+    Player.update_all "for_call = for_call + #{value - for_call}", ["game_id = ? AND NOT id = ?", game_id, id] if value > for_call
+    game_params = {:bank => game.bank + value}
+    game_params[:current_bet] = in_pot + value if value > for_call
     update_attributes params
+    game.update_attributes game_params
     value
+  end
+
+  def add_for_call value
+    update_attribute :for_call, for_call + value
   end
 
   def take_ante
@@ -103,14 +109,12 @@ class Player < ActiveRecord::Base
   end
 
   def do_call value = nil
-    game.update_attribute(:bank, game.bank + take_chips(for_call))
+    take_chips(for_call)
   end
 
   def do_bet value = nil
     value ||= game.minimal_bet
-    full_value = take_chips(value + for_call)
-    game.update_attributes(:bank => game.bank + full_value, :current_bet => game.current_bet + value)
-    Players.update_all "for_call = for_call + #{value}", ["game_id = ? AND NOT id = ?", game_id, id]
+    take_chips(value + for_call)
   end
 
   def do_raise value
