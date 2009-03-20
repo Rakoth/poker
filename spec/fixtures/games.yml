@@ -19,7 +19,7 @@ start:
   ante:
   blind_level: 0
   next_level_time:
-  players_count: 2
+  players_count: 5
   bank: 0
 
 max_level:

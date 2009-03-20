@@ -4,6 +4,15 @@ class GameTest < ActiveSupport::TestCase
 
   fixtures :games, :game_types, :blind_values, :users
 
+#  test "Game groups_players should group players by hand and return array of groups" do
+#    game = games(:start)
+#    game.players.build [{:hand => 1}, {:hand => 2}, {:hand => 3},{:hand => 1}]
+#    game.save
+#    groups = game.group_players
+#    assert_instance_of Array, groups
+#    assert_equal 3, groups.length
+#  end
+
   test "method add_player should create player if user can join the game" do
     game = games(:wait)
     user = users(:reach)
