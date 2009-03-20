@@ -18,7 +18,7 @@ class GameTypesController < ApplicationController
   def create
     @game_type = GameType.new params[:game_type]
     if @game_type.save
-      params[:blind_value] = params[:blind_value].delete_if {|level| level[:value].blank? }
+      params[:blind_value].delete_if {|level| level[:value].blank? }
       @game_type.blind_values.create params[:blind_value]
       flash[:notice] = "Новый вид игры создан"
       redirect_to

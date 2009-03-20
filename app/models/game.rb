@@ -40,7 +40,7 @@ class Game < ActiveRecord::Base
   end
 
   def wait_action_from user
-    Player.find_by_id_and_user_id turn, user.id
+    Player.find_by_id_and_user_id active_player_id, user.id
   end
 
   def next_level
@@ -62,16 +62,19 @@ class Game < ActiveRecord::Base
       :status => STATUS[:start],
       :next_level_time => Time.now + type.change_level_time.minutes,
       :blind_position => random_blind_sit,
-      :turn => get_first_player_from(random_blind_sit)
+      :active_player_id => get_first_player_from(random_blind_sit)
     }
     update_attributes(params)
-    distribution
+    new_distribution
   end
 
-  def next_turn
-    current_player = Player.find self.turn
-    player_id = get_first_player_from current_player.sit
-    update_attribute :turn, player_id
+  def next_active_player_id
+    current_player = Player.find self.active_player_id
+    player = get_first_player_from current_player.sit, :out => :self
+    while !player.active?
+      player = get_first_player_from current_player.sit, :out => :self
+    end
+    update_attribute :active_player_id, player.id
   end
 
   # Ищет первое не пустое место начиная с sit в направлении :direction
@@ -86,22 +89,32 @@ class Game < ActiveRecord::Base
     end
     player = players.first :conditions => conditions[:first], :order => conditions[:order]
     player = players.first(:order => conditions[:order]) unless player
-    player.send(params[:out])
+    if :self == params[:out]
+      player
+    else
+      player.send(params[:out])
+    end
   end
 
   def active_players
     players.find_all{ |player| player.active? }
   end
 
-  def distribution # раздача
-    take_blinds
-    #TODO генерация карт
+  def nex_stage
+    if players.all? { |p| 0 == p.for_call }
+      goto_next_stage
+    else
+      if all_pass? # возможно не все
+        ending_distribution
+      end
+    end
   end
 
-  def take_blinds
-    players.each { |player| player.take_ante } if ante > 0
-    players.select { |player| player.sit == blind_position }.first.take_chips blind_size
-    players.select { |player| player.sit == small_blind_position }.first.take_chips small_blind_size
+  def new_distribution # раздача
+    before_distribution
+    next_level
+    take_blinds
+    #TODO генерация карт
   end
 
   def ending_distribution
@@ -131,19 +144,26 @@ class Game < ActiveRecord::Base
         }
       end
     end
-
-    all_players=players
-    groups.each_index { |i|
-          groups[i].each_index { |p|
-            player=all_players.find_by_id(groups[i][p][:id])
-            player.update_attributes(
-              :stack => groups[i][p][:stack],
-              :in_pot =>groups[i][p][:in_pot]
-            )
-          }
-    }
-
+    players_hash = {}
+    groups.flatten!.each do |player|
+      players_hash[player[:id]] = {
+        :stack => player[:stack]
+      }
+    end
+    players.each do |player|
+      player.update_attributes(players_hash[player.id])
+    end
   end
+
+  def all_pass?
+    players.select{|p| p.pass?}.count = players.count - 1
+  end
+
+  def away_to_pass
+    #TODO пройтись по всем эвэям и поставить им пассы, если надо
+  end
+
+  protected
 
   def group_players
     temp_players = players.map{|p| {
@@ -165,5 +185,28 @@ class Game < ActiveRecord::Base
     end
     groups.push group
   end
-  
+
+  def take_blinds
+    players.each { |player| player.take_ante } if ante > 0
+    players.select { |player| player.sit == blind_position }.first.take_chips blind_size
+    players.select { |player| player.sit == small_blind_position }.first.take_chips small_blind_size
+  end
+
+  def before_distribution
+    update_attributes :bank => 0, :current_bet => 0
+    players.each do |player|
+      if 0 == player.stack
+        player.destroy
+      else
+        players_params = {:in_pot => 0, :for_call => 0}
+        if player.pass_away?
+          players_params[:state] = Player::STATE[:away]
+        else
+          players_params[:state] = Player::STATE[:active] unless player.away?
+        end
+        player.update_attributes players_params
+      end
+    end
+  end
+
 end

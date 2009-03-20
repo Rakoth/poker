@@ -1,6 +1,6 @@
 class Player < ActiveRecord::Base
 
-  STATE = {:active => 'active', :allin => 'allin', :pass => 'pass', :away => 'away'}
+  STATE = {:active => 'active', :allin => 'allin', :pass => 'pass', :away => 'away', :pass_away => 'pass_away'}
 
   validates_presence_of :user_id, :game_id, :sit, :stack
 
@@ -8,14 +8,16 @@ class Player < ActiveRecord::Base
   belongs_to :game, :counter_cache => :players_count
   has_many :actions
 
-  before_destroy :return_money, :destroy_game_if_last
+  before_destroy :return_money, :destroy_game_if_last, :give_prize
   before_create :take_money
 
   def do_action params
     action_name = Action::NAME_BY_KIND[params[:kind]]
     params[:value] ||= nil
     if self.send("can_do_#{action_name}?", params[:value]) and self.send("do_#{action_name}", params[:value])
-      game.next_turn
+      game.away_to_pass
+      game.next_stage
+      game.next_active_player_id
       params[:game_id] = game.id
       self.actions.create params
     end
@@ -52,6 +54,18 @@ class Player < ActiveRecord::Base
   def active?
     STATE[:active] == state
   end
+  
+  def away?
+    STATE[:away] == state or STATE[:pass_away] == state
+  end
+
+  def pass_away?
+    STATE[:pass_away] == state
+  end
+
+  def pass?
+    STATE[:pass] == state or STATE[:pass_away] == state
+  end
 
   def has_called?
     0 == for_call
@@ -61,8 +75,12 @@ class Player < ActiveRecord::Base
     for_call > 0
   end
 
-  #protected
+  protected
 
+  def give_prize
+    #TODO отдать выйгранные деньги юзеру
+  end
+  
   def return_money
     user.update_attribute(:cash, user.cash + game.type.pay_for_play) if game.wait?
   end
@@ -101,7 +119,7 @@ class Player < ActiveRecord::Base
   end
 
   def do_pass value = nil
-    update_attribute :state, STATE[:pass]
+    update_attribute :state, (away? ? STATE[:pass_away] : STATE[:pass])
   end
 
   def do_check value = nil

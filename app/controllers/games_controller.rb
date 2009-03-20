@@ -8,7 +8,7 @@ class GamesController < ApplicationController
 
   def show
     @game = Game.find params[:id], :include => [:type]
-    #render :layout => false
+    render :layout => false
   end
 
   def new

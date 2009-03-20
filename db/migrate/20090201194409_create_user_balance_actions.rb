@@ -3,7 +3,7 @@ class CreateUserBalanceActions < ActiveRecord::Migration
     create_table :user_balance_actions, :id => false do |t|
       t.references :user
       t.string :direction
-      t.float :value
+      t.decimal :value, :precision => 10, :scale => 2
       t.string :comment
       t.datetime :created_at
     end
