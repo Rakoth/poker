@@ -61,7 +61,7 @@ class Player < ActiveRecord::Base
     for_call > 0
   end
 
-  protected
+  #protected
 
   def return_money
     user.update_attribute(:cash, user.cash + game.type.pay_for_play) if game.wait?
@@ -89,7 +89,7 @@ class Player < ActiveRecord::Base
 
   def can_do_bet? value
     value ||= game.minimal_bet
-    stack >= for_call + value and value >= game.minimal_bet and game.current_bet.nil?
+    stack >= for_call + value and value >= game.minimal_bet and game.current_bet == game.blind_size
   end
 
   def can_do_raise? value
