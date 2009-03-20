@@ -1,0 +1,55 @@
+body{
+  background:#131313;
+}
+div{
+  overflow:hidden;
+}
+#room{
+  width:700px;
+  height:400px;
+  background:#000 url("");
+}
+#main{
+  width:500px;
+  height:400px;
+  float:left;
+}
+#control{
+  height:400px;
+  width:200px;
+  margin-left:400px;
+}
+#info{
+  height:40px;
+  width:500px;
+}
+#table{
+  width:500px;
+  height:360px;
+  background:url(/images/game/table.gif);
+}
+#info_line{
+  background:url("/images/game/back/3.gif");
+}
+#game_info{
+  background:url("/images/game/back/3.gif");
+}
+#log{
+  background:url("/images/game/back/1.gif");
+}
+#notes{
+  background:url("/images/game/back/2.gif");
+}
+#help{
+  background:#000;
+}
+#actions{
+  background:#000;
+}
+#control .block{
+  height:100px;
+}
+#info .block{
+  height:20px;
+  width:500px;
+}

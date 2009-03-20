@@ -46,8 +46,8 @@ ru:
 
     currency:
       format:
-        format: "%n %u"
-        unit: "руб."
+        format: "%u %n"
+        unit: "$"
         separator: "."
         delimiter: " "
         precision: 2

@@ -3,7 +3,7 @@
 wait:
   status: wait
   turn: 0
-  blind: 0
+  blind_position: 0
   blind_size: 50
   ante:
   blind_level: 0
@@ -14,7 +14,7 @@ wait:
 start:
   status: start
   turn: 0
-  blind: 0
+  blind_position: 0
   blind_size: 50
   ante:
   blind_level: 0
@@ -26,7 +26,7 @@ max_level:
   type_id: 1
   status: start
   turn: 0
-  blind: 0
+  blind_position: 0
   blind_size: 500
   ante: 100
   blind_level: 100
@@ -38,7 +38,7 @@ pre_start:
   type_id: 1
   status: wait
   turn: 0
-  blind: 0
+  blind_position: 0
   blind_size: 50
   ante:
   blind_level: 0

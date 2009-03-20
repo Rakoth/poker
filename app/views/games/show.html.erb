@@ -1,32 +1,58 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
   <head>
-    <title><%=h @game.type.title %></title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <%= stylesheet_link_tag "game", :media => "all" %>
+    <title>Game</title>
   </head>
   <body>
-    <h2>Игра</h2>
-    <div class="singleGame">
-      <h3><%=h @game.type.title %> / <%= human_status @game.status %></h3>
-      <div>
-        Игроков : <%= players_stat @game %><br />
-        Блайнды : <%= @game.blind_size %> / <%= @game.blind_size / 2 %><br />
-        Начальный  стэк : <%= @game.type.start_stack %><br />
-        Подходяще уровни : <%= levels_stat @game.type %><br />
-        Призовой фонд : <%= number_to_currency @game.type.prize %>
+    <div id="room">
+      <div id="main">
+        <div id="info">
+          <div id="info_line" class="block"></div>
+          <div id="game_info" class="block"></div>
+        </div>
+        <div id="table"></div>
       </div>
-      <h4>Игроки</h4>
-      <table class="gamePlayers">
-        <thead>
-          <tr>
-            <th>Логин</th>
-            <th>Стэк</th>
-            <th>Активность</th>
-            <th>Действия</th>
-          </tr>
-        </thead>
-        <tbody>
-          <%= render :partial => 'player', :collection => @game.players %>
-        </tbody>
-      </table>
+      <div id="control">
+        <div id="log" class="block"></div>
+        <div id="help" class="block"></div>
+        <div id="actions" class="block"></div>
+        <div id="notes" class="block"></div>
+      </div>
     </div>
   </body>
 </html>
+<!--
+<html>
+<head>
+<title><%=h @game.type.title %></title>
+</head>
+<body>
+<h2>Игра</h2>
+<div class="singleGame">
+<h3><%=h @game.type.title %> / <%= human_status @game.status %></h3>
+<div>
+Игроков : <%= players_stat @game %><br />
+Блайнды : <%= @game.blind_size %> / <%= @game.blind_size / 2 %><br />
+Начальный  стэк : <%= @game.type.start_stack %><br />
+Подходяще уровни : <%= levels_stat @game.type %><br />
+Призовой фонд : <%= number_to_currency @game.type.prize %>
+</div>
+<h4>Игроки</h4>
+<table class="gamePlayers">
+<thead>
+<tr>
+<th>Логин</th>
+<th>Стэк</th>
+<th>Активность</th>
+<th>Действия</th>
+</tr>
+</thead>
+<tbody>
+<%= render :partial => 'player', :collection => @game.players %>
+</tbody>
+</table>
+</div>
+</body>
+</html> -->
