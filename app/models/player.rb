@@ -11,6 +11,8 @@ class Player < ActiveRecord::Base
   before_destroy :return_money, :destroy_game_if_last, :give_prize
   before_create :take_money
 
+  attr_accessor :persent # процент выйгрыша
+
   def do_action params
     action_name = Action::NAME_BY_KIND[params[:kind]]
     params[:value] ||= nil

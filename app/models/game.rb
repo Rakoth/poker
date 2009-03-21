@@ -104,9 +104,7 @@ class Game < ActiveRecord::Base
     if players.all? { |p| 0 == p.for_call }
       goto_next_stage
     else
-      if all_pass? # возможно не все
-        ending_distribution
-      end
+      ending_distribution if all_pass?
     end
   end
 
@@ -117,43 +115,94 @@ class Game < ActiveRecord::Base
     #TODO генерация карт
   end
 
-  def ending_distribution
-    groups = self.group_players
-    groups.each_index do |group|
-      general_in_pot = groups[group].inject(0){|s, p| s + p[:in_pot]}
+  def final_distribution
+    groups = players.group_by(&:hand).sort_by{ |g| -g[0] }.map do |g|
+      group = g[1]
+      general_in_pot = group.inject(0){|s, p| s + p.in_pot}
       if general_in_pot > 0
-        max = groups[group].first[:in_pot]
-        groups[group].each_index{|player|
-          max = groups[group][player][:in_pot] if groups[group][player][:in_pot] > max
-          groups[group][player][:persent] = (groups[group][player][:in_pot] / general_in_pot).to_f.round(2)
-        }
-        chips_summ = 0
-        groups.each_index { |i|
-          groups[i].each_index { |p|
-            if groups[i][p][:in_pot] > max
-              chips_summ += max
-              groups[i][p][:in_pot] -= max
-            else
-              chips_summ += groups[i][p][:in_pot]
-              groups[i][p][:in_pot] = 0
-            end
-          }
-        }
-        groups[group].each_index { |player|
-          groups[group][player][:stack] += (chips_summ * groups[group][player][:persent]).round
-        }
+        max = group.first.in_pot
+        group.map! do |player|
+          max = player.in_pot if player.in_pot > max
+          player.persent = (player.in_pot / general_in_pot).to_f.round(2)
+          player
+        end
       end
+      [max, group]
     end
-    players_hash = {}
-    groups.flatten!.each do |player|
-      players_hash[player[:id]] = {
-        :stack => player[:stack]
+    calculated_groups = groups.map do |g|
+      max, group, chips_sum = g[0], g[1], 0
+      group.map!{|player|
+        if player.in_pot > max
+          chips_sum += max
+          player.in_pot -= max
+        else
+          chips_sum += player.in_pot
+          player.in_pot = 0
+        end
+        player
       }
+      group.map!{ |player| player.stack += (chips_sum * player.persent).round}
     end
-    players.each do |player|
-      player.update_attributes(players_hash[player.id])
-    end
+    calculated_groups.flatten.each{ |player| player.update_attributes(:stack => player.stack)}
   end
+#  def ending_distribution
+#    groups = self.group_players
+#    groups.each_index do |group|
+#      general_in_pot = groups[group].inject(0){|s, p| s + p[:in_pot]}
+#      if general_in_pot > 0
+#        max = groups[group].first[:in_pot]
+#        groups[group].each_index{|player|
+#          max = groups[group][player][:in_pot] if groups[group][player][:in_pot] > max
+#          groups[group][player][:persent] = (groups[group][player][:in_pot] / general_in_pot).to_f.round(2)
+#        }
+#        chips_summ = 0
+#        groups.each_index { |i|
+#          groups[i].each_index { |p|
+#            if groups[i][p][:in_pot] > max
+#              chips_summ += max
+#              groups[i][p][:in_pot] -= max
+#            else
+#              chips_summ += groups[i][p][:in_pot]
+#              groups[i][p][:in_pot] = 0
+#            end
+#          }
+#        }
+#        groups[group].each_index { |player|
+#          groups[group][player][:stack] += (chips_summ * groups[group][player][:persent]).round
+#        }
+#      end
+#    end
+#    players_hash = {}
+#    groups.flatten!.each do |player|
+#      players_hash[player[:id]] = {
+#        :stack => player[:stack]
+#      }
+#    end
+#    players.each do |player|
+#      player.update_attributes(players_hash[player.id])
+#    end
+#  end
+
+#  def group_players
+#    temp_players = players.map{|p| {
+#        :id => p.id,
+#        :hand => p.hand,
+#        :in_pot => p.in_pot,
+#        :stack => p.stack
+#      } if p.in_pot > 0
+#    }.sort_by{|p| p[:hand]}.reverse
+#    groups = []
+#    group =[]
+#    temp_players.each_index do |i|
+#      if 0 == i or temp_players[i][:hand] == temp_players[i-1][:hand]
+#        group.push temp_players[i]
+#      else
+#        groups.push group
+#        group = [temp_players[i]]
+#      end
+#    end
+#    groups.push group
+#  end
 
   def all_pass?
     players.select{|p| p.pass?}.count = players.count - 1
@@ -164,27 +213,6 @@ class Game < ActiveRecord::Base
   end
 
   protected
-
-  def group_players
-    temp_players = players.map{|p| {
-        :id => p.id,
-        :hand => p.hand,
-        :in_pot => p.in_pot,
-        :stack => p.stack
-      } if p.in_pot > 0
-    }.sort_by{|p| p[:hand]}.reverse
-    groups = []
-    group =[]
-    temp_players.each_index do |i|
-      if 0 == i or temp_players[i][:hand] == temp_players[i-1][:hand]
-        group.push temp_players[i]
-      else
-        groups.push group
-        group = [temp_players[i]]
-      end
-    end
-    groups.push group
-  end
 
   def take_blinds
     players.each { |player| player.take_ante } if ante > 0
