@@ -45,7 +45,7 @@ class User < ActiveRecord::Base
   
   def crypt_password
     unless self.password.blank?
-      self.salt = Digest::SHA1.hexdigest("#{Time.now}_#{login}") if new_record?
+      self.salt = ("#{Time.now}_#{login}").crypt(rand(1000).to_s) if new_record?
       self.crypted_password = password.crypt(salt)
     end
   end

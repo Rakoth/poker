@@ -44,16 +44,19 @@ ActiveRecord::Schema.define(:version => 20090226132804) do
   end
 
   create_table "games", :force => true do |t|
-    t.string   "status",          :default => "wait"
-    t.integer  "turn",            :default => 0
-    t.integer  "blind_position",  :default => 0
+    t.string   "status",           :default => "wait"
+    t.integer  "active_player_id", :default => 0
+    t.integer  "blind_position",   :default => 0
     t.integer  "blind_size"
-    t.integer  "blind_level",     :default => 0
-    t.integer  "ante",            :default => 0
+    t.integer  "blind_level",      :default => 0
+    t.integer  "ante",             :default => 0
     t.integer  "current_bet"
     t.datetime "next_level_time"
-    t.integer  "players_count",   :default => 0
-    t.integer  "bank",            :default => 0
+    t.integer  "players_count",    :default => 0
+    t.integer  "bank",             :default => 0
+    t.string   "flop"
+    t.string   "turn"
+    t.string   "river"
     t.integer  "type_id"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -94,7 +97,7 @@ ActiveRecord::Schema.define(:version => 20090226132804) do
   create_table "user_balance_actions", :id => false, :force => true do |t|
     t.integer  "user_id"
     t.string   "direction"
-    t.float    "value"
+    t.decimal  "value",      :precision => 10, :scale => 2
     t.string   "comment"
     t.datetime "created_at"
   end

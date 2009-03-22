@@ -213,8 +213,8 @@ ru:
   input_registration_data: "Введите данные для регистраци"
 
   # global
-  click_here: "Кликни"
-  submit: "Готово"
+  click_here:   "Кликни"
+  submit:       "Готово"
   cancel:       "Закрыть"
   preview:      "Превью"
   create:       "Создать"
