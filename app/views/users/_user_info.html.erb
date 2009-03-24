@@ -1,8 +1,8 @@
 <%- fields_for :info, @user.info do |info| -%>
-  <div class="formTitle"><%= info.label :name %></div>
+  <div class="formTitle"><%= info.label :name, UserInfo.human_attribute_name("name") %></div>
   <%= info.text_field :name %>
-  <div class="formTitle"><%= info.label :birthday %></div>
+  <div class="formTitle"><%= info.label :birthday, UserInfo.human_attribute_name("birthday") %></div>
   <%= info.date_select :birthday, :start_year => 1950, :end_year => 2000, :order => [:day, :month, :year], :default => 21.year.ago%>
-  <div class="formTitle"><%= info.label :country %></div>
+  <div class="formTitle"><%= info.label :country, UserInfo.human_attribute_name("country") %></div>
   <%= info.text_field :country %>
 <%- end -%>

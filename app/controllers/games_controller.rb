@@ -20,18 +20,18 @@ class GamesController < ApplicationController
     if @type = GameType.find_by_id(params[:game][:type]) and @current_user.can_create?(@type)
       if @game = Game.create( :type => @type, :blind_size => @type.start_blind)
         if @game.add_player(@current_user)
-          flash[:notice] = "Игра создана!"
+          flash[:notice] = t 'controllers.games.game_successfully_created'
           redirect_to game_url(@game)
         else
-          flash[:notice] = "Игра создана, но подключиться к ней не удалось."
+          flash[:notice] = t 'controllers.games.game_created_with_error'
           redirect_to games_url
         end
       else
-        flash[:error] = "При создании игры возникла ошибка!"
+        flash[:error] = t 'controllers.games.failed_to_create_game'
         redirect_to games_url
       end
     else
-      flash[:error] = "Вы не можете создать игру такого типа!"
+      flash[:error] = t 'controllers.games.access_denied_to_game_creation'
       @game = Game.new
       @types = GameType.for_create
       render :action => :new

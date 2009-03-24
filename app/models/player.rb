@@ -11,7 +11,11 @@ class Player < ActiveRecord::Base
   before_destroy :return_money, :destroy_game_if_last, :give_prize
   before_create :take_money
 
-  attr_accessor :persent # процент выйгрыша
+  attr_writer :persent # процент выйгрыша
+  
+  def persent
+    @persent ||= 0
+  end
 
   def do_action params
     action_name = Action::NAME_BY_KIND[params[:kind]]
@@ -75,6 +79,18 @@ class Player < ActiveRecord::Base
 
   def must_call?
     for_call > 0
+  end
+
+  def rank
+    if pass?
+      -1
+    else
+      hand
+    end
+  end
+
+  def do_pass_away
+    update_attribute :state => STATE[:pass_away]
   end
 
   protected

@@ -69,10 +69,10 @@ class Game < ActiveRecord::Base
   end
 
   def next_active_player_id
-    current_player = Player.find self.active_player_id
-    player = get_first_player_from current_player.sit, :out => :self
+    player = Player.find self.active_player_id
+    player = get_first_player_from player.sit, :out => :self
     while !player.active?
-      player = get_first_player_from current_player.sit, :out => :self
+      player = get_first_player_from player.sit, :out => :self
     end
     update_attribute :active_player_id, player.id
   end
@@ -101,10 +101,22 @@ class Game < ActiveRecord::Base
   end
 
   def nex_stage
-    if players.all? { |p| 0 == p.for_call }
+    if players.all? { |p| p.has_called? or p.pass? }
       goto_next_stage
     else
-      ending_distribution if all_pass?
+      final_distribution if all_pass?
+    end
+  end
+
+  def goto_next_stage
+    if flop.nil?
+      do_flop
+    elsif !flop.nil? and turn.nil?
+      do_turn
+    elsif !flop.nil? and !turn.nil? and river.nil?
+      do_river
+    else
+      final_distribution
     end
   end
 
@@ -115,35 +127,47 @@ class Game < ActiveRecord::Base
     #TODO генерация карт
   end
 
+  def away_to_pass
+    player = Player.find self.active_player_id
+    player = get_first_player_from player.sit, :out => :self
+    while !player.active?
+      player.do_pass_away if player.away? and player.must_call?
+      player = get_first_player_from player.sit, :out => :self
+    end
+  end
+
   def final_distribution
-    groups = players.group_by(&:hand).sort_by{ |g| -g[0] }.map do |g|
-      group = g[1]
+    groups = players.group_by(&:rank).sort_by{ |g| g[0] }.reverse.map do |g|
+      group, max = g[1], 0
       general_in_pot = group.inject(0){|s, p| s + p.in_pot}
       if general_in_pot > 0
         max = group.first.in_pot
         group.map! do |player|
           max = player.in_pot if player.in_pot > max
-          player.persent = (player.in_pot / general_in_pot).to_f.round(2)
+          player.persent = ((100 * player.in_pot / general_in_pot).to_f.round) / 100
           player
         end
       end
       [max, group]
     end
     calculated_groups = groups.map do |g|
-      max, group, chips_sum = g[0], g[1], 0
-      group.map!{|player|
-        if player.in_pot > max
-          chips_sum += max
-          player.in_pot -= max
-        else
-          chips_sum += player.in_pot
-          player.in_pot = 0
+      max, chips_sum = g[0], 0
+      groups.map! do |group|
+        group[1].map! do |player|
+          if player.in_pot > max
+            chips_sum += max
+            player.in_pot -= max
+          else
+            chips_sum += player.in_pot
+            player.in_pot = 0
+          end
+          player
         end
-        player
-      }
-      group.map!{ |player| player.stack += (chips_sum * player.persent).round}
+        group
+      end
+      g[1].map{ |player| player.stack += (chips_sum * player.persent).round; player}
     end
-    calculated_groups.flatten.each{ |player| player.update_attributes(:stack => player.stack)}
+    calculated_groups.flatten.each{ |player| player.save}
   end
 #  def ending_distribution
 #    groups = self.group_players

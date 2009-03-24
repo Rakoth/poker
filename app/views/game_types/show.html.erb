@@ -1,31 +1,31 @@
-<h3>Просмотр типа игры</h3>
+<h3><%=t 'views.game_types.show.title' %></h3>
 <table id="gameTypeTable">
   <tr>
-    <td>Заголовок</td>
+    <td><%=GameType.human_attribute_name :title %></td>
     <td><%= @game_type.title %></td>
   </tr>
   <tr>
-    <td>Количество игроков</td>
+    <td><%=GameType.human_attribute_name :max_players %></td>
     <td><%= @game_type.max_players %></td>
   </tr>
   <tr>
-    <td>Плата за вход</td>
+    <td><%=t 'views.game_types.index.pay_for_play' %></td>
     <td><%= @game_type.start_cash + @game_type.additional_cash %></td>
   </tr>
   <tr>
-    <td>Стартовый стэк</td>
+    <td><%=GameType.human_attribute_name :start_stack %></td>
     <td><%= @game_type.start_stack %></td>
   </tr>
   <tr>
-    <td>Начальный блайнд</td>
+    <td><%=GameType.human_attribute_name :start_blind %></td>
     <td><%= @game_type.start_blind %></td>
   </tr>
   <tr>
-    <td>Время роста блайнда (мин)</td>
+    <td><%=GameType.human_attribute_name :change_level_time %></td>
     <td><%= @game_type.change_level_time %></td>
   </tr>
   <tr>
-    <td>Уровень для входа</td>
+    <td><%=t 'views.game_types.index.level_for_play' %></td>
     <td><%= @game_type.min_level %> - <%= @game_type.max_level %></td>
   </tr>
 </table>

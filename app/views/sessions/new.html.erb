@@ -1,10 +1,10 @@
-<h2>Введите свой логин и пароль</h2>
+<h2><%=t 'views.sessions.new.title' %></h2>
 
 <%- form_for :user, @user, :url => session_path do |form| -%>
-	<p class="formTitle">Логин: </p>
+	<p class="formTitle"><%= form.label :login, User.human_attribute_name("login") %></p>
 	<%= form.text_field :login %>
-	<p class="formTitle">Пароль: </p>
+	<p class="formTitle"><%= form.label :password, User.human_attribute_name("password") %></p>
 	<%= form.password_field :password %><br /><br />
 
-	<%= form.submit "Войти!" %>
+	<%= form.submit t(:entry) %>
 <%- end -%>

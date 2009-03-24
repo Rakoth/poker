@@ -147,10 +147,35 @@ ru:
   activerecord:
     models:
       user: "Пользователь"
-      attributes:
-        user:
-          login: "Логин"
-          password: "Пароль"
+      user_info: "Анкета"
+      game: "Игра"
+      game_type: "Тип игры"
+      player: "Игрок"
+    attributes:
+      user:
+        login: "Логин"
+        password: "Пароль"
+        password_confirmation: "Повторите пароль"
+        email: "Емэил"
+        level: "Уровень"
+      user_info:
+        name: "Имя"
+        birthday: "День рождения"
+        country: "Страна"
+      game_type:
+        title: "Заголовок"
+        max_players: "Кол-во игроков"
+        start_stack: "Начальный стэк"
+        start_cash: "Стартовый взнос"
+        additional_cash: "Плата за игру"
+        start_blind: "Начальный блайнд"
+        change_level_time: "Время роста блайнда(мин)"
+        template: "Шаблон стола"
+        min_level: "Минимальный уровень игрока"
+        max_level: "Максимальный уровень игрока"
+      game:
+        players_count: "Кол-во игроков"
+        state: "Состояние"
     errors:
       template:
         header:
@@ -206,11 +231,62 @@ ru:
       last_word_connector: " и "
 
 
-  # хз как тут че переводить..((
-  additional_info: "Дополнительно"
-  required_data: "Обязательно"
-  sign_up: "Зарегистрироваться"
-  input_registration_data: "Введите данные для регистраци"
+#  хз как тут че переводить..((
+  views:
+    game_types:
+      form:
+        players_count: "Количество игроков"
+        blind_levels: "Значения блайндов"
+      edit:
+        title: "Изменение типа игры"
+      index:
+        title: "Просмотр типов покера"
+        pay_for_play: "Плата за вход"
+        level_for_play: "Уровень для участия"
+      new:
+        title: "Создание нового типа игры!"
+      show:
+        title: "Просмотр типа игры"
+    users:
+      new:
+        additional_info: "Дополнительно"
+        required_data: "Обязательно"
+        sign_up: "Зарегистрироваться"
+        input_registration_data: "Введите данные для регистраци"
+    games:
+      actions:
+        leave_game_confirm: "Вы собираетесь покинуть игру {{title}}?"
+      index:
+        pay_for_play: "Плата за вход"
+      new:
+        title: "Создать новую игру"
+    sessions:
+      new:
+        title: "Введите свой логин и пароль"
+
+  controllers:
+    users:
+      successfully_sign_up: "Регистрация прошла успешно"
+      failed_sign_up: "Ошибка при регистрации!"
+    game_types:
+      new_type_successfully_created: "Новый вид игры создан"
+      cant_create_new_game_type: "Не удалось добавить новый тип игры"
+      failed_to_update_type: "Не удалось обновить тип игры"
+    games:
+      game_successfully_created: "Игра создана!"
+      game_created_with_error: "Игра создана, но подключиться к ней не удалось."
+      failed_to_create_game: "При создании игры возникла ошибка!"
+      access_denied_to_game_creation: "Вы не можете создать игру такого типа!"
+    players:
+      successfully_connected_to_game: "Вы успешно присоединились к игре!"
+      failed_connect_to_game: "Невозможно присоединиться к этой игре!"
+      successfully_leave_the_game: "Вы успешно вышли из игры!"
+      cant_leave_the_game: "Невозможно покинуть эту игру"
+    sessions:
+      hello: "Привет, {{login}}!"
+      wrong_password: "Неверное сочетание логин-пароль!"
+    application:
+      authorisation_required: "Необходимо авторизоваться для выполнения данного действия!"
 
   # global
   click_here:   "Кликни"
@@ -230,7 +306,23 @@ ru:
   back:         "Назад"
   the_site:     "Сайт"
   ago:          "{{time_ago}} назад"
-  automated_message: "Note: this is an automated message; please do not reply, as there's no human at the other end of it."
+  exit: "Выход"
+  entry: "Вход"
   thanks:       "Спасибо!"
   or:           " или "
   warning:      "Внимание"
+  successfully_updated: "Изменения успешно внесены"
+  title: "Заголовок"
+  level: "Уровень"
+  blind: "Блайнд"
+  ante: "Анте"
+  detail: "Подробнее"
+  join: "Присоединитсья"
+  leave: "Покинуть"
+  message: "Сообщение"
+  type: "Тип"
+  actions: "Действия"
+  games: "Игры"
+  game_types: "Типы игр"
+  sign_up: "Регистрация"
+  really_exit: "Вы действительно желаете выйти?"

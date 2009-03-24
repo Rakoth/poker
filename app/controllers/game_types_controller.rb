@@ -20,10 +20,10 @@ class GameTypesController < ApplicationController
     if @game_type.save
       params[:blind_value].delete_if {|level| level[:value].blank? }
       @game_type.blind_values.create params[:blind_value]
-      flash[:notice] = "Новый вид игры создан"
+      flash[:notice] = t 'controllers.game_types.new_type_successfully_created'
       redirect_to
     else
-      flash[:error] = "Не удалось добавить новый тип игры"
+      flash[:error] = t 'controllers.game_types.cant_create_new_game_type'
       render :action => :new
     end
   end
@@ -36,10 +36,10 @@ class GameTypesController < ApplicationController
   def update
     @game_type = GameType.find params[:id]
     if @game_type.update_attributes(params[:game_type])
-      flash[:notice] = "Изменения успешно внесены"
+      flash[:notice] = t :successfully_updated
       redirect_to
     else
-      flash[:error] = "Не удалось обновить тип игры"
+      flash[:error] = t 'controllers.game_types.failed_to_update_type'
       render :action => :edit
     end
   end

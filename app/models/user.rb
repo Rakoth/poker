@@ -2,6 +2,8 @@ class User < ActiveRecord::Base
 
   attr_accessor :password
 
+  attr_accessible :crypted_password, :password, :password_confirmation
+
   EMAIL_USER = /[a-z]([\w+-_]*\.?[\w+-_]+)?/
   EMAIL_DOMAIN = /[a-z]\w*(\.\w+)?/
   EMAIL_DOMAIN_IP = /((\d{1,2}|1\d{2}|2[0-4]\d|25[0-5])\.){3}(\d{1,2}|1\d{2}|2[0-4]\d|25[0-5])/
@@ -12,8 +14,6 @@ class User < ActiveRecord::Base
   validates_confirmation_of :password
   validates_uniqueness_of :login, :email, :on => :create, :case_sensitive => false
   validates_format_of :email, :with => /^#{EMAIL_USER}@(#{EMAIL_DOMAIN}|#{EMAIL_DOMAIN_IP})$/i
-
-  attr_accessible :crypted_password, :password, :password_confirmation
   
   has_one :info, :dependent => :destroy, :class_name => "UserInfo", :foreign_key => "user_id"
   has_many :players

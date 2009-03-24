@@ -8,7 +8,7 @@ class ApplicationController < ActionController::Base
   # See ActionController::RequestForgeryProtection for details
   # Uncomment the :secret if you're not using the cookie session store
   # protect_from_forgery :secret => '8bef2a684c066408714d2a1e3a769645'
-  protect_from_forgery :only => [:update, :delete, :create]
+  protect_from_forgery :only => [:update, :delete, :create] #, :secret => 'sdkjfbgksdfbgsdhkjfbghjsdbgfkjb'
   
   before_filter :find_user, :set_locate
 
@@ -24,7 +24,7 @@ class ApplicationController < ActionController::Base
 
   def check_authorization
     unless @current_user
-      flash[:error] = "Необходимо авторизоваться для выполнения данного действия!"
+      flash[:error] = t 'controllers.application.authorisation_required'
       redirect_to games_url
     end
   end

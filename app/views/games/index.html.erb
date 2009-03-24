@@ -1,18 +1,18 @@
 <% content_for :games_menu do %>
   <ul>
-    <li><%= link_to "Создать", new_game_path %></li>
+    <li><%= link_to t(:create), new_game_path %></li>
   </ul>
 <% end %>
 <table>
   <thead>
     <tr>
-      <th>Состояние</th>
-      <th>Тип</th>
-      <th>Стартовый взнос</th>
-      <th>Стартовый стэк</th>
-      <th>Начальный блайнд</th>
-      <th>Игроков</th>
-      <th>Действия</th>
+      <th><%=h Game.human_attribute_name("state") %></th>
+      <th><%=t :type %></th>
+      <th><%=t 'views.games.index.pay_for_play' %></th>
+      <th><%=h GameType.human_attribute_name("start_stack") %></th>
+      <th><%=h GameType.human_attribute_name("start_blind") %></th>
+      <th><%=h Game.human_attribute_name("players_count") %></th>
+      <th><%=t :actions %></th>
     </tr>
   </thead>
   <tbody>

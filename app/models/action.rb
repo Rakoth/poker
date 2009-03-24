@@ -5,9 +5,9 @@ class Action < ActiveRecord::Base
 
   NAME_BY_KIND = [:pass, :check, :call, :bet, :raise]
   
-  named_scope :omitted, lambda { |game_id, last_id|
+  named_scope :omitted, lambda do |game_id, last_id|
     {:conditions => ["game_id = ? AND id > ?", game_id, last_id]}
-  }
+  end
 
   def has_value?
     kind >= 3

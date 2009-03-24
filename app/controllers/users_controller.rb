@@ -21,11 +21,11 @@ class UsersController < ApplicationController
     @user.email = params[:user][:email]
     if @user.save
       @user.create_info params[:info]
-      flash[:notice] = "Регистрация прошла успешно"
+      flash[:notice] = t 'controllers.users.successfully_sign_up'
       redirect_to login_url
     else
       @user.password = nil
-      flash[:error] = "Ошибка при регистрации!"
+      flash[:error] = t 'controllers.users.failed_sign_up'
       render :action => :new
     end
   end
