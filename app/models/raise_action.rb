@@ -1,8 +1,4 @@
 class RaiseAction < BetAction
-  def initialize receiver, value
-    super receiver, value
-  end
-
   def kind
     return 4
   end

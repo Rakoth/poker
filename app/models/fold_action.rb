@@ -1,8 +1,4 @@
 class FoldAction < Action
-  def initialize receiver
-    super receiver
-  end
-
   def kind
     return 0
   end

@@ -1,9 +1,4 @@
-class BetAction < CallAction
-  def initialize receiver, value
-    @value = (0 == value ? game.minimal_bet : value)  
-    super receiver
-  end
-
+class BetAction < Action
   def kind
     return 3
   end
@@ -17,4 +12,6 @@ class BetAction < CallAction
     game_params[:current_bet] = game.current_bet + value
     super
   end
+
+  include StackAffectedAction
 end

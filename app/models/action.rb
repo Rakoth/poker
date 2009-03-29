@@ -17,18 +17,17 @@ class Action < ActiveRecord::Base
     self.game.type.action_time - (Time.now - created_at).to_i
   end
 
-  def value
-    @value ||= 0
-  end
-
   attr_accessor :game_params
 
   def kind
     raise "can't resive kind of class Action"
   end
 
-  def initialize receiver
-    super :value => @value, :player => receiver, :game => receiver.game
+  def value
+    self[:value] ||= 0
+  end
+
+  def after_initialize
     @game_params = {}
   end
 
