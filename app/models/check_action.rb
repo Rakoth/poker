@@ -1,7 +1,10 @@
 class CheckAction < Action
   def initialize receiver
-    @kind = 1
     super receiver
+  end
+
+  def kind
+    return 1
   end
 
   def can_perform?

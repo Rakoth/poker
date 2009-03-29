@@ -3,6 +3,8 @@ class Action < ActiveRecord::Base
   belongs_to :game
   belongs_to :player
 
+  before_save :perform!
+
   # NAME_BY_KIND = [:pass, :check, :call, :bet, :raise]
   
   named_scope :omitted, lambda{ |game_id, last_id| {:conditions => ["game_id = ? AND id > ?", game_id, last_id]}}
@@ -19,26 +21,19 @@ class Action < ActiveRecord::Base
     @value ||= 0
   end
 
-  attr_accessor :player_params
   attr_accessor :game_params
-  attr_accessor :need_update_all
 
-  def game_influence
-  end
-
-  def player_influence
-  end
-
-  def other_players_influence
+  def kind
+    raise "can't resive kind of class Action"
   end
 
   def initialize receiver
-    super :kind => @kind, :value => @value, :player => receiver, :game => receiver.game
-    @player_params, @game_params, @need_update_all = {}, {}, false
+    super :value => @value, :player => receiver, :game => receiver.game
+    @game_params = {}
   end
 
   def execute
-    perform! if can_perform?
+    save if can_perform?
   end
 
   protected
@@ -50,22 +45,14 @@ class Action < ActiveRecord::Base
   def perform!
     game_influence
     player_influence
-    other_players_influence
-    begin 
-      save_changes!
-    rescue
-      #TODO сделать откат действия
-      return false
-    end
     game.next_active_player_id
     game.next_stage
-    return true;
   end
 
-  def save_changes!
-    player.update_attributes!(@player_params) unless @player_params.empty?
+  def game_influence
     game.update_attributes!(@game_params) unless @game_params.empty?
-    Player.update_all "for_call = for_call + #{self.value}", ["game_id = ? AND NOT id = ?", game.id, player.id] if @need_update_all
-    save
+  end
+
+  def player_influence
   end
 end

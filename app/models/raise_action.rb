@@ -1,7 +1,10 @@
 class RaiseAction < BetAction
   def initialize receiver, value
-    @kind = 4
     super receiver, value
+  end
+
+  def kind
+    return 4
   end
 
   def can_perform?

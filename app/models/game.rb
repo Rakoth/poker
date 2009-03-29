@@ -84,6 +84,14 @@ class Game < ActiveRecord::Base
     update_attribute :active_player_id, player.id
   end
 
+  def player_on_blind
+    players.select { |player| player.sit == blind_position }.first
+  end
+
+  def player_on_small_blind
+    players.select { |player| player.sit == small_blind_position }.first
+  end
+
   # Ищет первое не пустое место начиная с sit в направлении :direction
   def get_first_player_from sit, params = {} 
     params[:out] ||= :id
@@ -117,7 +125,7 @@ class Game < ActiveRecord::Base
 
   def goto_next_stage
     if flop.nil?
-      #do_flop
+      #TODO do_flop
     elsif !flop.nil? and turn.nil?
       #do_turn
     elsif !flop.nil? and !turn.nil? and river.nil?
@@ -167,64 +175,6 @@ class Game < ActiveRecord::Base
     end
     calculated_groups.flatten.each{ |player| player.save}
   end
-#  def ending_distribution
-#    groups = self.group_players
-#    groups.each_index do |group|
-#      general_in_pot = groups[group].inject(0){|s, p| s + p[:in_pot]}
-#      if general_in_pot > 0
-#        max = groups[group].first[:in_pot]
-#        groups[group].each_index{|player|
-#          max = groups[group][player][:in_pot] if groups[group][player][:in_pot] > max
-#          groups[group][player][:persent] = (groups[group][player][:in_pot] / general_in_pot).to_f.round(2)
-#        }
-#        chips_summ = 0
-#        groups.each_index { |i|
-#          groups[i].each_index { |p|
-#            if groups[i][p][:in_pot] > max
-#              chips_summ += max
-#              groups[i][p][:in_pot] -= max
-#            else
-#              chips_summ += groups[i][p][:in_pot]
-#              groups[i][p][:in_pot] = 0
-#            end
-#          }
-#        }
-#        groups[group].each_index { |player|
-#          groups[group][player][:stack] += (chips_summ * groups[group][player][:persent]).round
-#        }
-#      end
-#    end
-#    players_hash = {}
-#    groups.flatten!.each do |player|
-#      players_hash[player[:id]] = {
-#        :stack => player[:stack]
-#      }
-#    end
-#    players.each do |player|
-#      player.update_attributes(players_hash[player.id])
-#    end
-#  end
-
-#  def group_players
-#    temp_players = players.map{|p| {
-#        :id => p.id,
-#        :hand => p.hand,
-#        :in_pot => p.in_pot,
-#        :stack => p.stack
-#      } if p.in_pot > 0
-#    }.sort_by{|p| p[:hand]}.reverse
-#    groups = []
-#    group =[]
-#    temp_players.each_index do |i|
-#      if 0 == i or temp_players[i][:hand] == temp_players[i-1][:hand]
-#        group.push temp_players[i]
-#      else
-#        groups.push group
-#        group = [temp_players[i]]
-#      end
-#    end
-#    groups.push group
-#  end
 
   def all_pass?
     players.select{|p| p.pass?}.length == players.count - 1
@@ -233,11 +183,14 @@ class Game < ActiveRecord::Base
   protected
 
   def take_blinds!
-    players.map{ |player| player.give_chips!(ante)} if ante > 0
-    blind = players.select { |player| player.sit == blind_position }.first.give_chips! blind_size
-    Player.update_all "for_call = for_call + #{blind}", ["game_id = ? AND in_pot <= ?", self.id, ante]
-    players.select { |player| player.sit == small_blind_position }.first.give_chips! small_blind_size
-    update_attribute :current_bet, blind
+    # снимаем анте со всех игроков
+    players.map{ |player| StackManipulator.take_chips(player, ante)} if ante > 0
+    # снимаем малый блайнд
+    StackManipulator.take_chips player_on_small_blind, small_blind_size
+    # снимаем большой блайнд (малый блайнд + малый блайнд)
+    StackManipulator.take_chips player_on_blind, small_blind_size
+    
+    update_attribute :current_bet, blind_size
   end
 
   def before_distribution

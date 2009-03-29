@@ -38,7 +38,7 @@ class User < ActiveRecord::Base
   end
 
   def can_create? type
-    have_money?(type) and type.verify_level(level)
+    have_money?(type) and type.verify_user_level(level)
   end
 
 

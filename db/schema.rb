@@ -14,7 +14,6 @@ ActiveRecord::Schema.define(:version => 20090226132804) do
   create_table "actions", :force => true do |t|
     t.integer  "game_id"
     t.integer  "player_id"
-    t.integer  "kind"
     t.string   "type"
     t.integer  "value"
     t.datetime "created_at"

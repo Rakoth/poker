@@ -32,20 +32,20 @@ class Player < ActiveRecord::Base
     action.execute
   end
 
-  def give_chips! value
-    reload
-    params = {}
-    if value >= stack
-      params[:state] = STATE[:allin]
-      value = stack
-    end
-    params[:stack] = stack - value
-    params[:in_pot] = in_pot + value
-    params[:for_call] = (for_call - value > 0 ? for_call - value : 0)
-    update_attributes params
-    value
-  end
-
+#  def give_chips! value
+#    reload
+#    params = {}
+#    if value >= stack
+#      params[:state] = STATE[:allin]
+#      value = stack
+#    end
+#    params[:stack] = stack - value
+#    params[:in_pot] = in_pot + value
+#    params[:for_call] = (for_call - value > 0 ? for_call - value : 0)
+#    update_attributes params
+#    value
+#  end
+#
 #  def do_action params
 #    action_name = Action::NAME_BY_KIND[params[:kind]]
 #    params[:value] ||= nil
@@ -113,7 +113,7 @@ class Player < ActiveRecord::Base
     if pass?
       -1
     else
-      hand
+      hand.to_i
     end
   end
 
@@ -125,14 +125,6 @@ class Player < ActiveRecord::Base
 
   def give_prize
     #TODO отдать выйгранные деньги юзеру
-  end
-  
-  def return_money
-    user.update_attribute(:cash, user.cash + game.type.pay_for_play) if game.wait?
-  end
-
-  def take_money
-    user.update_attribute(:cash, user.cash - game.type.pay_for_play)
   end
 
   def destroy_game_if_last
