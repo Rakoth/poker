@@ -10,7 +10,6 @@ class CreateGames < ActiveRecord::Migration
       t.integer :current_bet, :default => nil
       t.datetime :next_level_time
       t.integer :players_count, :default => 0
-      t.integer :bank, :default => 0
       t.string :flop, :default => nil
       t.string :turn, :default => nil
       t.string :river, :default => nil

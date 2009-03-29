@@ -4,6 +4,7 @@ class CreateActions < ActiveRecord::Migration
       t.references :game
       t.references :player
       t.integer :kind # 0 => pass, 1 => check, 2 => call, 3 => bet, 4 => raise
+      t.string :type
       t.integer :value
       t.timestamp :created_at
     end

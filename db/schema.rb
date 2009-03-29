@@ -15,6 +15,7 @@ ActiveRecord::Schema.define(:version => 20090226132804) do
     t.integer  "game_id"
     t.integer  "player_id"
     t.integer  "kind"
+    t.string   "type"
     t.integer  "value"
     t.datetime "created_at"
   end
@@ -53,7 +54,6 @@ ActiveRecord::Schema.define(:version => 20090226132804) do
     t.integer  "current_bet"
     t.datetime "next_level_time"
     t.integer  "players_count",    :default => 0
-    t.integer  "bank",             :default => 0
     t.string   "flop"
     t.string   "turn"
     t.string   "river"

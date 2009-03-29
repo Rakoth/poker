@@ -13,12 +13,18 @@ class Game < ActiveRecord::Base
     blind_size * type.bet_multiplier
   end
 
+  def bank
+    players.inject(0){|sum, player| sum + player.in_pot}
+  end
+
   def small_blind_size
     blind_size / 2
   end
 
+  attr_reader :small_blind_position
+
   def small_blind_position
-    get_first_player_from blind_position, :out => :sit, :direction => :desc
+    @small_blind_position ||= get_first_player_from blind_position, :out => :sit, :direction => :desc
   end
 
   def add_player user
@@ -69,9 +75,10 @@ class Game < ActiveRecord::Base
   end
 
   def next_active_player_id
-    player = Player.find self.active_player_id
-    player = get_first_player_from player.sit, :out => :self
-    while !player.active?
+    current_player = Player.find self.active_player_id
+    player = get_first_player_from current_player.sit, :out => :self
+    while !player.active? and player != current_player
+      player.do_pass_away if player.away? and player.must_call?
       player = get_first_player_from player.sit, :out => :self
     end
     update_attribute :active_player_id, player.id
@@ -100,7 +107,7 @@ class Game < ActiveRecord::Base
     players.find_all{ |player| player.active? }
   end
 
-  def nex_stage
+  def next_stage
     if players.all? { |p| p.has_called? or p.pass? }
       goto_next_stage
     else
@@ -110,11 +117,11 @@ class Game < ActiveRecord::Base
 
   def goto_next_stage
     if flop.nil?
-      do_flop
+      #do_flop
     elsif !flop.nil? and turn.nil?
-      do_turn
+      #do_turn
     elsif !flop.nil? and !turn.nil? and river.nil?
-      do_river
+      #do_river
     else
       final_distribution
     end
@@ -123,17 +130,8 @@ class Game < ActiveRecord::Base
   def new_distribution # раздача
     before_distribution
     next_level
-    take_blinds
+    take_blinds!
     #TODO генерация карт
-  end
-
-  def away_to_pass
-    player = Player.find self.active_player_id
-    player = get_first_player_from player.sit, :out => :self
-    while !player.active?
-      player.do_pass_away if player.away? and player.must_call?
-      player = get_first_player_from player.sit, :out => :self
-    end
   end
 
   def final_distribution
@@ -229,23 +227,21 @@ class Game < ActiveRecord::Base
 #  end
 
   def all_pass?
-    players.select{|p| p.pass?}.count = players.count - 1
-  end
-
-  def away_to_pass
-    #TODO пройтись по всем эвэям и поставить им пассы, если надо
+    players.select{|p| p.pass?}.length == players.count - 1
   end
 
   protected
 
-  def take_blinds
-    players.each { |player| player.take_ante } if ante > 0
-    players.select { |player| player.sit == blind_position }.first.take_chips blind_size
-    players.select { |player| player.sit == small_blind_position }.first.take_chips small_blind_size
+  def take_blinds!
+    players.map{ |player| player.give_chips!(ante)} if ante > 0
+    blind = players.select { |player| player.sit == blind_position }.first.give_chips! blind_size
+    Player.update_all "for_call = for_call + #{blind}", ["game_id = ? AND in_pot <= ?", self.id, ante]
+    players.select { |player| player.sit == small_blind_position }.first.give_chips! small_blind_size
+    update_attribute :current_bet, blind
   end
 
   def before_distribution
-    update_attributes :bank => 0, :current_bet => 0
+    update_attributes :current_bet => 0
     players.each do |player|
       if 0 == player.stack
         player.destroy
