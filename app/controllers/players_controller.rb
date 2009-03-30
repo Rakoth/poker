@@ -4,7 +4,7 @@ class PlayersController < ApplicationController
 
   def create
     @game = Game.find params[:game_id]
-    if @game and @game.add_player(@current_user)
+    if @game and @current_user.join!(@game)
       flash[:notice] = t 'controllers.players.successfully_connected_to_game'
       redirect_to game_url(@game)
     else

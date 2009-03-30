@@ -42,8 +42,7 @@ class Action < ActiveRecord::Base
   def perform!
     game_influence
     player_influence
-    game.next_active_player_id
-    game.next_stage
+		game.after_each_action
   end
 
   def game_influence

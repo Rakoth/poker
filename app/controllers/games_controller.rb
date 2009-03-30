@@ -18,8 +18,8 @@ class GamesController < ApplicationController
 
   def create
     if @type = GameType.find_by_id(params[:game][:type]) and @current_user.can_create?(@type)
-      if @game = Game.create( :type => @type, :blind_size => @type.start_blind)
-        if @game.add_player(@current_user)
+      if @game = Game.create(:type => @type, :blind_size => @type.start_blind)
+        if @current_user.join!(@game)
           flash[:notice] = t 'controllers.games.game_successfully_created'
           redirect_to game_url(@game)
         else

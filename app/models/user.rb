@@ -1,9 +1,7 @@
 require 'digest/sha1'
 
 class User < ActiveRecord::Base
-
   attr_accessor :password
-
   attr_accessible :crypted_password, :password, :password_confirmation
 
   EMAIL_USER = /[a-z]([\w+-_]*\.?[\w+-_]+)?/
@@ -34,12 +32,16 @@ class User < ActiveRecord::Base
   end
   
   def can_join? game
-    can_create?(game.type) and not game.users.include?(self)
+    game.waited? and can_create?(game.type) and not game.users.include?(self)
   end
 
   def can_create? type
     have_money?(type) and type.verify_user_level(level)
   end
+
+	def join! game
+		players.create(:game => game, :sit => game.players_count, :stack => game.type.start_stack) if can_join? game
+	end
 
 
 

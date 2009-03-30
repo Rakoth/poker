@@ -46,7 +46,7 @@ ActiveRecord::Schema.define(:version => 20090226132804) do
   create_table "games", :force => true do |t|
     t.string   "status"
     t.integer  "active_player_id", :default => 0
-    t.integer  "blind_position",   :default => 0
+    t.integer  "blind_position"
     t.integer  "blind_size"
     t.integer  "blind_level",      :default => 0
     t.integer  "ante",             :default => 0

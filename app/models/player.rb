@@ -8,9 +8,12 @@ class Player < ActiveRecord::Base
   belongs_to :game, :counter_cache => :players_count
   has_many :actions
 
-  before_destroy :return_money, :destroy_game_if_last, :give_prize
   before_create :take_money
-
+	after_create :start_game, :if => lambda {|player| player.game.full_of_players?}
+  before_destroy :return_money, :if => lambda {|player| player.game.waited?}
+	after_destroy :give_prize, :unless => lambda {|player| player.game.waited?}
+	after_destroy :destroy_game, :if => lambda {|player| player.game.empty_players_set?}
+	
   attr_writer :persent # процент выйгрыша
   def persent
     @persent ||= 0
@@ -34,6 +37,10 @@ class Player < ActiveRecord::Base
     action.execute
   end
 
+	def ready_for_next_stage?
+		has_called? or fold?
+	end
+
   def active?
     STATE[:active] == status
   end
@@ -49,6 +56,7 @@ class Player < ActiveRecord::Base
   def pass?
     STATE[:pass] == status or STATE[:pass_away] == status
   end
+	alias_method :fold?, :pass?
 
   def has_called?
     0 == for_call
@@ -81,15 +89,19 @@ class Player < ActiveRecord::Base
   end
   
   def return_money
-    user.update_attribute(:cash, user.cash + game.type.pay_for_play) if game.waited?
+    user.update_attribute(:cash, user.cash + game.type.pay_for_play)
   end
 
   def take_money
     user.update_attribute(:cash, user.cash - game.type.pay_for_play)
   end
 
-  def destroy_game_if_last
-    game.destroy if 1 == game.players_count and Game.count(:conditions => ['status = "wait" AND type_id = ?', game.type_id]) > 1
+  def destroy_game
+    game.destroy
   end
+
+	def start_game
+		game.start!
+	end
 
 end
