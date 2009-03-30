@@ -54,7 +54,7 @@ class GameTest < ActiveSupport::TestCase
   test "method next_level should do nothing if game in wait status" do
     game = games(:wait)
     assert_no_difference 'game.blind_level' do
-      game.next_level
+      game.next_blind_level
     end
   end
 
@@ -64,7 +64,7 @@ class GameTest < ActiveSupport::TestCase
     game.next_level_time = Time.now
     game.type = type
     assert_difference 'game.blind_level' do
-      game.next_level
+      game.next_blind_level
     end
     assert_in_delta Time.now + type.change_level_time.minutes, game.next_level_time, 1, "time to next level should be set"
   end
@@ -73,7 +73,7 @@ class GameTest < ActiveSupport::TestCase
     game = games(:start)
     game.next_level_time = Time.now + 10.minutes
     assert_no_difference 'game.blind_level' do
-      game.next_level
+      game.next_blind_level
     end
   end
 
@@ -81,7 +81,7 @@ class GameTest < ActiveSupport::TestCase
     game = games(:max_level)
     game.next_level_time = Time.now
     assert_no_difference 'game.blind_level' do
-      game.next_level
+      game.next_blind_level
     end
     assert_nil game.next_level_time, "no more levels"
   end

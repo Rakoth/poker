@@ -35,19 +35,19 @@ class Player < ActiveRecord::Base
   end
 
   def active?
-    STATE[:active] == state
+    STATE[:active] == status
   end
   
   def away?
-    STATE[:away] == state or STATE[:pass_away] == state
+    STATE[:away] == status or STATE[:pass_away] == status
   end
 
   def pass_away?
-    STATE[:pass_away] == state
+    STATE[:pass_away] == status
   end
 
   def pass?
-    STATE[:pass] == state or STATE[:pass_away] == state
+    STATE[:pass] == status or STATE[:pass_away] == status
   end
 
   def has_called?
@@ -71,7 +71,7 @@ class Player < ActiveRecord::Base
   end
 
   def do_pass_away!
-    update_attribute :state => STATE[:pass_away]
+    update_attribute :status => STATE[:pass_away]
   end
 
   protected
@@ -81,7 +81,7 @@ class Player < ActiveRecord::Base
   end
   
   def return_money
-    user.update_attribute(:cash, user.cash + game.type.pay_for_play) if game.wait?
+    user.update_attribute(:cash, user.cash + game.type.pay_for_play) if game.waited?
   end
 
   def take_money

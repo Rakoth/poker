@@ -44,7 +44,7 @@ ActiveRecord::Schema.define(:version => 20090226132804) do
   end
 
   create_table "games", :force => true do |t|
-    t.string   "status",           :default => "wait"
+    t.string   "status"
     t.integer  "active_player_id", :default => 0
     t.integer  "blind_position",   :default => 0
     t.integer  "blind_size"
@@ -73,7 +73,7 @@ ActiveRecord::Schema.define(:version => 20090226132804) do
     t.integer  "stack"
     t.integer  "for_call",            :default => 0
     t.integer  "in_pot",              :default => 0
-    t.string   "state",               :default => "active"
+    t.string   "status",              :default => "active"
     t.string   "hand"
     t.datetime "action_time"
     t.datetime "control_action_time"

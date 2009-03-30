@@ -5,6 +5,6 @@ class PlayerObserver < ActiveRecord::Observer
   end
 
   def before_destroy player
-    UserBalanceAction.in(player.user, player.game.type.pay_for_play, player.game.type.title) if player.game.wait?
+    UserBalanceAction.in(player.user, player.game.type.pay_for_play, player.game.type.title) if player.game.waited?
   end
 end

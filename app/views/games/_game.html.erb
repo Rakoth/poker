@@ -1,6 +1,6 @@
 <tr>
-  <td><%= human_status game.status %></td>
-  <td><%= game.type.title %></td>
+  <td><%= game.status.to_s %></td>
+  <td><%=h game.type.title %></td>
   <td><%= number_to_currency game.type.pay_for_play %></td>
   <td><%= game.type.start_stack %></td>
   <td><%= game.blind_size %></td>

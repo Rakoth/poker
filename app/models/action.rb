@@ -4,8 +4,6 @@ class Action < ActiveRecord::Base
   belongs_to :player
 
   before_save :perform!
-
-  # NAME_BY_KIND = [:pass, :check, :call, :bet, :raise]
   
   named_scope :omitted, lambda{ |game_id, last_id| {:conditions => ["game_id = ? AND id > ?", game_id, last_id]}}
 

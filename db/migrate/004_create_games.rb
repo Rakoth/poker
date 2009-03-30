@@ -1,9 +1,9 @@
 class CreateGames < ActiveRecord::Migration
   def self.up
     create_table :games do |t|
-      t.string :status, :default => Game::STATUS[:wait]
+      t.string :status
       t.integer :active_player_id, :default => 0 # id игрока, от которого ожидается действие
-      t.integer :blind_position, :default => 0
+      t.integer :blind_position
       t.integer :blind_size
       t.integer :blind_level, :default => 0
       t.integer :ante, :default => 0

@@ -1,8 +1,32 @@
 class Game < ActiveRecord::Base
+  include AASM
+  aasm_initial_state :waited
+  aasm_column :status
+
+  aasm_state :waited
+  aasm_state :started, :enter => :prepare_distribution!
+  aasm_state :on_flop, :enter => :prepare_flop!
+  aasm_state :on_turn, :enter => :prepare_turn!
+  aasm_state :on_river, :enter => :prepare_river!
+  aasm_state :finished
+
+  aasm_event :start do
+    transitions :from => :waited, :to => :started, :guard => Proc.new {|game| game.full_of_players?}
+  end
+
+	aasm_event :show_flop do
+		transitions :from => :started, :to => :on_flop
+	end
+
+	aasm_event :show_turn do
+		transitions :from => :started, :to => :on_flop
+	end
+
+	aasm_event :show_river do
+		transitions :from => :started, :to => :on_flop
+	end
 
   self.inheritance_column = "class"
-
-  STATUS = {:wait => 'wait', :start => 'start'}
   
   belongs_to :type, :class_name => 'GameType'
   has_many :players, :dependent => :delete_all
@@ -22,7 +46,6 @@ class Game < ActiveRecord::Base
   end
 
   attr_reader :small_blind_position
-
   def small_blind_position
     @small_blind_position ||= get_first_player_from blind_position, :out => :sit, :direction => :desc
   end
@@ -32,24 +55,24 @@ class Game < ActiveRecord::Base
       :user => user,
       :sit => players_count,
       :stack => type.start_stack
-    ) if wait? and user.can_join?(self)
+    ) if waited? and user.can_join?(self)
     if player
-      max_players = type.max_players
+      #max_players = type.max_players
       self.reload
-      start if players_count == max_players
+      start!# if players_count == max_players
     end
     player
   end
 
-  def wait?
-    STATUS[:wait] == status
+  def full_of_players?
+    players_count == type.max_players
   end
 
   def wait_action_from user
     Player.find_by_id_and_user_id active_player_id, user.id
   end
 
-  def next_level
+  def next_blind_level
     if new_blind_size = type.get_blind_size(blind_level + 1)
       update_attributes(
         :blind_level => blind_level + 1,
@@ -60,18 +83,6 @@ class Game < ActiveRecord::Base
     else
       update_attribute(:next_level_time, nil)
     end if next_level_time and Time.now >= next_level_time
-  end
-
-  def start
-    random_blind_sit = rand(type.max_players)
-    params = {
-      :status => STATUS[:start],
-      :next_level_time => Time.now + type.change_level_time.minutes,
-      :blind_position => random_blind_sit,
-      :active_player_id => get_first_player_from(random_blind_sit)
-    }
-    update_attributes(params)
-    new_distribution
   end
 
   def next_active_player_id
@@ -137,7 +148,7 @@ class Game < ActiveRecord::Base
 
   def new_distribution # раздача
     before_distribution
-    next_level
+    next_blind_level
     take_blinds!
     #TODO генерация карт
   end
@@ -201,13 +212,34 @@ class Game < ActiveRecord::Base
       else
         players_params = {:in_pot => 0, :for_call => 0}
         if player.pass_away?
-          players_params[:state] = Player::STATE[:away]
+          players_params[:status] = Player::STATE[:away]
         else
-          players_params[:state] = Player::STATE[:active] unless player.away?
+          players_params[:status] = Player::STATE[:active] unless player.away?
         end
         player.update_attributes players_params
       end
     end
+  end
+
+  def prepare_distribution!
+		puts aasm_current_state
+    new_blind_position = (blind_position.nil? ? rand(type.max_players) : get_first_player_from(blind_position, :out => :sit))
+    params = {
+      :next_level_time => (next_level_time.nil? ? Time.now + type.change_level_time.minutes : next_level_time),
+      :blind_position => new_blind_position,
+      :active_player_id => get_first_player_from(new_blind_position)
+    }
+    update_attributes(params)
+    new_distribution
+  end
+
+  def prepare_flop!
+  end
+
+  def prepare_turn!
+  end
+
+  def prepare_river!
   end
 
 end
