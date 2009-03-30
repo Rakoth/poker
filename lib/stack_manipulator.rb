@@ -3,7 +3,7 @@ class StackManipulator
     player.reload
     stake_size = player.for_call + value
     if stake_size >= player.stack
-      player.state = Player::STATE[:allin]
+      player.im_allin!
       stake_size = player.stack
     end
     player.stack = player.stack - stake_size

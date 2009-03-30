@@ -36,7 +36,7 @@ class Game < ActiveRecord::Base
 	include DistributionSystem
   
   belongs_to :type, :class_name => 'GameType'
-  has_many :players, :dependent => :delete_all
+  has_many :players, :dependent => :delete_all, :conditions => 'status NOT LIKE "leave"'
   has_many :users, :through => :players
   has_many :actions
 
@@ -66,13 +66,6 @@ class Game < ActiveRecord::Base
     players.select{|p| p.pass?}.length == players.count - 1
   end
 
-	def after_each_action
-		next_active_player_id
-    goto_next_stage
-	end
-
-  protected
-
   def next_active_player_id
     current_player = Player.find self.active_player_id
     player = get_first_player_from current_player.sit, :out => :self
@@ -82,6 +75,8 @@ class Game < ActiveRecord::Base
     end
     update_attribute :active_player_id, player.id
   end
+
+  protected
 
   # Ищет первое не пустое место начиная с sit в направлении :direction
   def get_first_player_from sit, params = {}

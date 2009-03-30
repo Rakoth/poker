@@ -1,30 +1,27 @@
 module DistributionSystem
-	protected
-
-  def before_distribution
-		logger.info 'STARTED before_distribution'
-    update_attributes :current_bet => 0, :blind_position => next_blind_position
-    players.each do |player|
-      if 0 == player.stack
-        player.destroy
-      else
-        players_params = {:in_pot => 0, :for_call => 0}
-        if player.pass_away?
-          players_params[:status] = Player::STATE[:away]
-        else
-          players_params[:status] = Player::STATE[:active] unless player.away?
-        end
-        player.update_attributes players_params
-      end
-    end
-  end
-
 	def goto_next_stage
 		logger.info 'STARTED next_stage'
 		if all_pass?
       final_distribution!
     elsif next_stage?
       next_stage!
+		else
+			# do nothing
+    end
+  end
+
+	protected
+
+  def before_distribution
+		logger.info 'STARTED before_distribution'
+    update_attributes :current_bet => 0, :blind_position => next_blind_position
+    players.each do |player|
+      if player.has_empty_stack?
+        player.lose!
+      else
+				player.activate!
+        player.update_attributes :in_pot => 0, :for_call => 0
+      end
     end
   end
 

@@ -30,7 +30,7 @@ class Action < ActiveRecord::Base
   end
 
   def execute
-    save if can_perform?
+    save! if can_perform?
   end
 
   protected
@@ -42,7 +42,8 @@ class Action < ActiveRecord::Base
   def perform!
     game_influence
     player_influence
-		game.after_each_action
+		game.goto_next_stage
+		game.next_active_player_id
   end
 
   def game_influence

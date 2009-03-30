@@ -4,7 +4,7 @@ class FoldAction < Action
   end
 
   def player_influence
-    player.update_attribute :status, player.class::STATE[:pass]
+    player.fold!
     super
   end
 end

@@ -1,6 +1,49 @@
 class Player < ActiveRecord::Base
+  include AASM
+  aasm_initial_state :active
+  aasm_column :status
 
-  STATE = {:active => 'active', :allin => 'allin', :pass => 'pass', :away => 'away', :pass_away => 'pass_away'}
+  aasm_state :active
+  aasm_state :allin
+  aasm_state :pass
+  aasm_state :absent
+  aasm_state :pass_away
+  aasm_state :leave
+
+	def fold?
+		pass? or pass_away?
+	end
+
+	def away?
+		absent? or pass_away?
+	end
+
+	def ready_for_next_stage?
+		has_called? or fold?
+	end
+
+	aasm_event :im_allin do
+		transitions :from => :active, :to => :allin
+	end
+
+	aasm_event :activate do
+		transitions :from => [:active, :pass, :allin], :to => :active
+		transitions :from => [:pass_away], :to => :absent
+	end
+
+	aasm_event :fold do
+		transitions :from => :active, :to => :pass
+		transitions :from => :absent, :to => :pass_away
+	end
+
+	aasm_event :back_here do
+		transitions :from => :absent, :to => :active
+		transitions :from => :pass_away, :to => :pass
+	end
+
+	aasm_event :lose do
+		transitions :from => [:pass, :allin, :pass_away] , :to => :leave, :guard => lambda {|player| player.has_empty_stack?}
+	end
 
   validates_presence_of :user_id, :game_id, :sit, :stack
 
@@ -37,27 +80,6 @@ class Player < ActiveRecord::Base
     action.execute
   end
 
-	def ready_for_next_stage?
-		has_called? or fold?
-	end
-
-  def active?
-    STATE[:active] == status
-  end
-  
-  def away?
-    STATE[:away] == status or STATE[:pass_away] == status
-  end
-
-  def pass_away?
-    STATE[:pass_away] == status
-  end
-
-  def pass?
-    STATE[:pass] == status or STATE[:pass_away] == status
-  end
-	alias_method :fold?, :pass?
-
   def has_called?
     0 == for_call
   end
@@ -66,7 +88,7 @@ class Player < ActiveRecord::Base
     for_call > 0
   end
 
-  def stack_empty?
+  def has_empty_stack?
     0 == stack
   end
 
@@ -76,10 +98,6 @@ class Player < ActiveRecord::Base
     else
       hand.to_i
     end
-  end
-
-  def do_pass_away!
-    update_attribute :status => STATE[:pass_away]
   end
 
   protected
