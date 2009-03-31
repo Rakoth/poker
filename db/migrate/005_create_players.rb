@@ -5,7 +5,7 @@ class CreatePlayers < ActiveRecord::Migration
       t.integer :stack
       t.integer :for_call, :default => 0
       t.integer :in_pot, :default => 0
-      t.string :status, :default => 'active' # :active, :allin, :pass, :away, :pass_away
+      t.string :status
       t.string :hand
       t.datetime :action_time
       t.datetime :control_action_time
