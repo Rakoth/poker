@@ -1,3 +1,5 @@
+require 'cards/poker'
+
 class Player < ActiveRecord::Base
   include AASM
   aasm_initial_state :active
@@ -22,7 +24,7 @@ class Player < ActiveRecord::Base
 		has_called? or fold?
 	end
 
-	aasm_event :im_allin do
+	aasm_event :i_am_allin do
 		transitions :from => :active, :to => :allin
 	end
 
@@ -45,6 +47,8 @@ class Player < ActiveRecord::Base
 		transitions :from => [:pass, :allin, :pass_away] , :to => :leave, :guard => lambda {|player| player.has_empty_stack?}
 	end
 
+  serialize :hand, Poker::Hand
+  
   validates_presence_of :user_id, :game_id, :sit, :stack
 
   belongs_to :user

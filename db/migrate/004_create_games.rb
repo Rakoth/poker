@@ -7,12 +7,13 @@ class CreateGames < ActiveRecord::Migration
       t.integer :blind_size
       t.integer :blind_level, :default => 0
       t.integer :ante, :default => 0
-      t.integer :current_bet, :default => nil
+      t.integer :current_bet
       t.datetime :next_level_time
       t.integer :players_count, :default => 0
-      t.string :flop, :default => nil
-      t.string :turn, :default => nil
-      t.string :river, :default => nil
+      t.string :flop
+      t.string :turn
+      t.string :river
+      t.string :deck
       t.references :type
 
       t.timestamps

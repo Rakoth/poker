@@ -56,6 +56,7 @@ ActiveRecord::Schema.define(:version => 20090226132804) do
     t.string   "flop"
     t.string   "turn"
     t.string   "river"
+    t.string   "deck"
     t.integer  "type_id"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -73,7 +74,7 @@ ActiveRecord::Schema.define(:version => 20090226132804) do
     t.integer  "stack"
     t.integer  "for_call",            :default => 0
     t.integer  "in_pot",              :default => 0
-    t.string   "status",              :default => "active"
+    t.string   "status"
     t.string   "hand"
     t.datetime "action_time"
     t.datetime "control_action_time"

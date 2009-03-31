@@ -1,3 +1,5 @@
+require 'cards/poker'
+
 class Game < ActiveRecord::Base
   include AASM
   aasm_initial_state :waited
@@ -31,6 +33,8 @@ class Game < ActiveRecord::Base
 	end
 
   self.inheritance_column = "class"
+
+  serialize :deck, Poker::Deck
 
 	include BlindSystem
 	include DistributionSystem
@@ -70,7 +74,7 @@ class Game < ActiveRecord::Base
     current_player = Player.find self.active_player_id
     player = get_first_player_from current_player.sit, :out => :self
     while !player.active? and player != current_player
-      player.fold! if player.away? and player.must_call?
+      player.fold! if player.absent? and player.must_call?
       player = get_first_player_from player.sit, :out => :self
     end
     update_attribute :active_player_id, player.id
