@@ -36,7 +36,7 @@ class Game < ActiveRecord::Base
 	include DistributionSystem
   
   belongs_to :type, :class_name => 'GameType'
-  has_many :players, :dependent => :delete_all, :conditions => 'status NOT LIKE "leave"'
+  has_many :players, :conditions => 'status NOT LIKE "leave"'
   has_many :users, :through => :players
   has_many :actions
 
@@ -70,7 +70,7 @@ class Game < ActiveRecord::Base
     current_player = Player.find self.active_player_id
     player = get_first_player_from current_player.sit, :out => :self
     while !player.active? and player != current_player
-      player.do_pass_away if player.away? and player.must_call?
+      player.fold! if player.away? and player.must_call?
       player = get_first_player_from player.sit, :out => :self
     end
     update_attribute :active_player_id, player.id

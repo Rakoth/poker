@@ -7,7 +7,7 @@ class Player < ActiveRecord::Base
   aasm_state :allin
   aasm_state :pass
   aasm_state :absent
-  aasm_state :pass_away
+  aasm_state :pass_away, :enter => :auto_fold!
   aasm_state :leave
 
 	def fold?
@@ -120,6 +120,10 @@ class Player < ActiveRecord::Base
 
 	def start_game
 		game.start!
+	end
+
+	def auto_fold!
+		act! :kind => 0
 	end
 
 end
