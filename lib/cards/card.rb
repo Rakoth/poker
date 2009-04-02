@@ -1,44 +1,42 @@
 module Poker
   class Card
     include Comparable
-    
-    attr_reader :id, :suit, :number
-    
-    # Poker::Card.new(0) # => 2C
-    # Poker::Card.new(:number => 2, :suit => 0) # => 2C
-    # Poker::Card.new("2C") # => 2C
-    def initialize(arg)
-      if arg.class == Poker::Card
-        @id = arg.id
-      elsif arg.class == Fixnum
-        @id = arg
-      elsif arg.class == Hash and arg[:number] and arg[:suit]
-        @id = ((arg[:number] - 2) * 4) + arg[:suit]
-      elsif arg.class == String
-        num, suit = arg.split("")
-        @id = Card.new(:number => Numbers.index(num), :suit => Suits.index(suit.upcase)).id
-      else
-        @id = 0
-      end
-      
-      @number = @id / 4 + 2
-      @suit = @id % 4
+
+    SUITS = ['Spades', 'Diamonds', 'Clubs', 'Hearts']
+    VALUES = {
+      'Ace' => 14,
+      'King' => 13,
+      'Queen' => 12,
+      'Jack' => 11,
+      '10' => 10,
+      '9' => 9,
+      '8' => 8,
+      '7' => 7,
+      '6' => 6,
+      '5' => 5,
+      '4' => 4,
+      '3' => 3,
+      '2' => 2,
+    }
+    FACES = VALUES.keys
+
+    attr_reader :value, :suit
+
+    def initialize(suit, face_or_value)
+      self.suit = suit
+      self.value = VALUES[face_or_value] || face_or_value
+      raise ArgumentError unless SUITS.include?(suit) && VALUES.has_value?(value)
     end
-    
-    def <=>(other_card)
-      @number <=> other_card.number
+
+    def face
+      VALUES.index(value)
     end
-    
-    def ==(other_card)
-      return @id == other_card.id
+
+    def <=> other_card
+      value <=> other_card.value
     end
-    
-    def to_s
-      Numbers[@number][0].chr + Suits[@suit][0].chr
-    end
-    
-    def inspect
-      to_s
-    end
+
+    private
+      attr_writer :value, :suit
   end
 end

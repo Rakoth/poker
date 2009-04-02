@@ -24,6 +24,10 @@ class Player < ActiveRecord::Base
 		has_called? or fold?
 	end
 
+	def absent_and_must_call?
+		absent? and must_call?
+	end
+
 	aasm_event :i_am_allin do
 		transitions :from => :active, :to => :allin
 	end
@@ -97,11 +101,7 @@ class Player < ActiveRecord::Base
   end
 
   def rank
-    if pass?
-      -1
-    else
-      hand.to_i
-    end
+    fold? ? Poker::PassHand.new : hand
   end
 
   protected
@@ -127,7 +127,7 @@ class Player < ActiveRecord::Base
 	end
 
 	def auto_fold!
-		act! :kind => 0
+		AutoFoldAction.new(:player => self, :game => game).execute
 	end
 
 end

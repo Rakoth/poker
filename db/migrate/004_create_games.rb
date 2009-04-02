@@ -13,7 +13,7 @@ class CreateGames < ActiveRecord::Migration
       t.string :flop
       t.string :turn
       t.string :river
-      t.string :deck
+      t.text :deck
       t.references :type
 
       t.timestamps

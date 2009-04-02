@@ -3,6 +3,8 @@ class FoldAction < Action
     return 0
   end
 
+	protected
+	
   def player_influence
     player.fold!
     super

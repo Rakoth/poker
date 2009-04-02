@@ -1,106 +1,162 @@
 module Poker
-  class Hand < Deck
+  class Hand
     include Comparable
-    
-    # Poker::Hand.new
-    # Poker::Hand.new(Poker::Card.new("2C"), Poker::Card.new("2D"))
-    # Poker::Hand.new([Poker::Card.new("2C"), Poker::Card.new("2D")])
-    # Poker::Hand.new("2C 2D")
-    # Poker::Hand.new("2C", "2D")
-    # Poker::Hand.new(["2C", "2D"])
-    def initialize(*args)
-      args.flatten.each do |c|
-      
-        if c.class == String
-          c.split(" ").each do |card|
-            self << Card.new(card)
-          end
+    attr_reader :cards
+
+    def initialize(*hands_or_cards)
+      @cards = hands_or_cards.map do |hand_or_card|
+        if hand_or_card.is_a?(Hand)
+          hand_or_card.cards
         else
-          self << Card.new(c)
+          hand_or_card
         end
-        
-      end
-    end
-    
-    def rank
-      Ranks[rank_number].to_s.gsub("_", " ").capitalize
-    end
-    
-    def rank_number
-      Ranks.sort.reverse.each { |rank, symbol| return rank if self.send("#{symbol}?") }
-      0
-    end
-    
-    def <=>(other_hand)
-      if rank_number < other_hand.rank_number
-        return -1
-      elsif rank_number > other_hand.rank_number
-        return 1
-      else
-        return 0
-      end
-    end
-    
-    def royal_flush?
-      self.sort[0].number == 10 and straight_flush?
+      end.flatten.uniq.sort.reverse
     end
 
     def straight_flush?
-      flush? and straight?
+      @straight_flush ||= suited_cards.any? do |cards|
+        Hand.new(*cards).straight?
+      end
     end
 
-    def four_of_a_kind?
-      pairs(4).size == 1
+    def quads?
+      @quads ||= matched_cards.any? do |cards|
+        cards.length >= 4
+      end
     end
 
     def full_house?
-      pairs(3).size == 1 and pairs(2).size == 1
+      @full_house ||= set? && two_pair?
     end
 
     def flush?
-      suits.uniq.size == 1
+      @flush ||= suited_cards.any? do |cards|
+        cards.length >= 5
+      end
     end
 
     def straight?
-      numbers.sequence?
+      @straight ||= !straight_cards.empty?
+    end
+
+    def set?
+      @set ||= matched_cards.any? do |cards|
+        cards.length >= 3
+      end
+    end
+
+    def two_pair?
+      @two_pair ||= matched_cards.length >= 2
     end
 
     def pair?
-      pairs(2).size == 1
+      @pair ||= matched_cards.length >= 1
     end
 
-    def two_pairs?
-      pairs(2).size == 2
+    def four_to_flush?
+      @four_to_flush ||= suited_cards.any? do |cards|
+        cards.length >= 4
+      end
     end
 
-    def three_of_a_kind?
-      pairs(3).size == 1
+    def open_ended?
+      @open_ended ||= straight_cards(4).any? do |cards|
+        cards.first.face != 'Ace' && cards.last.face != 'Ace'
+      end
     end
 
-    def cards
-      self.join(" ")
+    def gutshot?
+      @gutshot ||= !gutshot_cards.empty?
     end
 
-    def to_s
-      cards + " (" + rank + ")"
+    def double_gutshot?
+      @double_gutshot ||= gutshot_cards.length >= 2
     end
 
-    def inspect
-      to_s
+    def <=> other_hand
+      return rank <=> other_hand.rank unless rank == other_hand.rank
+      return 0 if tie_breaker == other_hand.tie_breaker
+      tie_breaker.each_with_index do |card, i|
+        compared = card.value <=> other_hand.tie_breaker[i].value
+        return compared unless compared == 0
+      end
     end
-    
-    private
-    def pairs(pair_size)
-      pairs = []
-      numbers.map do |number|
-        next if pairs.include?(number)
-        if numbers.select { |x| x == number }.size == pair_size
-          pairs << number
+
+    protected
+      def rank
+        @rank ||= if straight_flush?: 8
+        elsif quads?: 7
+        elsif full_house?: 6
+        elsif flush?: 5
+        elsif straight?: 4
+        elsif set?: 3
+        elsif two_pair?: 2
+        elsif pair?: 1
+        else; 0
         end
       end
-      pairs
-    end
-    
+
+      def tie_breaker
+        @tie_breaker ||= if flush?
+          Hand.new(*suited_cards.find{|cards| cards.length >= 5}).unsuited!.tie_breaker
+        elsif quads?
+          quads = matched_cards.find{|cards| cards.length == 4}
+          quads + [(@cards - quads).first]
+        elsif full_house?
+          set = matched_cards.find{|cards| cards.length == 3}
+          set + (matched_cards - [set]).first.first(2)
+        elsif straight?
+          [straight_cards.last.last]
+        elsif set?
+          set = matched_cards.first
+          set + (@cards - set).first(2)
+        elsif two_pair?
+          two_pair = matched_cards.first(2).flatten
+          two_pair + [(@cards - two_pair).first]
+        elsif pair?
+          pair = matched_cards.first
+          pair + (@cards - pair).first(3)
+        else
+          @cards.first(5)
+        end
+      end
+
+      def unsuited!
+        @suited_cards = []
+        self
+      end
+
+    private
+      def matched_cards
+        @matched_cards ||= @cards.map{|card| card.value}.uniq.map do |value|
+          cards = @cards.select{|card| card.value == value}
+          cards.length > 1 ? cards : nil
+        end.compact
+      end
+
+      def suited_cards
+        @suited_cards ||= @cards.map{|card| card.suit}.uniq.map do |suit|
+          @cards.select{|card| card.suit == suit}
+        end
+      end
+
+      def straight_cards(length = 5)
+        @straight_cards ||= {}
+        @straight_cards[length] ||= (1..14-(length-1)).map do |low| # straight can start at a low ace up to a 10
+          high = low + (length - 1)
+          cards = (low..high).map do |value|
+            @cards.find{|card| card.value % 13 == value % 13} # %13 allows an ace to be high or low
+          end.compact
+        end.select{|cards| cards.length == length}
+      end
+
+      def gutshot_cards
+        @gutshot_cards ||= (1..10).map do |low|
+          high = low + 4
+          (low..high).reject do |value|
+            @cards.find{|card| card.value % 13 == value % 13}
+          end
+        end.reject{|cards| cards.length != 1}.uniq.flatten
+      end
   end
 end
-

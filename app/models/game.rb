@@ -66,21 +66,21 @@ class Game < ActiveRecord::Base
     Player.find_by_id_and_user_id active_player_id, user.id
   end
 
-  def all_pass?
-    players.select{|p| p.pass?}.length == players.count - 1
-  end
-
   def next_active_player_id
     current_player = Player.find self.active_player_id
     player = get_first_player_from current_player.sit, :out => :self
     while !player.active? and player != current_player
-      player.fold! if player.absent? and player.must_call?
+      player.fold! if player.absent_and_must_call?
       player = get_first_player_from player.sit, :out => :self
     end
     update_attribute :active_player_id, player.id
   end
 
-  protected
+  private
+
+  def all_pass?
+    players.select{|p| p.pass?}.length == players.count - 1
+  end
 
   # Ищет первое не пустое место начиная с sit в направлении :direction
   def get_first_player_from sit, params = {}

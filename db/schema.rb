@@ -56,7 +56,7 @@ ActiveRecord::Schema.define(:version => 20090226132804) do
     t.string   "flop"
     t.string   "turn"
     t.string   "river"
-    t.string   "deck"
+    t.text     "deck"
     t.integer  "type_id"
     t.datetime "created_at"
     t.datetime "updated_at"

@@ -10,11 +10,11 @@ module DistributionSystem
     end
   end
 
-	protected
+	private
 
   def before_distribution
 		logger.info 'STARTED before_distribution'
-    update_attributes :current_bet => 0, :blind_position => next_blind_position, :deck => Poker::Deck.new
+    update_attributes :current_bet => 0, :blind_position => next_blind_position, :deck => Poker::Deck.new.shuffle
     players.each do |player|
       if player.has_empty_stack?
         player.lose!
@@ -61,7 +61,7 @@ module DistributionSystem
 
   def hands_deal!
     players.each do |player|
-      player.update_attribute :hand, deck.deal(1, 2).first
+      player.update_attribute :hand, Poker::Hand.new(deck.next(2))
     end
   end
 
