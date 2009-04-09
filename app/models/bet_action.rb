@@ -3,6 +3,10 @@ class BetAction < Action
     return 3
   end
 
+	def has_value?
+		true
+	end
+
   def can_perform?
     return (player.stack >= player.for_call + value and
       value >= game.minimal_bet and game.current_bet == game.blind_size)

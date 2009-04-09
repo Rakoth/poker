@@ -1,8 +1,7 @@
 class UsersController < ApplicationController
 
-  skip_before_filter :find_user, :exept => [:index, :show]
   before_filter :check_authorization, :only => [:index, :show]
-  
+
   def index
     @users = User.all
   end

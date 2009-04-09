@@ -8,7 +8,7 @@ class Action < ActiveRecord::Base
   named_scope :omitted, lambda{ |game_id, last_id| {:conditions => ["game_id = ? AND id > ?", game_id, last_id]}}
 
   def has_value?
-    kind >= 3
+    false
   end
 
   def time_handler

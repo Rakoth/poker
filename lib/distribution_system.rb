@@ -6,7 +6,7 @@ module DistributionSystem
     elsif next_stage?
       next_stage!
 		else
-			# do nothing
+			# ничего не делать, т.к. еще не закончены торги
     end
   end
 
@@ -51,12 +51,15 @@ module DistributionSystem
 	end
 	
   def prepare_flop!
+		update_attribute :flop, deck.next(3)
   end
 
   def prepare_turn!
+		update_attribute :turn, deck.next(1)
   end
 
   def prepare_river!
+		update_attribute :river, deck.next(1)
   end
 
   def hands_deal!
@@ -65,25 +68,49 @@ module DistributionSystem
     end
   end
 
+	# метод разделяет банк игры между победителями раздачи,
+	# которые определяются самим методом исходя из карт игроков
   def final_distribution!
 		logger.info 'STARTED final_distribution!'
-    groups = players.group_by(&:rank).sort_by{ |g| g[0] }.reverse.map do |g|
-      group, max = g[1], 0
-      general_in_pot = group.inject(0){|s, p| s + p.in_pot}
-      if general_in_pot > 0
-        max = group.first.in_pot
-        group.map! do |player|
-          max = player.in_pot if player.in_pot > max
-          player.persent = ((100 * player.in_pot / general_in_pot).to_f.round) / 100
-          player
-        end
+		# выделить не сделавших пасс игроков
+		winners = players.select {|player| !player.fold?}
+
+		# разделить игроков на группы по значению карт
+		# отсортировать группы в порядке убывания по силе комбинаций карт игроков в группе
+		groups = winners.group_by(&:full_hand).sort_by{ |g| g[0] }.reverse
+
+		# выделить сделавших пасс игроков в последнюю группу, не указывать в комбинации карт группы их карты
+		folds = players.select {|player| player.fold?}
+		groups.push [nil, folds] unless folds.empty?
+
+		# делаем необходимые для определения выйгрыша каждой группы подготовительные операции
+    groups.map! do |g|
+			# если это не последняя группа(сделавших пасс)
+			unless g[0].nil?
+				group, max = g[1], 0
+				general_in_pot = group.inject(0){|s, p| s + p.in_pot}
+				max = group.first.in_pot
+				# определяем максимум из ставок игроков группы
+				# и для каждого игрока устанавливаем процент его выйгрыша относительно общего выйгрыша группы
+				group.map! do |player|
+					max = player.in_pot if player.in_pot > max
+					player.persent = ((100 * player.in_pot / general_in_pot).to_f.round) / 100
+					player
+				end
+				[max, group]
+			else
+				[0, g[1]]
       end
-      [max, group]
     end
+		# для каждой группы определить ее выйгрыш
+		# проходя по массиву групп по очереди (от более сильных рук к более слабым)
     calculated_groups = groups.map do |g|
       max, chips_sum = g[0], 0
+			# для каждого игрока в каждой группе
       groups.map! do |group|
         group[1].map! do |player|
+					# снимаем с него минимум из поставленных им фишек и максимума ставки для текущей группы
+					# и прибавляем это значения к выйгрышу группы
           if player.in_pot > max
             chips_sum += max
             player.in_pot -= max
@@ -95,8 +122,10 @@ module DistributionSystem
         end
         group
       end
+			# разделить выйгрыш группы на членов группы согласно их процентам
       g[1].map{ |player| player.stack += (chips_sum * player.persent).round; player}
     end
+		# сохранить все изменения
     calculated_groups.flatten.each{ |player| player.save}
   end
 end

@@ -10,7 +10,7 @@ module Poker
         else
           hand_or_card
         end
-      end.flatten.uniq.sort.reverse
+      end.flatten.compact.uniq.sort.reverse
     end
 
     def straight_flush?

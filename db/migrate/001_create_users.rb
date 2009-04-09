@@ -1,22 +1,32 @@
 class CreateUsers < ActiveRecord::Migration
   def self.up
     create_table :users do |t|
-      t.string :login
-      t.string :crypted_password
-      t.string :salt
-      t.integer :type
-      t.string :email
-      t.string :locate
-      t.decimal :cash, :default => 0, :precision => 10, :scale => 2
-      t.integer :chips, :default => 1000
-      t.integer :level, :default => 0
+      t.string   :login
+      t.string   :crypted_password, :null => false
+      t.string   :password_salt, :null => false
+      t.integer  :type
+      t.string   :email
+      t.string   :locate
+      t.decimal  :cash, :default => 0, :precision => 10, :scale => 2
+      t.integer  :chips, :default => 1000
+      t.integer  :level, :default => 0
+			t.string   :persistence_token,   :null => false                # required
+			t.string   :single_access_token, :null => false                # optional, see Authlogic::Session::Params
+			t.string   :perishable_token,    :null => false                # optional, see Authlogic::Session::Perishability
+			t.integer  :login_count,         :null => false, :default => 0 # optional, see Authlogic::Session::MagicColumns
+			t.integer  :failed_login_count,  :null => false, :default => 0 # optional, see Authlogic::Session::MagicColumns
+			t.datetime :last_request_at                                    # optional, see Authlogic::Session::MagicColumns
+			t.datetime :current_login_at                                   # optional, see Authlogic::Session::MagicColumns
+			t.datetime :last_login_at                                      # optional, see Authlogic::Session::MagicColumns
+			t.string   :current_login_ip                                   # optional, see Authlogic::Session::MagicColumns
+			t.string   :last_login_ip                                      # optional, see Authlogic::Session::MagicColumns
 
       t.timestamps
     end
     
     5.times do |i|
       user = User.new :password => '1111', :password_confirmation => '1111'
-      user.login = "u#{i}"
+      user.login = "user#{i}"
       user.email = "user#{i}@mail.ru"
       user.cash = 1000
       user.save

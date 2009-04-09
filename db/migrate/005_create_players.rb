@@ -6,7 +6,7 @@ class CreatePlayers < ActiveRecord::Migration
       t.integer :for_call, :default => 0
       t.integer :in_pot, :default => 0
       t.string :status
-      t.string :hand
+      t.text :hand
       t.datetime :action_time
       t.datetime :control_action_time
       t.references :user

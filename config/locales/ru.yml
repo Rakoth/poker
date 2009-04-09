@@ -282,9 +282,10 @@ ru:
       failed_connect_to_game: "Невозможно присоединиться к этой игре!"
       successfully_leave_the_game: "Вы успешно вышли из игры!"
       cant_leave_the_game: "Невозможно покинуть эту игру"
-    sessions:
+    user_sessions:
       hello: "Привет, {{login}}!"
       wrong_password: "Неверное сочетание логин-пароль!"
+      bye: "До свидания, {{login}}!"
     application:
       authorisation_required: "Необходимо авторизоваться для выполнения данного действия!"
 

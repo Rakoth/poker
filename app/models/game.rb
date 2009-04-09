@@ -35,12 +35,15 @@ class Game < ActiveRecord::Base
   self.inheritance_column = "class"
 
   serialize :deck, Poker::Deck
+  serialize :flop, Poker::Hand
+  serialize :turn, Poker::Hand
+  serialize :river, Poker::Hand
 
 	include BlindSystem
 	include DistributionSystem
   
   belongs_to :type, :class_name => 'GameType'
-  has_many :players, :conditions => 'status NOT LIKE "leave"'
+  has_many :players, :conditions => ['status <> ?', Player::STATUS[:leave]]
   has_many :users, :through => :players
   has_many :actions
 
@@ -79,7 +82,7 @@ class Game < ActiveRecord::Base
   private
 
   def all_pass?
-    players.select{|p| p.pass?}.length == players.count - 1
+    players.select{|p| p.fold?}.length == players.count - 1
   end
 
   # Ищет первое не пустое место начиная с sit в направлении :direction

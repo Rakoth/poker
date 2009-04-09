@@ -12,6 +12,8 @@ class Player < ActiveRecord::Base
   aasm_state :pass_away, :enter => :auto_fold!
   aasm_state :leave
 
+	STATUS = {:leave => 'leave'}
+
 	def fold?
 		pass? or pass_away?
 	end
@@ -51,7 +53,7 @@ class Player < ActiveRecord::Base
 		transitions :from => [:pass, :allin, :pass_away] , :to => :leave, :guard => lambda {|player| player.has_empty_stack?}
 	end
 
-  serialize :hand, Poker::Hand
+  serialize :hand#, Poker::Hand
   
   validates_presence_of :user_id, :game_id, :sit, :stack
 
@@ -100,9 +102,9 @@ class Player < ActiveRecord::Base
     0 == stack
   end
 
-  def rank
-    fold? ? Poker::PassHand.new : hand
-  end
+	def full_hand
+		Poker::Hand.new hand, game.flop, game.turn, game.river
+	end
 
   protected
 

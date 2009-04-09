@@ -75,7 +75,7 @@ ActiveRecord::Schema.define(:version => 20090226132804) do
     t.integer  "for_call",            :default => 0
     t.integer  "in_pot",              :default => 0
     t.string   "status"
-    t.string   "hand"
+    t.text     "hand"
     t.datetime "action_time"
     t.datetime "control_action_time"
     t.integer  "user_id"
@@ -114,14 +114,24 @@ ActiveRecord::Schema.define(:version => 20090226132804) do
 
   create_table "users", :force => true do |t|
     t.string   "login"
-    t.string   "crypted_password"
-    t.string   "salt"
+    t.string   "crypted_password",                                   :default => "",   :null => false
+    t.string   "password_salt",                                      :default => "",   :null => false
     t.integer  "type"
     t.string   "email"
     t.string   "locate"
-    t.decimal  "cash",             :precision => 10, :scale => 2, :default => 0.0
-    t.integer  "chips",                                           :default => 1000
-    t.integer  "level",                                           :default => 0
+    t.decimal  "cash",                :precision => 10, :scale => 2, :default => 0.0
+    t.integer  "chips",                                              :default => 1000
+    t.integer  "level",                                              :default => 0
+    t.string   "persistence_token",                                  :default => "",   :null => false
+    t.string   "single_access_token",                                :default => "",   :null => false
+    t.string   "perishable_token",                                   :default => "",   :null => false
+    t.integer  "login_count",                                        :default => 0,    :null => false
+    t.integer  "failed_login_count",                                 :default => 0,    :null => false
+    t.datetime "last_request_at"
+    t.datetime "current_login_at"
+    t.datetime "last_login_at"
+    t.string   "current_login_ip"
+    t.string   "last_login_ip"
     t.datetime "created_at"
     t.datetime "updated_at"
   end

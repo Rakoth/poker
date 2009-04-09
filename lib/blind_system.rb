@@ -50,9 +50,7 @@ module BlindSystem
 		logger.info 'STARTED take_blinds!'
     players.map {|player| StackManipulator.take_chips(ante, player)} if ante > 0
     StackManipulator.take_chips small_blind_size, player_on_small_blind
-
     StackManipulator.take_chips blind_size, player_on_blind
-
     update_attribute :current_bet, blind_size
   end
 end

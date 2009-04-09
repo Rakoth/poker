@@ -1,11 +1,5 @@
 <h2><%=t 'views.users.new.input_registration_data' %></h2>
-<%- if @user.errors -%>
-  <div id="modelErrors">
-    <%- @user.errors.each do |attr, error| -%>
-        <%= User.human_attribute_name(attr) + ' ' + error %><br/>
-    <%- end -%>
-  </div>
-<%- end -%>
+<%=  error_messages_for 'user' %>
 <%- form_for @user do |form| -%>
   <h3><%=t 'views.users.new.required_data' %></h3>
   <div class="formTitle"><%= form.label :login, User.human_attribute_name("login") %></div>
