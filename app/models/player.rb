@@ -53,13 +53,15 @@ class Player < ActiveRecord::Base
 		transitions :from => [:pass, :allin, :pass_away] , :to => :leave, :guard => lambda {|player| player.has_empty_stack?}
 	end
 
-  serialize :hand#, Poker::Hand
+	serialize :hand, Poker::Hand
   
   validates_presence_of :user_id, :game_id, :sit, :stack
 
   belongs_to :user
   belongs_to :game, :counter_cache => :players_count
   has_many :actions
+
+	delegate :login, :level, :to => :user
 
   before_create :take_money
 	after_create :start_game, :if => lambda {|player| player.game.full_of_players?}

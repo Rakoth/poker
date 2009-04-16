@@ -33,6 +33,17 @@ div{
 }
 #game_info{
   background:url("/images/game/back/3.gif");
+	color:green;
+}
+#game_info .info_part{
+	float:left;
+	width:250px;
+	height:40px;
+	text-align:center;
+}
+#pot, #blinds{
+	font-family:monospace;
+	color:orange;
 }
 #log{
   background:url("/images/game/back/1.gif");
@@ -52,4 +63,60 @@ div{
 #info .block{
   height:20px;
   width:500px;
+}
+
+
+
+
+.sit{
+	position:absolute;
+	width:153px;
+	height:90px;
+  display:none;
+	background:#ccc;
+}
+.main_part{
+	float:left;
+	width:100px;
+	height:90px;
+	background:#000;
+}
+.side_part{
+	width:50px;
+	margin-left:100px;
+	height:90px;
+	background:#fff;
+}
+.login{
+	height:20px;
+	width:100px;
+	background:#0a0;
+	text-align:center;
+}
+.cards{
+	height:70px;
+	width:100px;
+	background:#00a;
+}
+.buttons{
+	height:20px;
+	width:50px;
+	background:#040;
+}
+.side_block{
+	height:35px;
+	width:50px;
+	background:#a00;
+}
+.side_block img{
+	width:50px;
+	height:35px;
+}
+.stack{
+	width:50px;
+	height:15px;
+	margin-top:23px;
+	font-size:10px;
+	font-family:monospace;
+	text-align:center;
 }

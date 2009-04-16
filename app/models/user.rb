@@ -42,7 +42,7 @@ class User < ActiveRecord::Base
   end
 
 	def join! game
-		players.create(:game => game, :sit => game.players_count, :stack => game.type.start_stack) if can_join? game
+		players.create(:game => game, :sit => game.first_free_sit, :stack => game.type.start_stack) if can_join? game
 	end
 
 

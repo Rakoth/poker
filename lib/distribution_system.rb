@@ -14,13 +14,21 @@ module DistributionSystem
 
   def before_distribution
 		logger.info 'STARTED before_distribution'
-    update_attributes :current_bet => 0, :blind_position => next_blind_position, :deck => Poker::Deck.new.shuffle
+		new_blind_position = next_blind_position
+    update_attributes(
+			:current_bet => 0,
+			:blind_position => new_blind_position,
+			:active_player_id => get_first_player_from(new_blind_position),
+			:deck => Poker::Deck.new.shuffle
+		)
     players.each do |player|
       if player.has_empty_stack?
         player.lose!
       else
-				player.activate!
-        player.update_attributes :in_pot => 0, :for_call => 0
+				logger.info 'START'
+				player.activate! unless player.active?
+        player.update_attributes :in_pot => 0, :for_call => 0 unless 0 == player.in_pot and 0 == player.for_call
+				logger.info 'END'
       end
     end
   end
@@ -50,15 +58,15 @@ module DistributionSystem
     hands_deal!
 	end
 	
-  def prepare_flop!
+  def deal_flop!
 		update_attribute :flop, deck.next(3)
   end
 
-  def prepare_turn!
+  def deal_turn!
 		update_attribute :turn, deck.next(1)
   end
 
-  def prepare_river!
+  def deal_river!
 		update_attribute :river, deck.next(1)
   end
 
@@ -88,14 +96,17 @@ module DistributionSystem
 			# если это не последняя группа(сделавших пасс)
 			unless g[0].nil?
 				group, max = g[1], 0
-				general_in_pot = group.inject(0){|s, p| s + p.in_pot}
-				max = group.first.in_pot
+				#! следующие два цикла можно объединить в один
 				# определяем максимум из ставок игроков группы
-				# и для каждого игрока устанавливаем процент его выйгрыша относительно общего выйгрыша группы
-				group.map! do |player|
-					max = player.in_pot if player.in_pot > max
-					player.persent = ((100 * player.in_pot / general_in_pot).to_f.round) / 100
-					player
+				max = group.first.in_pot
+				group.each {|player| max = player.in_pot if player.in_pot > max}
+				# для каждого игрока устанавливаем процент его выйгрыша относительно общего выйгрыша группы
+				general_in_pot = group.inject(0){|s, p| s + p.in_pot}
+				if general_in_pot > 0
+					group.map! do |player|
+						player.persent = ((100 * player.in_pot / general_in_pot).to_f.round) / 100
+						player
+					end
 				end
 				[max, group]
 			else

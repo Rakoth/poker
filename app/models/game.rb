@@ -7,9 +7,9 @@ class Game < ActiveRecord::Base
 
   aasm_state :waited, :exit => :init_blinds_system!
   aasm_state :on_preflop, :enter => :start_distribution!
-  aasm_state :on_flop, :enter => :prepare_flop!
-  aasm_state :on_turn, :enter => :prepare_turn!
-  aasm_state :on_river, :enter => :prepare_river!, :exit => :final_distribution!
+  aasm_state :on_flop, :enter => :deal_flop!
+  aasm_state :on_turn, :enter => :deal_turn!
+  aasm_state :on_river, :enter => :deal_river!, :exit => :final_distribution!
   aasm_state :finished
 
   aasm_event :start do
@@ -51,7 +51,11 @@ class Game < ActiveRecord::Base
     blind_size * type.bet_multiplier
   end
 
-  def bank
+	def started?
+		on_preflop? or on_flop? or on_turn? or on_river?
+	end
+
+  def pot
     players.inject(0){|sum, player| sum + player.in_pot}
   end
 
@@ -69,6 +73,15 @@ class Game < ActiveRecord::Base
     Player.find_by_id_and_user_id active_player_id, user.id
   end
 
+	def active_player_sit
+		player = players.select{|p| active_player_id == p.id}.first
+		player.sit if player
+	end
+
+	def first_free_sit
+		(0...(type.max_players)).to_a.select{|sit| !players.map(&:sit).include?(sit)}.min
+	end
+
   def next_active_player_id
     current_player = Player.find self.active_player_id
     player = get_first_player_from current_player.sit, :out => :self
@@ -79,6 +92,40 @@ class Game < ActiveRecord::Base
     update_attribute :active_player_id, player.id
   end
 
+	def build_init_data user_id
+		game_copy = {
+			:id => id,
+			:status => status,
+			:blind_size => blind_size,
+			:ante => ante,
+			:client_sit => players.select{|p| user_id == p.user_id}.first.sit,
+			:time_for_action => type.time_for_action,
+			:max_players => type.max_players,
+			:start_stack => type.start_stack
+		}
+		unless waited?
+			game_copy[:blind_position] = blind_position
+			game_copy[:small_blind_position] = small_blind_position
+			game_copy[:next_level_time] = next_level_time
+			game_copy[:active_player_id] = active_player_id
+		end
+		game_copy[:players_to_load] = players.map do |player|
+			player_hash = {
+				:id => player.id,
+				:login => player.login,
+				:sit => player.sit
+			}
+			unless waited?
+				player_hash[:status] = player.status
+				player_hash[:stack] = player.stack
+				player_hash[:for_call] = player.for_call
+				player_hash[:in_pot] = player.in_pot
+			end
+			player_hash
+		end
+		game_copy
+	end
+
   private
 
   def all_pass?
@@ -87,6 +134,7 @@ class Game < ActiveRecord::Base
 
   # Ищет первое не пустое место начиная с sit в направлении :direction
   def get_first_player_from sit, params = {}
+		players.reload
     params[:out] ||= :id
     params[:direction] ||= :asc
     conditions = case params[:direction]

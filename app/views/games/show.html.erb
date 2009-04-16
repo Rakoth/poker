@@ -4,17 +4,23 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <%= stylesheet_link_tag "game", :media => "all" %>
 		<%= javascript_include_tag :defaults %>
-		<%= javascript_include_tag 'initialize_game.js' %>
+		<%= javascript_include_tag 'game.js' %>
     <title>Game</title>
+		<%=render :partial => 'init_game' %>
   </head>
   <body>
     <div id="room">
       <div id="main">
         <div id="info">
           <div id="info_line" class="block"></div>
-          <div id="game_info" class="block"></div>
+          <div id="game_info" class="block">
+						<div class="info_part"><%= @game.type.title %></div>
+						<div class="info_part"><%=t 'views.games.show.blinds' %> <span id="blinds"></span>&nbsp;&nbsp;&nbsp;<%=t 'views.games.show.in_pot' %> <span id="pot"></span></div>
+					</div>
         </div>
-        <div id="table"></div>
+        <div id="table">
+					<%= render :partial => 'players' %>
+				</div>
       </div>
       <div id="control">
         <div id="log" class="block"></div>

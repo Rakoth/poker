@@ -1,16 +1,16 @@
 module BlindSystem
+  def small_blind_position
+    @small_blind_position ||= get_first_player_from blind_position, :out => :sit, :direction => :desc
+  end
+	
 	private
 
 	def small_blind_size
     blind_size / 2
   end
-
-  def small_blind_position
-    @small_blind_position ||= get_first_player_from blind_position, :out => :sit, :direction => :desc
-  end
-
+	
 	def next_blind_position
-		waited? ? rand(type.max_players) : get_first_player_from(blind_position, :out => :sit)
+		blind_position.nil? ? rand(type.max_players) : get_first_player_from(blind_position, :out => :sit)
 	end
 
   def player_on_blind
@@ -23,11 +23,11 @@ module BlindSystem
 	
 	def init_blinds_system!
 		logger.info 'STARTED init_blinds_system!'
-    blind_position = next_blind_position
+    #new_blind_position = next_blind_position
     update_attributes(
-      :blind_position => blind_position,
-			:next_level_time => Time.now + type.change_level_time.minutes,
-      :active_player_id => get_first_player_from(blind_position)
+      #:blind_position => new_blind_position,
+			:next_level_time => Time.now + type.change_level_time.minutes #,
+      #:active_player_id => get_first_player_from(new_blind_position)
     )
 	end
 

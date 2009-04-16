@@ -260,6 +260,9 @@ ru:
         pay_for_play: "Плата за вход"
       new:
         title: "Создать новую игру"
+      show:
+        in_pot: "В банке:"
+        blinds: "Блайнды:"
     sessions:
       new:
         title: "Введите свой логин и пароль"

@@ -34,6 +34,7 @@ class ApplicationController < ActionController::Base
   end
 
 	def check_authorization
+		puts current_user.inspect
 		unless current_user
 			store_location
 			flash[:error] = t 'controllers.application.authorisation_required'

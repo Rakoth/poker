@@ -35,7 +35,7 @@ ActiveRecord::Schema.define(:version => 20090226132804) do
     t.integer  "start_blind"
     t.integer  "bet_multiplier"
     t.integer  "change_level_time"
-    t.integer  "action_time"
+    t.integer  "time_for_action"
     t.string   "template"
     t.integer  "min_level"
     t.integer  "max_level"
