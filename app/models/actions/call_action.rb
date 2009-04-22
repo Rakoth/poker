@@ -1,12 +1,10 @@
-class CallAction < Action
+class Actions::CallAction < Action
   def after_initialize
-    self.value = 0
+    self.value = self.player.for_call
     super
   end
   
-  def kind
-    return 2
-  end
+  KIND = 2
 
   def can_perform?
     player.must_call?

@@ -8,7 +8,7 @@ class GamesController < ApplicationController
 
   def show
     @game = Game.find params[:id], :include => [:type]
-		@game_in_json = @game.build_init_data(current_user.id).to_json
+		@game_in_json = @game.build_synch_data(:init, current_user.id).to_json
     render :layout => false
   end
 
@@ -38,31 +38,5 @@ class GamesController < ApplicationController
       render :action => :new
     end
   end
-
-	def synchronize
-		respond_to do |format|
-			format.json {
-				game = Game.find params[:id]
-				add_players = game.players.select{|p| !params[:players].to_a.include?(p.id.to_s)}
-				remove_players = params[:players].select{|id| !game.players.map(&:id).include?(id.to_i)}
-				players = {}
-				players[:add] = add_players.map{|p| {:id => p.id, :login => p.login, :sit => p.sit}} unless add_players.empty?
-				players[:remove] = remove_players unless remove_players.empty?
-				if game.started?
-					players[:game] = {
-						:blind_position => game.blind_position,
-						:small_blind_position => game.small_blind_position,
-						:next_level_time => game.next_level_time,
-						:active_player_id => game.active_player_id
-					}
-				end
-				unless players.empty?
-					render :json => players.to_json and return
-				else
-					render :nothing => true and return
-				end
-			}
-		end
-	end
 
 end

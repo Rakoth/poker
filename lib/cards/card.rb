@@ -36,6 +36,10 @@ module Poker
       value <=> other_card.value
     end
 
+		def to_s
+			suit.first + ('10' == face ? 'T' : face.first)
+		end
+
     private
       attr_writer :value, :suit
   end

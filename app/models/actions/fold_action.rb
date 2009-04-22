@@ -1,7 +1,5 @@
-class FoldAction < Action
-  def kind
-    return 0
-  end
+class Actions::FoldAction < Action
+  KIND = 0
 
 	protected
 	

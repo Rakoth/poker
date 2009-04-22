@@ -27,7 +27,7 @@ class CreateGameTypes < ActiveRecord::Migration
          :start_blind => 100 * (i + 1),
          :bet_multiplier => 2,
          :change_level_time => 4 + i,
-         :time_for_action => 3,
+         :time_for_action => 10,
          :min_level => 0,
          :max_level => 10
       }

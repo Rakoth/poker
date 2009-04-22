@@ -1,7 +1,5 @@
-class RaiseAction < BetAction
-  def kind
-    return 4
-  end
+class Actions::RaiseAction < Actions::BetAction
+  KIND = 4
 
   def can_perform?
     return (player.stack >= player.for_call + value and

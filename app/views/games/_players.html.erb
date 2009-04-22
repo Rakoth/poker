@@ -1,13 +1,17 @@
 <%- @game.type.max_players.times do |sit| -%>
 <div id="sit_<%= sit %>" class="sit" style="<%=player_window_position(@game.type_id, sit)%>">
+	<div id="<%= sits_element_id 'last_action', sit %>" class="last_action"></div>
 	<div class="main_part">
 		<div id="<%= sits_element_id 'login', sit %>" class="login"></div>
-		<div id="<%= sits_element_id 'cards', sit %>" class="cards"></div>
+		<div id="<%= sits_element_id 'cards', sit %>" class="cards">
+			<%= image_tag "game/cards/default.gif", :id => sits_element_id('card_0', sit), :alt => 'RP' %>
+			<%= image_tag "game/cards/default.gif", :id => sits_element_id('card_1', sit), :alt => 'RP' %>
+		</div>
 	</div>
 	<div class="side_part">
 		<div id="<%= sits_element_id 'buttons', sit %>" class="buttons"></div>
 		<div class="side_block">
-			<img id="<%= sits_element_id 'timer', sit %>" src="/images/game/timer/default.gif" alt="timer"/>
+			<%= image_tag "game/timer/default.gif", :id => sits_element_id('timer', sit) %>
 		</div>
 		<div id="<%= sits_element_id 'chips', sit %>" class="side_block">
 			<div id="<%= sits_element_id 'stack', sit %>" class="stack"></div>

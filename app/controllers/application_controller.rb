@@ -34,7 +34,6 @@ class ApplicationController < ActionController::Base
   end
 
 	def check_authorization
-		puts current_user.inspect
 		unless current_user
 			store_location
 			flash[:error] = t 'controllers.application.authorisation_required'
@@ -51,6 +50,10 @@ class ApplicationController < ActionController::Base
 		redirect_to(session[:return_to] || default)
 		session[:return_to] = nil
 	end
+
+#	def turn_off_logging
+#		logger.close
+#	end
 
 
 end

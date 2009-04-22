@@ -45,7 +45,7 @@ class Game < ActiveRecord::Base
   belongs_to :type, :class_name => 'GameType'
   has_many :players, :conditions => ['status <> ?', Player::STATUS[:leave]]
   has_many :users, :through => :players
-  has_many :actions
+  has_many :actions, :class_name => 'Actions::Action'
 
   def minimal_bet
     blind_size * type.bet_multiplier
@@ -86,50 +86,46 @@ class Game < ActiveRecord::Base
     current_player = Player.find self.active_player_id
     player = get_first_player_from current_player.sit, :out => :self
     while !player.active? and player != current_player
-      player.fold! if player.absent_and_must_call?
+			if player.absent_and_must_call?
+				player.fold!
+			elsif player.absent?
+				player.auto_check!
+			end
       player = get_first_player_from player.sit, :out => :self
     end
     update_attribute :active_player_id, player.id
   end
 
-	def build_init_data user_id
-		game_copy = {
-			:id => id,
-			:status => status,
-			:blind_size => blind_size,
-			:ante => ante,
-			:client_sit => players.select{|p| user_id == p.user_id}.first.sit,
-			:time_for_action => type.time_for_action,
-			:max_players => type.max_players,
-			:start_stack => type.start_stack
-		}
-		unless waited?
-			game_copy[:blind_position] = blind_position
-			game_copy[:small_blind_position] = small_blind_position
-			game_copy[:next_level_time] = next_level_time
-			game_copy[:active_player_id] = active_player_id
+	def active_player_away?
+		action_time_left <= 0
+	end
+
+	def action_time_left
+		unless actions.empty?
+			actions.first(:order => 'id DESC').time_left
+		else
+			# начало отсчета - старт игры
+			(type.time_for_action - (Time.now - updated_at).to_i)
 		end
-		game_copy[:players_to_load] = players.map do |player|
-			player_hash = {
-				:id => player.id,
-				:login => player.login,
-				:sit => player.sit
-			}
-			unless waited?
-				player_hash[:status] = player.status
-				player_hash[:stack] = player.stack
-				player_hash[:for_call] = player.for_call
-				player_hash[:in_pot] = player.in_pot
-			end
-			player_hash
+	end
+
+	def build_synch_data type, for_user_id = nil
+		case type
+		when :init
+			data_for_init_client for_user_id
+		when :on_start
+			data_for_synch_on_start
+		when :on_distribution
+			data_for_synch_on_distribution
+		else
+			raise ArgumentError, 'Unexpected type for building game data: ' + type.to_s
 		end
-		game_copy
 	end
 
   private
 
-  def all_pass?
-    players.select{|p| p.fold?}.length == players.count - 1
+  def one_winner?
+    1 == players.select{|p| !p.fold?}.length
   end
 
   # Ищет первое не пустое место начиная с sit в направлении :direction
@@ -148,7 +144,63 @@ class Game < ActiveRecord::Base
     if :self == params[:out]
       player
     else
-      player.send(params[:out])
+      player.send params[:out]
     end
   end
+
+	def data_for_init_client for_user_id
+		game_copy = init_data_common for_user_id
+		game_copy.merge! init_data_after_start(for_user_id) unless waited?
+		game_copy
+	end
+
+	def init_data_common for_user_id
+		{
+			:id => id,
+			:status => status,
+			:blind_size => blind_size,
+			:ante => ante,
+			:client_sit => players.client_sit(for_user_id).first.sit,
+			:time_for_action => type.time_for_action,
+			:max_players => type.max_players,
+			:start_stack => type.start_stack,
+			:players_to_load => players.map(&:build_synch_data)
+		}
+	end
+
+	def init_data_after_start for_user_id
+		{
+			:blind_position => blind_position,
+			:small_blind_position => small_blind_position,
+			:next_level_time => next_level_time,
+			:active_player_id => active_player_id,
+			:last_action_id => (actions.any? ? actions.sort_by(&:created_at).last.id : nil),
+			:action_time_left => action_time_left,
+			:flop  => (flop.nil? ? flop.to_s : nil),
+			:turn  => (turn.nil? ? turn.to_s : nil),
+			:river => (river.nil? ? river.to_s : nil),
+			:players_to_load => players.map{|p| p.build_synch_data(:after_start_game, for_user_id)}
+		}
+	end
+
+	def data_for_synch_on_distribution
+		{
+			:status => status,
+			:active_player_id => active_player_id,
+			:blind_position => blind_position,
+			:small_blind_position => small_blind_position,
+			:blind_size => blind_size,
+			:current_ber => current_bet,
+		}
+	end
+
+	def data_for_synch_on_start
+		{
+			:blind_position => blind_position,
+			:small_blind_position => small_blind_position,
+			:next_level_time => next_level_time,
+			:active_player_id => active_player_id,
+			:action_time_left => action_time_left,
+		}
+	end
 end

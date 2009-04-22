@@ -76,6 +76,7 @@ ActiveRecord::Schema.define(:version => 20090226132804) do
     t.integer  "in_pot",              :default => 0
     t.string   "status"
     t.text     "hand"
+    t.boolean  "open_hand"
     t.datetime "action_time"
     t.datetime "control_action_time"
     t.integer  "user_id"

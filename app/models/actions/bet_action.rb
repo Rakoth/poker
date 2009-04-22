@@ -1,7 +1,9 @@
-class BetAction < Action
-  def kind
-    return 3
-  end
+class Actions::BetAction < Action
+  KIND = 3
+
+	def after_initialize
+		self.value += player.for_call
+	end
 
 	def has_value?
 		true

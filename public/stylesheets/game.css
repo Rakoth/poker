@@ -17,7 +17,9 @@ div{
 #control{
   height:400px;
   width:200px;
-  margin-left:400px;
+}
+* html #control{
+	margin-left:397px;
 }
 #info{
   height:40px;
@@ -64,32 +66,38 @@ div{
   height:20px;
   width:500px;
 }
+.hidden{
+	display:none;
+}
 
 
 
 
 .sit{
 	position:absolute;
-	width:153px;
-	height:90px;
+	width:120px;
+	height:105px;
   display:none;
-	background:#ccc;
+	background-color:#ccc;
 }
 .main_part{
 	float:left;
-	width:100px;
+	width:70px;
 	height:90px;
 	background:#000;
 }
 .side_part{
 	width:50px;
-	margin-left:100px;
 	height:90px;
 	background:#fff;
 }
+.last_action{
+	width:120px;
+	height:15px;
+}
 .login{
 	height:20px;
-	width:100px;
+	width:70px;
 	background:#0a0;
 	text-align:center;
 }
@@ -97,6 +105,12 @@ div{
 	height:70px;
 	width:100px;
 	background:#00a;
+}
+.cards img{
+	margin:5px 5px;
+	width:32px;
+	height:50px;
+	float:left;
 }
 .buttons{
 	height:20px;
@@ -115,8 +129,7 @@ div{
 .stack{
 	width:50px;
 	height:15px;
-	margin-top:23px;
-	font-size:10px;
-	font-family:monospace;
+	margin-top:20px;
+	font:10px monospace;
 	text-align:center;
 }

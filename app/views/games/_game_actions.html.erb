@@ -1,6 +1,8 @@
 <%= link_to(t(:detail), game_path(game))%>
 <%= link_to(t(:join), game_players_path(game), :method => :post) if current_user and game.waited? and current_user.can_join?(game) %>
-<%= link_to(t(:leave),
-      leave_game_path(game),
-      :method => :delete,
-      :confirm => t('views.games.actions.leave_game_confirm', :title => game.type.title)) if game.waited? and game.users.include?(current_user) %>
+<%= link_to(
+	t(:leave),
+	leave_game_path(game),
+	:method => :delete,
+	:confirm => t('views.games.actions.leave_game_confirm', :title => game.type.title)
+) if game.waited? and game.users.include?(current_user) %>

@@ -1,7 +1,7 @@
 module DistributionSystem
 	def goto_next_stage
 		logger.info 'STARTED next_stage'
-		if all_pass?
+		if one_winner?
       final_distribution!
     elsif next_stage?
       next_stage!
@@ -25,10 +25,8 @@ module DistributionSystem
       if player.has_empty_stack?
         player.lose!
       else
-				logger.info 'START'
 				player.activate! unless player.active?
         player.update_attributes :in_pot => 0, :for_call => 0 unless 0 == player.in_pot and 0 == player.for_call
-				logger.info 'END'
       end
     end
   end
@@ -59,15 +57,15 @@ module DistributionSystem
 	end
 	
   def deal_flop!
-		update_attribute :flop, deck.next(3)
+		update_attribute :flop, Poker::Hand.new(deck.next(3))
   end
 
   def deal_turn!
-		update_attribute :turn, deck.next(1)
+		update_attribute :turn, Poker::Hand.new(deck.next(1))
   end
 
   def deal_river!
-		update_attribute :river, deck.next(1)
+		update_attribute :river, Poker::Hand.new(deck.next(1))
   end
 
   def hands_deal!

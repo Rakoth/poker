@@ -38,13 +38,13 @@ ActionController::Routing::Routes.draw do |map|
   map.leave_game ':game_id/leave', :controller => 'players', :action => 'destroy'
 	map.omitted_actions 'actions/:game_id/:last_action_id.:format', :controller => 'actions', :action => 'omitted'
   map.resources :users
+  map.resources :actions
   map.resources :games, :has_many => 'players'
   map.resources :players
   map.resources :game_types
   map.create_note 'notes', :controller => 'notes', :action => 'create'
   map.update_note 'notes/:about_user_id', :controller => 'notes', :action => 'update'
   map.show_note 'note/:about_user_id', :controller => 'notes', :action => 'show'
-  map.show_action 'actions/:game_id/:last_id.:format',  :controller => 'actions', :action => 'show'
   map.connect ':controller/:action/:id'
   map.connect ':controller/:action/:id.:format'
   

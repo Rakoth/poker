@@ -5,20 +5,24 @@ class Action < ActiveRecord::Base
 
   before_save :perform!
   
-  named_scope :omitted, lambda{ |game_id, last_id| {:conditions => ["game_id = ? AND id > ?", game_id, last_id]}}
+  named_scope :omitted, lambda{ |game_id, last_id, player_id|
+		{:conditions => ["game_id = ? AND id > ? AND (player_id <> ? OR type IN ('AutoFoldAction', 'AutoCheckAction', 'TimeoutFoldAction', 'TimeoutCheckAction')) ", game_id, last_id, player_id]}
+	}
 
   def has_value?
     false
   end
 
-  def time_handler
-    self.game.type.action_time - (Time.now - created_at).to_i
+  def time_left
+    self.game.type.time_for_action - (Time.now - created_at).to_i
   end
 
   attr_accessor :game_params
 
+	KIND = nil
+	
   def kind
-    raise "can't resive kind of class Action"
+    self.class::KIND
   end
 
   def value

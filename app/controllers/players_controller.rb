@@ -15,7 +15,7 @@ class PlayersController < ApplicationController
 
   def destroy
     return unless request.delete?
-    @player = current_user.players.find_by_game_id params[:game_id]
+    @player = current_user.current_player params[:game_id]
     if @player and @player.game.waited?
       @player.destroy
       flash[:notice] = t 'controllers.players.successfully_leave_the_game'

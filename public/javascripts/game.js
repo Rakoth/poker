@@ -37,13 +37,25 @@ var GameMethods = {
 		this._add_players_from_game();
 		if(this.is_started()){
 			this.on_start();
+			if(this.last_action_id){
+				ActionsSynchronizer.set_last_action_id(this.last_action_id);
+			}
+			if(this.flop){
+				//
+			}
+			if(this.turn){
+				//
+			}
+			if(this.river){
+				//
+			}
 		}
 		this.update_pot();
 		this.update_blinds();
 	},
 	on_start: function(){
 		this.set_active_player();
-		this.active_player.start_turn();
+		this.active_player.start_turn(this.action_time_left);
 	},
 	_add_players_from_game: function(){
 		this._add_players_from_array(this.players_to_load);
@@ -80,13 +92,15 @@ var GameMethods = {
 		}
 	},
 	get_players_ids: function(){
-		var answer = [];
+		ids = [];
 		for(var i in this.players){
 			if(this.players[i]){
-				answer.push(this.players[i].id)
+				ids.push(this.players[i].id);
 			}
 		}
-		return answer;
+		return ids;
+		// убивающий firefox код :
+		//return $($.grep(this.players, function(){return this;})).map(function(){return this.id});
 	},
 	take_blinds: function(){
 		if(this.ante > 0){
@@ -98,6 +112,8 @@ var GameMethods = {
 		this.players[this.blind_position].stake(this.blind_size);
 	},
 	next_turn: function(){
+		this.active_player.end_turn();
+		this._goto_next_stage();
 		this._set_next_active_player();
 		this.active_player.start_turn();
 	},
@@ -117,11 +133,13 @@ var GameMethods = {
 	_set_next_active_player: function(){
 		var next_active_player_sit = this.active_player.sit.id;
 		next_active_player_sit++;
-		while(!this.players[next_active_player_sit]){
-			if(this.max_players == next_active_player_sit)
-				next_active_player_sit = 0;
-			else
-				next_active_player_sit++;
+		var safe_counter = 0;
+		while((!this.players[next_active_player_sit] || this.players[next_active_player_sit].is_fold()) && safe_counter <= this.max_players){
+			next_active_player_sit += (this.max_players == next_active_player_sit) ? -next_active_player_sit : 1;
+			safe_counter++;
+		}
+		if(this.max_players < safe_counter){
+			alert("Can`t find next active player");
 		}
 		this.active_player = this.players[next_active_player_sit];
 	},
@@ -135,15 +153,58 @@ var GameMethods = {
 	},
 	update_blinds: function(){
 		$('#blinds').text(this.blind_size + '/' + this.small_blind());
+	},
+	client_action: function(action_kind){
+		action_name = ActionsExecuter.name_by_kind[action_kind];
+		action = [this.client_sit, action_kind];
+		if('bet' == action_name || 'raise' == action_name){
+			value = parseInt($('#stake_value').value);
+			action.push(value);
+		}
+		ActionsExecuter.perform(action);
+	},
+	_goto_next_stage: function(){
+		if(this._is_one_winner()){
+      GameSynchronizer.new_distribution();
+		}else{
+			if(this._is_next_stage()){
+				GameSynchronizer.next_stage();
+			}
+		}
+	},
+	_is_one_winner: function(){
+		var count = 0;
+		$(this.players).each(function(){
+			if(!this.is_fold()){
+				count++;
+			}
+		});
+		return (1 == count)
+	},
+	_is_next_stage: function(){
+		var next_stage = true;
+		$(this.players).each(function(){
+			if(!this.has_called() && !this.is_fold()){
+				next_stage = false;
+				return;
+			}
+		});
+		return next_stage;
 	}
 };
 
 //=============================================================================
+var HurrySyncErrorStatus = 440; // чувак, ты не прав (клиент спешит)
+var LateSyncErrorStatus  = 441; // ты молодец, но нам уже сообщили об этом (клиент опаздывает)
 var ActionsSynchronizer = {
-	_period: 25,
+	_period: 3,
+	_notify_period: 2,
 	_last_action_id: 0,
+	set_last_action_id: function(id){
+		this._last_action_id = id;
+	},
 	start: function(){
-		this._timer = setInterval(this._get_omitted, this._period * 1000);
+		this._timer = setInterval(this._get_omitted.bind(this), this._period * 1000);
 	},
 	restart: function(new_period){
 		this._period = new_period;
@@ -151,7 +212,7 @@ var ActionsSynchronizer = {
 		this.start();
 	},
 	_get_omitted: function(){
-		$.getJSON(ActionsSynchronizer._url(), ActionsSynchronizer._perform);
+		$.getJSON(this._url(), this._perform.bind(this));
 	},
 	_url: function(){
 		return '/actions/' + Game.id + '/' + this._last_action_id + '.json';
@@ -159,54 +220,62 @@ var ActionsSynchronizer = {
 	_perform: function(json){
 		var time = json.pop();
 		this._last_action_id = json.pop();
-		for(action in json){
-			ActionsExecuter.perform(action);
-		}
+		$(json).each(function(){
+			ActionsExecuter.perform(this);
+		});
 		Game.active_player.set_time_for_action(time);
 	},
 	notify_about_action_timeout: function(player_id){
-		//TODO
-		//$.post('actions/timeout/', {game_id: Game.id, player_id: player_id});
-		return;
+		$.ajax({
+			url: '/actions/timeout/',
+			type: 'POST',
+			data: ({game_id: Game.id, player_id: player_id}),
+			error: function(XMLHttpRequest){
+				if(HurrySyncErrorStatus == XMLHttpRequest.status){
+					setTimeout("ActionsSynchronizer.notify_about_action_timeout(" + player_id + ")", this._notify_period * 1000);
+				}
+			}
+		});
 	}
 };
 
 var ActionsExecuter = {
 	name_by_kind: ['fold', 'check', 'call', 'bet', 'raise'],
 	perform: function(action){
+		var player_sit = action.shift();
+		Game.active_player = Game.players[player_sit];
 		var kind = action[0];
 		action_name = this.name_by_kind[kind];
 		if(action.length == 1){
-			this.ActionsInfluence[action_name]();
+			ActionsInfluence[action_name]();
 		}else{
 			var value = action[1];
-			this.ActionsInfluence[action_name](value);
+			ActionsInfluence[action_name](value);
 		}
 		this._show_action(action_name);
-		Game.next_active_player();
-	},
-	ActionsInfluence: {
-		fold: function(){
-			Game.active_player.fold();
-		},
-		check: function(){},
-		call: function(){
-			player = Game.active_player;
-			player.stake(player.for_call);
-		},
-		bet: function(value){
-			player = Game.active_player;
-			player.stake(player.for_call + value);
-		},
-		raise: function(value){
-			this.bet(value);
-		}
+		Game.next_turn();
 	},
 	_show_action: function(action_name){
 		Game.active_player.say_action(action_name);
 	}
 };
-
+ActionsInfluence = {
+	fold: function(){
+		Game.active_player.fold();
+	},
+	check: function(){},
+	call: function(){
+		player = Game.active_player;
+		player.stake(player.for_call);
+	},
+	bet: function(value){
+		player = Game.active_player;
+		player.stake(player.for_call + value);
+	},
+	raise: function(value){
+		this.bet(value);
+	}
+}
 //=============================================================================
 var GameSynchronizer = {
 	_period: 5,
@@ -216,7 +285,7 @@ var GameSynchronizer = {
 	_check_for_new_players: function(){
 		var players = Game.get_players_ids();
 		$.getJSON(
-			this._url(),
+			'/game_synchronizers/wait_for_start/' + Game.id + '.json',
 			{'players[]': players},
 			this._sync_game
 		);
@@ -241,10 +310,21 @@ var GameSynchronizer = {
 		clearTimeout(this._timer);
 		Game.take_blinds();
 		Game.on_start();
+		Game.players[Game.client_sit].update_hand(Game.client_hand);
+		Game.status = 'on_preflop';
 		ActionsSynchronizer.start();
 	},
-	_url: function(){
-		return '/games/synchronize/' + Game.id + '.json';
+	new_distribution: function(){
+		$.getJSON('/game_synchronizers/distribution/' + Game.id + '.json', function(json){
+
+		});
+	},
+	next_stage: function(){
+		$.getJSON('/game_synchronizers/stage/' + Game.id + '.json', {current_status: Game.status}, function(json){
+			if(json.status){
+				Game.status = json.status
+			}
+		});
 	}
 };
 
@@ -258,13 +338,16 @@ var Player = function(params){
 	};
 	$.extend(this, default_params, params);
 	$.extend(this, PlayerMethods);
+	if(this.hand){
+		this.hand = new PlayerHand(this.hand);
+	}
 	this.sit = new PlayerSit(this);
 	this.timer = new PlayerTimer(this);
 };
 
 var PlayerMethods = {
 	say_action: function(action_name){
-		alert(action_name);
+		this.sit.last_action.text(action_name);
 	},
 	stake: function(value){
 		if(this.for_call < value){
@@ -272,6 +355,16 @@ var PlayerMethods = {
 		}
 		this._update_stack(value, 'out');
 		Game.update_pot();
+	},
+	fold: function(){
+		this.sit.cards.hide('slow');
+		this.status = 'pass';
+	},
+	is_fold: function(){
+		return 'pass' == this.status || 'pass_away' == this.status;
+	},
+	has_called: function(){
+		return (0 == this.for_call);
 	},
 	add_for_call: function(value){
 		this.for_call += value;
@@ -291,6 +384,10 @@ var PlayerMethods = {
 		this.sit.update_in_pot(this.in_pot);
 		//this.sit.for_call.update(this.for_call);
 	},
+	update_hand: function(new_hand_string){
+		this.hand = new PlayerHand(new_hand_string);
+		this.sit.update_hand();
+	},
 	set_time_for_action: function(time){
 		this.timer.set_time(time);
 	},
@@ -302,9 +399,13 @@ var PlayerMethods = {
 		}
 		this.timer.start();
 	},
+	end_turn: function(){
+		this.timer.stop();
+	},
 	end_turn_by_timeout: function(){
-		 ActionsSynchronizer.notify_about_action_timeout(this.id);
-		 Game.next_turn();
+		ActionsSynchronizer.notify_about_action_timeout(this.id);
+		this.timer.stop();
+		//Game.next_turn();
 	}
 };
 
@@ -316,8 +417,15 @@ var PlayerSit = function(player){
 	this.main = $('#sit_' + this.id).show('slow');
 	this.login = $('#login_' + this.id).attr('title', player.login).text(player.login);
 	this.cards = $('#cards_' + this.id);
+	if(this.player.hand){
+		this.update_hand();
+	}
+	if(this.player.is_fold()){
+		this.cards.hide();
+	}
 	this.timer = $('#timer_' + this.id);
 	this.stack = $('#stack_' + this.id).text(player.stack);
+	this.last_action = $('#last_action_' + this.id);
 	this.for_call = null;
 	this.in_pot = null;
 };
@@ -332,9 +440,14 @@ var PlayerSitMethods = {
 	update_stack: function(new_value){
 		this.stack.text(new_value);
 	},
+	update_hand: function(){
+		this.player.hand.cards.each(function(i, card){
+			$('#card_' + i + '_' + this.id).attr('src', card.src).attr('alt', card.str);
+		}.bind(this));
+	},
 	_timer_src: function(){
 		var time = this.player.timer.time;
-		var image = (1 <= time ? time : 'default');
+		var image = (0 < time ? time : 'default');
 		return '/images/game/timer/' + image + '.gif';
 	},
 	disable: function(){
@@ -355,19 +468,24 @@ var PlayerTimerMethods = {
 	},
 	stop: function(){
 		clearTimeout(this._timer);
+		this.set_time(0);
 	},
 	set_time: function(time){
 		this.time = time;
-		this.player.sit.update_timer()
+		this.player.sit.update_timer();
 	},
 	_reduce_time: function(){
 		if(0 < this.time){
 			this.set_time(this.time - 1);
 		}else{
-			this.stop();
 			this.player.end_turn_by_timeout();
 		}
 	}
 }
 
 //=============================================================================
+var PlayerHand = function(hand_string){
+	this.cards = $($(hand_string.split(':')).map(function(){
+		return {suit:this.split('')[0], value:this.split('')[1], src:'/images/game/cards/' + this + '.gif', str:this};
+	}));
+}

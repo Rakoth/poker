@@ -7,6 +7,7 @@ class CreatePlayers < ActiveRecord::Migration
       t.integer :in_pot, :default => 0
       t.string :status
       t.text :hand
+			t.boolean :open_hand
       t.datetime :action_time
       t.datetime :control_action_time
       t.references :user

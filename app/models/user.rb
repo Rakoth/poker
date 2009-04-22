@@ -45,6 +45,10 @@ class User < ActiveRecord::Base
 		players.create(:game => game, :sit => game.first_free_sit, :stack => game.type.start_stack) if can_join? game
 	end
 
+	def current_player game_id
+		players.find_by_game_id game_id
+	end
+
 
 
 #  protected

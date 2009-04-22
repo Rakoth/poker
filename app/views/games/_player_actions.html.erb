@@ -1,2 +1,9 @@
-<%= link_to t(:detail), user_path(player.user) %>
-<%= link_to t(:message), "\#" %>
+<% actions  = [
+	{:name => 'fold',  :kind => Actions::FoldAction::KIND,  :hidden_class => '',        :value => false},
+	{:name => 'check', :kind => Actions::CheckAction::KIND, :hidden_class => ' hidden', :value => false},
+	{:name => 'call',  :kind => Actions::CallAction::KIND,  :hidden_class => '',        :value => false},
+	{:name => 'bet',   :kind => Actions::BetAction::KIND,   :hidden_class => ' hidden', :value => true},
+	{:name => 'raise', :kind => Actions::RaiseAction::KIND, :hidden_class => '',        :value => true}
+] %>
+<%= render :partial => 'player_action_button', :collection => actions, :as => :action %>
+<input id="stake_value" class="stake_value" value="0" />
