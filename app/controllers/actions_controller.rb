@@ -7,7 +7,7 @@ class ActionsController < ApplicationController
     respond_to do |format|
       format.html {render :text => 'Здесь ничего нет..неверный формат!!!' and return}
       format.json {
-				@actions = Action.omitted(params[:game_id], params[:last_action_id], current_user.current_player(params[:game_id]).id)
+				@actions = PlayerActions::Action.omitted(params[:game_id], params[:last_action_id], current_user.current_player(params[:game_id]).id)
         unless @actions.empty?
 					j_array = @actions.map do |action|
 						action.has_value? ? [action.player.sit, action.kind, action.value] : [action.player.sit, action.kind]

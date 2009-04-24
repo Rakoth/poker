@@ -98,18 +98,16 @@ class Player < ActiveRecord::Base
 		when 1:
 				Actions::CheckAction.new hash_params
 		when 2:
-				Actions::CallAction.new hash_params
+				PlayerActions::CallAction.new hash_params
 		when 3:
-				Actions::BetAction.new hash_params
+				PlayerActions::BetAction.new hash_params
 		when 4:
-				Actions::RaiseAction.new hash_params
+				PlayerActions::RaiseAction.new hash_params
 		else
 			raise 'Unexpected action type "' + params[:kind] + '"'
     end
     action.execute
-  end
-
-  def has_called?
+  ePlayerActionsef has_called?
     0 == for_call
   end
 
@@ -201,15 +199,15 @@ class Player < ActiveRecord::Base
 	end
 
 	def auto_check!
-		Actions::AutoCheckAction.new(:player => self, :game => game).execute
+		PlayerActions::AutoCheckAction.new(:player => self, :game => game).execute
 	end
 
 	def do_fold_on_away!
-		Actions::TimeoutFoldAction.new(:player => self, :game => game).execute
+		PlayerActions::TimeoutFoldAction.new(:player => self, :game => game).execute
 	end
 
 	def check_on_away!
-		Actions::TimeoutCheckAction.new(:player => self, :game => game).execute
+		PlayerActions::TimeoutCheckAction.new(:player => self, :game => game).execute
 	end
 
 end

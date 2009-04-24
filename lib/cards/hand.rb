@@ -83,7 +83,7 @@ module Poker
     end
 
 		def to_s
-			cards.inject(''){|hand, card| hand += card.to_s + ':'}[0..-2]
+			cards.join(':')
 		end
 
     protected

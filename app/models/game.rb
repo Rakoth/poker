@@ -117,6 +117,8 @@ class Game < ActiveRecord::Base
 			data_for_synch_on_start
 		when :on_distribution
 			data_for_synch_on_distribution
+    when :on_next_stage
+      data_for_synch_on_next_stage
 		else
 			raise ArgumentError, 'Unexpected type for building game data: ' + type.to_s
 		end
@@ -190,7 +192,7 @@ class Game < ActiveRecord::Base
 			:blind_position => blind_position,
 			:small_blind_position => small_blind_position,
 			:blind_size => blind_size,
-			:current_ber => current_bet,
+			:current_ber => current_bet
 		}
 	end
 
@@ -200,7 +202,16 @@ class Game < ActiveRecord::Base
 			:small_blind_position => small_blind_position,
 			:next_level_time => next_level_time,
 			:active_player_id => active_player_id,
-			:action_time_left => action_time_left,
+			:action_time_left => action_time_left
 		}
 	end
+
+  def data_for_synch_on_next_stage
+    {
+      :status => status,
+      :flop => flop,
+      :turn => turn,
+      :river => river
+    }
+  end
 end

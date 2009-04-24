@@ -17,18 +17,20 @@ class GameSynchronizersController < ApplicationController
 				else
 					render :nothing => true, :status => :no_content
 				end
-				return
+				#return
 			}
 		end
 	end
 
 	def distribution
 		respond_to do |format|
-			format.json {render :json => Game.find(params[:id]).build_synch_data(:on_distribution) and return}
+			format.json {render :json => Game.find(params[:id]).build_synch_data(:on_distribution)}
 		end
 	end
 
 	def stage
-
+    respond_to do |format|
+      format.json {render :json => Game.find(params[:id]).build_synch_data(:on_next_stage)}
+    end
 	end
 end

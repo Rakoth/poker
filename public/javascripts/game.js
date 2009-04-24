@@ -1,8 +1,8 @@
 Function.prototype.bind = function(object) {
-  var __method = this;
-  return function() {
-    __method.apply(object, arguments);
-  }
+	var __method = this;
+	return function() {
+		__method.apply(object, arguments);
+	}
 }
 
 //=============================================================================
@@ -26,9 +26,9 @@ var GameMethods = {
 	},
 	is_started: function(){
 		return 'on_preflop' == this.status ||
-					 'on_flop'    == this.status ||
-					 'on_turn'    == this.status ||
-					 'on_river'   == this.status;
+		'on_flop'    == this.status ||
+		'on_turn'    == this.status ||
+		'on_river'   == this.status;
 	},
 	small_blind: function(){
 		return this.blind_size / 2;
@@ -41,14 +41,14 @@ var GameMethods = {
 				ActionsSynchronizer.set_last_action_id(this.last_action_id);
 			}
 			if(this.flop){
-				//
+			//
 			}
 			if(this.turn){
-				//
+			//
 			}
 			if(this.river){
-				//
-			}
+		//
+		}
 		}
 		this.update_pot();
 		this.update_blinds();
@@ -92,15 +92,9 @@ var GameMethods = {
 		}
 	},
 	get_players_ids: function(){
-		ids = [];
-		for(var i in this.players){
-			if(this.players[i]){
-				ids.push(this.players[i].id);
-			}
-		}
-		return ids;
-		// убивающий firefox код :
-		//return $($.grep(this.players, function(){return this;})).map(function(){return this.id});
+		return $.map($.grep(this.players, function(player){return player;}), function(player){return player.id;});
+	// убивающий firefox код :
+	//return $($.grep(this.players, function(){return this;})).map(function(){return this.id});
 	},
 	take_blinds: function(){
 		if(this.ante > 0){
@@ -145,7 +139,9 @@ var GameMethods = {
 	},
 	pot: function(){
 		var pot = 0;
-		$(this.players).each(function(){pot += this.in_pot});
+		$(this.players).each(function(){
+			pot += this.in_pot
+		});
 		return pot;
 	},
 	update_pot: function(){
@@ -153,6 +149,18 @@ var GameMethods = {
 	},
 	update_blinds: function(){
 		$('#blinds').text(this.blind_size + '/' + this.small_blind());
+	},
+	update_cards: function(){
+		if(this.flop){
+			this.flop = new PlayerHand(this.flop);
+			this.flop.show('flop');
+		}
+		if(this.turn){
+			this.turn.show('turn');
+		}
+		if(this.river){
+			this.river.show('river');
+		}
 	},
 	client_action: function(action_kind){
 		action_name = ActionsExecuter.name_by_kind[action_kind];
@@ -165,7 +173,7 @@ var GameMethods = {
 	},
 	_goto_next_stage: function(){
 		if(this._is_one_winner()){
-      GameSynchronizer.new_distribution();
+			GameSynchronizer.new_distribution();
 		}else{
 			if(this._is_next_stage()){
 				GameSynchronizer.next_stage();
@@ -229,7 +237,10 @@ var ActionsSynchronizer = {
 		$.ajax({
 			url: '/actions/timeout/',
 			type: 'POST',
-			data: ({game_id: Game.id, player_id: player_id}),
+			data: ({
+				game_id: Game.id,
+				player_id: player_id
+			}),
 			error: function(XMLHttpRequest){
 				if(HurrySyncErrorStatus == XMLHttpRequest.status){
 					setTimeout("ActionsSynchronizer.notify_about_action_timeout(" + player_id + ")", this._notify_period * 1000);
@@ -286,9 +297,11 @@ var GameSynchronizer = {
 		var players = Game.get_players_ids();
 		$.getJSON(
 			'/game_synchronizers/wait_for_start/' + Game.id + '.json',
-			{'players[]': players},
+			{
+				'players[]': players
+			},
 			this._sync_game
-		);
+			);
 	},
 	_sync_game: function(json){
 		if(json.remove && 0 < json.remove.length){
@@ -317,13 +330,14 @@ var GameSynchronizer = {
 	new_distribution: function(){
 		$.getJSON('/game_synchronizers/distribution/' + Game.id + '.json', function(json){
 
-		});
+			});
 	},
 	next_stage: function(){
-		$.getJSON('/game_synchronizers/stage/' + Game.id + '.json', {current_status: Game.status}, function(json){
-			if(json.status){
-				Game.status = json.status
-			}
+		$.getJSON('/game_synchronizers/stage/' + Game.id + '.json', {
+			current_status: Game.status
+		}, function(json){
+			$.extend(Game, json);
+			Game.update_cards();
 		});
 	}
 };
@@ -368,7 +382,7 @@ var PlayerMethods = {
 	},
 	add_for_call: function(value){
 		this.for_call += value;
-		//this.sit.for_call.update(this.for_call);
+	//this.sit.for_call.update(this.for_call);
 	},
 	_update_stack: function(value, direction){
 		if('out' == direction){
@@ -382,7 +396,7 @@ var PlayerMethods = {
 
 		this.sit.update_stack(this.stack);
 		this.sit.update_in_pot(this.in_pot);
-		//this.sit.for_call.update(this.for_call);
+	//this.sit.for_call.update(this.for_call);
 	},
 	update_hand: function(new_hand_string){
 		this.hand = new PlayerHand(new_hand_string);
@@ -405,7 +419,7 @@ var PlayerMethods = {
 	end_turn_by_timeout: function(){
 		ActionsSynchronizer.notify_about_action_timeout(this.id);
 		this.timer.stop();
-		//Game.next_turn();
+	//Game.next_turn();
 	}
 };
 
@@ -435,15 +449,13 @@ var PlayerSitMethods = {
 		this.timer.attr('src', this._timer_src());
 	},
 	update_in_pot: function(new_value){
-		//this.in_pot.text(new_value);
+	//this.in_pot.text(new_value);
 	},
 	update_stack: function(new_value){
 		this.stack.text(new_value);
 	},
 	update_hand: function(){
-		this.player.hand.cards.each(function(i, card){
-			$('#card_' + i + '_' + this.id).attr('src', card.src).attr('alt', card.str);
-		}.bind(this));
+		this.player.hand.show('card', this.id);
 	},
 	_timer_src: function(){
 		var time = this.player.timer.time;
@@ -486,6 +498,16 @@ var PlayerTimerMethods = {
 //=============================================================================
 var PlayerHand = function(hand_string){
 	this.cards = $($(hand_string.split(':')).map(function(){
-		return {suit:this.split('')[0], value:this.split('')[1], src:'/images/game/cards/' + this + '.gif', str:this};
+		return {
+			suit:this.split('')[0],
+			value:this.split('')[1],
+			src:'/images/game/cards/' + this + '.gif',
+			str:this
+		};
 	}));
+	this.show = function(image_id, sit){
+		this.cards.each(function(i, card){
+			$('#'  + image_id + '_' + i + (sit ? '_' + sit : '')).attr('src', card.src).attr('alt', card.str);
+		});
+	}
 }
