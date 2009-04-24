@@ -194,6 +194,29 @@ var GameMethods = {
 			}
 		});
 		return next_stage;
+	},
+	update_client_hand: function(){
+		this.players[this.client_sit].update_hand(this.client_hand);
+	},
+	show_necessary_action_buttons: function(){
+		$('#actions a').each(function(){
+			if(this._need_show_button(this.id)){
+				this.show();
+			}else{
+				this.hide();
+			}
+		});
+	},
+	_need_show_button: function(action_name){
+		var client = this.players[this.client_sit];
+		switch(action_name){
+			case 'fold': return true;
+			case 'check': return (0 == client.for_call);
+			case 'call': return (0 < client.for_call);
+			case 'bet': return (this.current_bet == this.blind_size && client.for_call < client.stack);
+			case 'raise': return (this.blind_size < this.current_bet && client.for_call < client.stack);
+			default: alert('Error in Game._need_show_button. Unexpected param: ' + action_name); return false;
+		}
 	}
 };
 
@@ -319,13 +342,25 @@ var GameSynchronizer = {
 		clearTimeout(this._timer);
 		Game.take_blinds();
 		Game.on_start();
-		Game.players[Game.client_sit].update_hand(Game.client_hand);
+		Game.update_client_hand();
 		Game.status = 'on_preflop';
 		ActionsSynchronizer.start();
 	},
 	new_distribution: function(){
 		$.getJSON('/game_synchronizers/distribution/' + Game.id + '.json', function(json){
+				$.each(json.players_to_load, function(){
+					$.extend(Game.players[this.sit], this);
+					current_player = Game.players[this.sit];
+					current_player.sit.update_stack();
+					current_player.sit.update_status();
+				});
+				json.players_to_load = null;
+
+				$.extend(Game, json);
+				Game.update_client_hand();
+				Game.update_blinds();
 				
+				Game.on_start();
 			});
 	},
 	next_stage: function(){
@@ -362,6 +397,7 @@ var PlayerMethods = {
 	stake: function(value){
 		if(this.for_call < value){
 			Game.add_for_call_exept_sit(value - this.for_call, this.sit);
+			Game.current_bet = value;
 		}
 		this._update_stack(value, 'out');
 		Game.update_pot();
@@ -390,7 +426,7 @@ var PlayerMethods = {
 		}
 		this.for_call = 0;
 
-		this.sit.update_stack(this.stack);
+		this.sit.update_stack();
 		this.sit.update_in_pot(this.in_pot);
 	//this.sit.for_call.update(this.for_call);
 	},
@@ -445,10 +481,13 @@ var PlayerSitMethods = {
 		this.timer.attr('src', this._timer_src());
 	},
 	update_in_pot: function(new_value){
-	//this.in_pot.text(new_value);
+		//this.in_pot.text(new_value);
 	},
-	update_stack: function(new_value){
-		this.stack.text(new_value);
+	update_status: function(){
+		//this.status.text(new_value);
+	},
+	update_stack: function(){
+		this.stack.text(this.player.stack);
 	},
 	update_hand: function(){
 		this.player.hand.show('card_' + this.id);

@@ -9,8 +9,8 @@ class Game < ActiveRecord::Base
   aasm_state :on_preflop, :enter => :start_distribution!
   aasm_state :on_flop, :enter => :deal_flop!
   aasm_state :on_turn, :enter => :deal_turn!
-  aasm_state :on_river, :enter => :deal_river!, :exit => :final_distribution!
-  aasm_state :finished
+  aasm_state :on_river, :enter => :deal_river!#, :exit => :final_distribution!
+  aasm_state :finished, :enter => :give_prize_to_winners
 
   aasm_event :start do
     transitions :from => :waited, :to => :on_preflop
@@ -29,7 +29,8 @@ class Game < ActiveRecord::Base
 	end
 
 	aasm_event :new_distribution do
-		transitions :from => :on_river, :to => :on_preflop
+		transitions :from => :on_river, :to => :on_preflop, :guard => lambda {|game| 1 < game.players.count}
+		transitions :from => :on_river, :to => :finished
 	end
 
   self.inheritance_column = "class"
@@ -45,7 +46,7 @@ class Game < ActiveRecord::Base
   belongs_to :type, :class_name => 'GameType'
   has_many :players, :conditions => ['status <> ?', Player::STATUS[:leave]]
   has_many :users, :through => :players
-  has_many :actions, :class_name => 'Actions::Action'
+  has_many :actions, :class_name => 'PlayerActions::Action'
 
   def minimal_bet
     blind_size * type.bet_multiplier
@@ -104,7 +105,7 @@ class Game < ActiveRecord::Base
 		unless actions.empty?
 			actions.first(:order => 'id DESC').time_left
 		else
-			# начало отсчета - старт игры
+			# начало отсчета - старт игры или новая раздача 
 			(type.time_for_action - (Time.now - updated_at).to_i)
 		end
 	end
@@ -178,6 +179,7 @@ class Game < ActiveRecord::Base
 		{
 			:blind_position => blind_position,
 			:small_blind_position => small_blind_position,
+			:current_ber => current_bet,
 			:next_level_time => next_level_time,
 			:active_player_id => active_player_id,
 			:last_action_id => (actions.any? ? actions.sort_by(&:created_at).last.id : nil),
@@ -196,9 +198,11 @@ class Game < ActiveRecord::Base
 			:blind_position => blind_position,
 			:small_blind_position => small_blind_position,
 			:blind_size => blind_size,
+			:ante => ante,
 			:current_ber => current_bet,
 			:nexl_level_time => next_level_time,
 			:client_hand => current_player(for_user_id).hand.to_s,
+			:action_time_left => action_time_left,
 			:players_to_load => players.map{|p| p.build_synch_data(:on_distribution)}
 		}
 	end
@@ -208,6 +212,7 @@ class Game < ActiveRecord::Base
 			:blind_position => blind_position,
 			:small_blind_position => small_blind_position,
 			:next_level_time => next_level_time,
+			:current_ber => current_bet,
 			:active_player_id => active_player_id,
 			:action_time_left => action_time_left,
 			:client_hand => current_player(for_user_id).hand.to_s
@@ -222,4 +227,8 @@ class Game < ActiveRecord::Base
       :river => river
     }
   end
+
+	def give_prize_to_winners
+		
+	end
 end

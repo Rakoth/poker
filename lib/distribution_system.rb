@@ -136,5 +136,8 @@ module DistributionSystem
     end
 		# сохранить все изменения
     calculated_groups.flatten.each{ |player| player.save}
+
+		# переходим к новой раздаче или заканчиваем игру
+	  new_distriburion!
   end
 end

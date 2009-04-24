@@ -1,9 +1,9 @@
 <% actions  = [
-	{:name => 'fold',  :kind => PlayerActions::FoldAction::KIND,  :hidden_class => '',        :value => false},
-	{:name => 'check', :kind => PlayerActions::CheckAction::KIND, :hidden_class => ' hidden', :value => false},
-	{:name => 'call',  :kind => PlayerActions::CallAction::KIND,  :hidden_class => '',        :value => false},
-	{:name => 'bet',   :kind => PlayerActions::BetAction::KIND,   :hidden_class => ' hidden', :value => true},
-	{:name => 'raise', :kind => PlayerActions::RaiseAction::KIND, :hidden_class => '',        :value => true}
+	{:name => 'fold',  :kind => PlayerActions::FoldAction::KIND,  :no_display => '',  :value => false},
+	{:name => 'check', :kind => PlayerActions::CheckAction::KIND, :no_display => 'display:none;', :value => false},
+	{:name => 'call',  :kind => PlayerActions::CallAction::KIND,  :no_display => '', :value => false},
+	{:name => 'bet',   :kind => PlayerActions::BetAction::KIND,   :no_display => '', :value => true},
+	{:name => 'raise', :kind => PlayerActions::RaiseAction::KIND, :no_display => 'display:none;', :value => true}
 ] %>
 <%= render :partial => 'player_action_button', :collection => actions, :as => :action %>
 <input id="stake_value" class="stake_value" value="0" />

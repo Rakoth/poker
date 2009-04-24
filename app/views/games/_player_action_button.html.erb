@@ -2,7 +2,7 @@
 	image_tag("game/actions/#{action[:name]}.gif", :mouseover => image_path("game/actions/#{action[:name]}_over.gif")),
 	:url => actions_path(:game_id => @game.id, :kind => action[:kind]),
 	:method => :post,
-	:html => {:id => action[:name], :class => "action_button#{action[:hidden_class]}"},
+	:html => {:id => action[:name], :class => "action_button", :style => action[:no_display]},
 	:condition => 'Game.is_started() && Game.active_player.sit.id == Game.client_sit',
 	:with => (action[:value] ? "'value=' + $('#stake_value').value" : ""),
 	:success => "Game.client_action(#{action[:kind]})",
