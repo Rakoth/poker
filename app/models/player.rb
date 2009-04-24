@@ -94,9 +94,9 @@ class Player < ActiveRecord::Base
     hash_params[:value] = params[:value] unless params[:value].nil?
     action = case params[:kind].to_i
 		when 0:
-				Actions::FoldAction.new hash_params
+				PlayerActions::FoldAction.new hash_params
 		when 1:
-				Actions::CheckAction.new hash_params
+				PlayerActions::CheckAction.new hash_params
 		when 2:
 				PlayerActions::CallAction.new hash_params
 		when 3:
@@ -107,17 +107,19 @@ class Player < ActiveRecord::Base
 			raise 'Unexpected action type "' + params[:kind] + '"'
     end
     action.execute
-  ePlayerActionsef has_called?
-    0 == for_call
-  end
+	end
 
-  def must_call?
-    for_call > 0
-  end
+	def has_called?
+		0 == for_call
+	end
 
-  def has_empty_stack?
-    0 == stack
-  end
+	def must_call?
+		for_call > 0
+	end
+
+	def has_empty_stack?
+		0 == stack
+	end
 
 	def full_hand
 		Poker::Hand.new hand, game.flop, game.turn, game.river
@@ -152,7 +154,7 @@ class Player < ActiveRecord::Base
 		end
 	end
 
-  private
+	private
 	
 	def init_data
 		{
@@ -174,21 +176,21 @@ class Player < ActiveRecord::Base
 		data
 	end
 	
-  def give_prize
-    #TODO отдать выйгранные деньги юзеру
-  end
+	def give_prize
+		#TODO отдать выйгранные деньги юзеру
+	end
   
-  def return_user_money
-    user.update_attribute(:cash, user.cash + game.type.pay_for_play)
-  end
+	def return_user_money
+		user.update_attribute(:cash, user.cash + game.type.pay_for_play)
+	end
 
-  def take_user_money
-    user.update_attribute(:cash, user.cash - game.type.pay_for_play)
-  end
+	def take_user_money
+		user.update_attribute(:cash, user.cash - game.type.pay_for_play)
+	end
 
-  def destroy_game
-    game.destroy
-  end
+	def destroy_game
+		game.destroy
+	end
 
 	def start_game
 		game.start!
