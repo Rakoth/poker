@@ -1,10 +1,14 @@
 body{
+	/*padding:0;*/
   background:#131313;
 }
 div{
   overflow:hidden;
 }
 #room{
+	top:0;
+	left:0;
+	position:fixed;
   width:700px;
   height:400px;
   background:#000 url("");

@@ -40,15 +40,9 @@ var GameMethods = {
 			if(this.last_action_id){
 				ActionsSynchronizer.set_last_action_id(this.last_action_id);
 			}
-			if(this.flop){
-			//
+			if('on_preflop' != this.status){
+				this.update_cards();
 			}
-			if(this.turn){
-			//
-			}
-			if(this.river){
-		//
-		}
 		}
 		this.update_pot();
 		this.update_blinds();
@@ -92,7 +86,9 @@ var GameMethods = {
 		}
 	},
 	get_players_ids: function(){
-		return $.map($.grep(this.players, function(player){return player;}), function(player){return player.id;});
+		return $.map($.grep(this.players, function(player){return player;}), function(player){
+			return player.id;
+		});
 	// убивающий firefox код :
 	//return $($.grep(this.players, function(){return this;})).map(function(){return this.id});
 	},
@@ -329,7 +325,7 @@ var GameSynchronizer = {
 	},
 	new_distribution: function(){
 		$.getJSON('/game_synchronizers/distribution/' + Game.id + '.json', function(json){
-
+				
 			});
 	},
 	next_stage: function(){
@@ -455,7 +451,7 @@ var PlayerSitMethods = {
 		this.stack.text(new_value);
 	},
 	update_hand: function(){
-		this.player.hand.show('card', this.id);
+		this.player.hand.show('card_' + this.id);
 	},
 	_timer_src: function(){
 		var time = this.player.timer.time;
@@ -499,15 +495,15 @@ var PlayerTimerMethods = {
 var PlayerHand = function(hand_string){
 	this.cards = $($(hand_string.split(':')).map(function(){
 		return {
-			suit:this.split('')[0],
-			value:this.split('')[1],
-			src:'/images/game/cards/' + this + '.gif',
-			str:this
+			suit: this.split('')[0],
+			value: this.split('')[1],
+			src: '/images/game/cards/' + this + '.gif',
+			str: this
 		};
 	}));
-	this.show = function(image_id, sit){
+	this.show = function(image_id){
 		this.cards.each(function(i, card){
-			$('#'  + image_id + '_' + i + (sit ? '_' + sit : '')).attr('src', card.src).attr('alt', card.str);
+			$('#'  + image_id + '_' + i).attr('src', card.src).attr('alt', card.str);
 		});
 	}
 }

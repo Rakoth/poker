@@ -1,4 +1,4 @@
-<%= link_to(t(:detail), game_path(game))%>
+<%= link_to_function(t(:detail), 'game_window("' + game_url(game) + '")') %>
 <%= link_to(t(:join), game_players_path(game), :method => :post) if current_user and game.waited? and current_user.can_join?(game) %>
 <%= link_to(
 	t(:leave),

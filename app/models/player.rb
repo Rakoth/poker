@@ -149,6 +149,8 @@ class Player < ActiveRecord::Base
 			init_data
 		when :after_start_game
 			init_data_after_start_game for_user_id
+		when :on_distribution
+			init_data_on_distribution
 		else
 			raise ArgumentError, 'Unexpected type for building player data: ' + type.to_s
 		end
@@ -166,14 +168,18 @@ class Player < ActiveRecord::Base
 
 	def init_data_after_start_game for_user_id
 		data = init_data
-		data.merge!(
+		data.merge!(init_data_on_distribution).merge!(:hand => (show_hand_to?(for_user_id) ? hand.to_s : nil))
+		data
+	end
+
+	def init_data_on_distribution
+		{
+			:sit => sit,
 			:status => status,
 			:stack => stack,
 			:for_call => for_call,
 			:in_pot => in_pot,
-			:hand => (show_hand_to?(for_user_id) ? hand.to_s : nil)
-		)
-		data
+		}
 	end
 	
 	def give_prize

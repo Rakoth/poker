@@ -109,19 +109,23 @@ class Game < ActiveRecord::Base
 		end
 	end
 
-	def build_synch_data type, for_user_id = nil
+	def build_synch_data type = :init, for_user_id = nil
 		case type
 		when :init
 			data_for_init_client for_user_id
 		when :on_start
-			data_for_synch_on_start
+			data_for_synch_on_start for_user_id
 		when :on_distribution
-			data_for_synch_on_distribution
+			data_for_synch_on_distribution for_user_id
     when :on_next_stage
       data_for_synch_on_next_stage
 		else
 			raise ArgumentError, 'Unexpected type for building game data: ' + type.to_s
 		end
+	end
+
+	def current_player user_id
+		players.find_by_user_id user_id
 	end
 
   private
@@ -185,24 +189,28 @@ class Game < ActiveRecord::Base
 		}
 	end
 
-	def data_for_synch_on_distribution
+	def data_for_synch_on_distribution for_user_id
 		{
 			:status => status,
 			:active_player_id => active_player_id,
 			:blind_position => blind_position,
 			:small_blind_position => small_blind_position,
 			:blind_size => blind_size,
-			:current_ber => current_bet
+			:current_ber => current_bet,
+			:nexl_level_time => next_level_time,
+			:client_hand => current_player(for_user_id).hand.to_s,
+			:players_to_load => players.map{|p| p.build_synch_data(:on_distribution)}
 		}
 	end
 
-	def data_for_synch_on_start
+	def data_for_synch_on_start for_user_id
 		{
 			:blind_position => blind_position,
 			:small_blind_position => small_blind_position,
 			:next_level_time => next_level_time,
 			:active_player_id => active_player_id,
-			:action_time_left => action_time_left
+			:action_time_left => action_time_left,
+			:client_hand => current_player(for_user_id).hand.to_s
 		}
 	end
 
