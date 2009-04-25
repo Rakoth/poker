@@ -47,7 +47,6 @@ class PlayerActions::Action < ActiveRecord::Base
     game_influence
     player_influence
 		game.goto_next_stage
-		game.next_active_player_id
   end
 
   def game_influence

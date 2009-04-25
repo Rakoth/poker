@@ -83,7 +83,7 @@ module Poker
     end
 
 		def to_s
-			cards.join(':')
+			cards.map(&:to_s).join(':')
 		end
 
     protected

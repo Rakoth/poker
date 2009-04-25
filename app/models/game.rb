@@ -29,8 +29,8 @@ class Game < ActiveRecord::Base
 	end
 
 	aasm_event :new_distribution do
-		transitions :from => :on_river, :to => :on_preflop, :guard => lambda {|game| 1 < game.players.count}
-		transitions :from => :on_river, :to => :finished
+		transitions :from => [:on_preflop, :on_flop, :on_turn, :on_river], :to => :on_preflop, :guard => lambda {|game| 1 < game.players.count}
+		transitions :from => [:on_preflop, :on_flop, :on_turn, :on_river], :to => :finished
 	end
 
   self.inheritance_column = "class"
@@ -222,9 +222,9 @@ class Game < ActiveRecord::Base
   def data_for_synch_on_next_stage
     {
       :status => status,
-      :flop => flop,
-      :turn => turn,
-      :river => river
+      :flop => flop.to_s,
+      :turn => turn.to_s,
+      :river => river.to_s
     }
   end
 

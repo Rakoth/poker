@@ -6,7 +6,7 @@ module DistributionSystem
     elsif next_stage?
       next_stage!
 		else
-			# ничего не делать, т.к. еще не закончены торги
+			next_active_player_id
     end
   end
 
@@ -19,7 +19,10 @@ module DistributionSystem
 			:current_bet => 0,
 			:blind_position => new_blind_position,
 			:active_player_id => get_first_player_from(new_blind_position),
-			:deck => Poker::Deck.new.shuffle
+			:deck => Poker::Deck.new.shuffle,
+			:flop => nil,
+			:turn => nil,
+			:river => nil
 		)
     players.each do |player|
       if player.has_empty_stack?
@@ -44,8 +47,9 @@ module DistributionSystem
     elsif on_turn?
       show_river!
     else
-      final_distribution!
+      final_distribution! and return
     end
+		next_active_player_id
   end
 
 	def start_distribution!
@@ -138,6 +142,6 @@ module DistributionSystem
     calculated_groups.flatten.each{ |player| player.save}
 
 		# переходим к новой раздаче или заканчиваем игру
-	  new_distriburion!
+	  new_distribution!
   end
 end

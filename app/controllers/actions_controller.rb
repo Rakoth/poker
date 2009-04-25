@@ -1,6 +1,7 @@
 class ActionsController < ApplicationController
 
   skip_before_filter :set_locate
+	skip_before_filter :verify_authenticity_token, :only => :create
   before_filter :check_authorization, :exept => :omitted
 
   def omitted

@@ -104,6 +104,7 @@ var GameMethods = {
 	next_turn: function(){
 		this.active_player.end_turn();
 		this._goto_next_stage();
+		this.show_necessary_action_buttons();
 		this._set_next_active_player();
 		this.active_player.start_turn();
 	},
@@ -152,9 +153,11 @@ var GameMethods = {
 			this.flop.show('flop');
 		}
 		if(this.turn){
+			this.turn = new PlayerHand(this.turn);
 			this.turn.show('turn');
 		}
 		if(this.river){
+			this.river = new PlayerHand(this.river);
 			this.river.show('river');
 		}
 	},
@@ -200,10 +203,10 @@ var GameMethods = {
 	},
 	show_necessary_action_buttons: function(){
 		$('#actions a').each(function(){
-			if(this._need_show_button(this.id)){
-				this.show();
+			if(Game._need_show_button(this.id)){
+				$(this).show();
 			}else{
-				this.hide();
+				$(this).hide();
 			}
 		});
 	},
@@ -215,7 +218,7 @@ var GameMethods = {
 			case 'call': return (0 < client.for_call);
 			case 'bet': return (this.current_bet == this.blind_size && client.for_call < client.stack);
 			case 'raise': return (this.blind_size < this.current_bet && client.for_call < client.stack);
-			default: alert('Error in Game._need_show_button. Unexpected param: ' + action_name); return false;
+			default: alert('Error in Game._need_show_button(). Unexpected param: ' + action_name); return false;
 		}
 	}
 };
@@ -262,7 +265,7 @@ var ActionsSynchronizer = {
 			}),
 			error: function(XMLHttpRequest){
 				if(HurrySyncErrorStatus == XMLHttpRequest.status){
-					setTimeout("ActionsSynchronizer.notify_about_action_timeout(" + player_id + ")", this._notify_period * 1000);
+					//setTimeout("ActionsSynchronizer.notify_about_action_timeout(" + player_id + ")", this._notify_period * 1000);
 				}
 			}
 		});
@@ -349,8 +352,10 @@ var GameSynchronizer = {
 	new_distribution: function(){
 		$.getJSON('/game_synchronizers/distribution/' + Game.id + '.json', function(json){
 				$.each(json.players_to_load, function(){
-					$.extend(Game.players[this.sit], this);
-					current_player = Game.players[this.sit];
+					sit_id = this.sit;
+					delete this.sit
+					$.extend(Game.players[sit_id], this);
+					current_player = Game.players[sit_id];
 					current_player.sit.update_stack();
 					current_player.sit.update_status();
 				});

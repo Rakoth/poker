@@ -39,7 +39,7 @@ class Player < ActiveRecord::Base
 	# восстанавливает состояние по умолчанию перед новой раздачей
 	aasm_event :activate do
 		transitions :from => [:active, :pass, :allin], :to => :active
-		transitions :from => [:pass_away], :to => :absent
+		transitions :from => [:pass_away, :absent], :to => :absent
 	end
 
 	aasm_event :fold do
@@ -104,7 +104,7 @@ class Player < ActiveRecord::Base
 		when 4:
 				PlayerActions::RaiseAction.new hash_params
 		else
-			raise 'Unexpected action type "' + params[:kind] + '"'
+			raise 'Unexpected action type in Player#act!: "' + params[:kind] + '"'
     end
     action.execute
 	end
@@ -205,7 +205,7 @@ class Player < ActiveRecord::Base
 	def auto_fold!
 		Actions::AutoFoldAction.new(:player => self, :game => game).execute
 	end
-
+	
 	def auto_check!
 		PlayerActions::AutoCheckAction.new(:player => self, :game => game).execute
 	end

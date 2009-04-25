@@ -1,14 +1,11 @@
 body{
-	/*padding:0;*/
+	margin:0;
   background:#131313;
 }
 div{
   overflow:hidden;
 }
 #room{
-	top:0;
-	left:0;
-	position:fixed;
   width:700px;
   height:400px;
   background:#000 url("");
@@ -70,13 +67,33 @@ div{
   height:20px;
   width:500px;
 }
-.hidden{
-	display:none;
+#cards{
+	position:absolute;
+	top:170px;
+	left:140px;
+	width:220px;
+	height:60px;
+	background-color:white;
+	border:1px solid red;
 }
-
-
-
-
+#cards div{
+	height:60px;
+	float:left;
+}
+#flop{
+	width:132px;
+}
+#turn, #river{
+	width:44px;
+}
+.action_button{
+	outline:none;
+}
+.action_button img{
+	border:0;
+	padding-left:5px;
+}
+/* место игрока */
 .sit{
 	position:absolute;
 	width:120px;
@@ -104,13 +121,14 @@ div{
 	width:70px;
 	background:#0a0;
 	text-align:center;
+	font-size:13px;
 }
 .cards{
 	height:70px;
 	width:100px;
 	background:#00a;
 }
-.cards img{
+#cards div img, .cards img{
 	margin:5px 5px;
 	width:32px;
 	height:50px;
