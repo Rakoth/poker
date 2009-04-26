@@ -238,11 +238,16 @@ var ActionsSynchronizer = {
 	},
 	restart: function(new_period){
 		this._period = new_period;
-		clearTimeout(this._timer);
+		this.stop();
 		this.start();
 	},
+	stop: function(){
+		clearTimeout(this._timer);
+	},
 	_get_omitted: function(){
-		$.getJSON(this._url(), this._perform.bind(this));
+		if(!this.currentRequest || 4 == this.currentRequest.readyState){
+			this.currentRequest = $.getJSON(this._url(), this._perform.bind(this));
+		}
 	},
 	_url: function(){
 		return '/actions/' + Game.id + '/' + this._last_action_id + '.json';
@@ -452,11 +457,6 @@ var PlayerMethods = {
 	},
 	end_turn: function(){
 		this.timer.stop();
-	},
-	end_turn_by_timeout: function(){
-		ActionsSynchronizer.notify_about_action_timeout(this.id);
-		this.timer.stop();
-	//Game.next_turn();
 	}
 };
 
@@ -516,24 +516,32 @@ var PlayerTimer = function(player){
 };
 var PlayerTimerMethods = {
 	start: function(){
-		this._timer = setInterval(this._reduce_time.bind(this), 1000);
+		this._timer = setInterval(this._reduce_time.bind(this), 2000);
 	},
 	stop: function(){
-		clearTimeout(this._timer);
+		window.clearTimeout(this._timer);
 		this.set_time(0);
 	},
 	set_time: function(time){
-		this.time = time;
-		this.player.sit.update_timer();
+		if(0 <= time){
+			this.time = time;
+			this.player.sit.update_timer();
+		}else{
+			alert("Error in set_time");
+		}
 	},
 	_reduce_time: function(){
-		if(0 < this.time){
+		if(this.time  && 0 < this.time){
 			this.set_time(this.time - 1);
 		}else{
-			this.player.end_turn_by_timeout();
+			if(0 == this.time){
+				this.stop();
+				this.time  = null;
+				ActionsSynchronizer.notify_about_action_timeout(this.player.id);
+			}
 		}
 	}
-}
+};
 
 //=============================================================================
 var PlayerHand = function(hand_string){

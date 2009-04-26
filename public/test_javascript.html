@@ -8,17 +8,16 @@ and open the template in the editor.
     <title></title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <link rel="stylesheet" type="text/css" href="stylesheets/room.css" />
-    <script type="text/javascript" src="javascripts/prototype.js"></script>
-    <script type="text/javascript" src="javascripts/scriptaculous.js"></script>
-    <script type="text/javascript" src="javascripts/room.js"></script>
+		<script type="text/javascript">
+			function func(){
+				document.getElementById("div").innerHTML = "test_" + Math.random();
+			}
+		</script>
   </head>
 <body>
-<div id="room"></div>
-<input type="button" onclick="Room.add_player({id:1,login:'Player_1',color:'pro'});" value="add" />
-<input type="button" onclick="Room.players[0].opponent_action([0]);" value="pass" />
-<input type="button" onclick="Room.Effects.info('This is Test')" value="alert info" />
-<input type="button" onclick="Room.Effects.error('This is Test')" value="alert error" /><br />
+<input type="button" onclick="time = setInterval(func, 2000);" value="add" />
+<input type="button" onclick="clearInterval(time);" value="pass" />
 <br />
-<a href="mail.ru" id="my_link">жми</a>
+<div id="div"></div>
 </body>
 </html>
