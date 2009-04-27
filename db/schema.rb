@@ -16,6 +16,7 @@ ActiveRecord::Schema.define(:version => 20090226132804) do
     t.integer  "player_id"
     t.string   "type"
     t.integer  "value"
+    t.boolean  "deleted",    :default => false
     t.datetime "created_at"
   end
 
@@ -45,6 +46,7 @@ ActiveRecord::Schema.define(:version => 20090226132804) do
 
   create_table "games", :force => true do |t|
     t.string   "status"
+    t.string   "paused"
     t.integer  "active_player_id", :default => 0
     t.integer  "blind_position"
     t.integer  "blind_size"
@@ -75,6 +77,7 @@ ActiveRecord::Schema.define(:version => 20090226132804) do
     t.integer  "for_call",            :default => 0
     t.integer  "in_pot",              :default => 0
     t.string   "status"
+    t.boolean  "want_pause",          :default => false
     t.text     "hand"
     t.boolean  "open_hand"
     t.datetime "action_time"

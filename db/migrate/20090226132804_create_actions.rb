@@ -5,6 +5,7 @@ class CreateActions < ActiveRecord::Migration
       t.references :player
       t.string :type
       t.integer :value
+			t.boolean :deleted, :default => false
       t.timestamp :created_at
     end
   end

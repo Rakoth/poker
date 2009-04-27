@@ -26,7 +26,7 @@ class ActionsController < ApplicationController
 
   def create
     game = current_user.games.find(params[:game_id])
-    if game and player = game.wait_action_from(current_user) and player.act!(params)
+    if game and !game.paused? and player = game.wait_action_from(current_user) and player.act!(params)
       status = :no_content
     else
       status = :bad_request
@@ -38,9 +38,11 @@ class ActionsController < ApplicationController
 		return unless request.post?
 		game = Game.find params[:game_id]
 		params[:player_id] = params[:player_id].to_i
-		if(game.active_player_id == params[:player_id] and game.active_player_away?)
+		if(!game.paused? and game.active_player_id == params[:player_id] and game.active_player_away?)
 			Player.find(params[:player_id]).act_on_away!
 			status = :no_content
+		elsif game.paused?
+			status = :bad_request
 		elsif game.active_player_id != params[:player_id]
 			status = :late_synch_error # этот игрок уже походил
 		else

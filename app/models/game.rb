@@ -47,18 +47,12 @@ class Game < ActiveRecord::Base
   has_many :players, :conditions => ['status <> ?', Player::STATUS[:leave]]
   has_many :users, :through => :players
   has_many :actions, :class_name => 'PlayerActions::Action'
+  has_many :current_distribution_actions, :class_name => 'PlayerActions::Action', :conditions => ['deleted = ?', false]
 
-  def minimal_bet
-    blind_size * type.bet_multiplier
-  end
 
 	def started?
 		on_preflop? or on_flop? or on_turn? or on_river?
 	end
-
-  def pot
-    players.inject(0){|sum, player| sum + player.in_pot}
-  end
 
   def full_of_players?
 		reload
@@ -69,6 +63,42 @@ class Game < ActiveRecord::Base
 		reload
 		0 == players_count
 	end
+
+	def active_player_away?
+		action_time_left <= 0
+	end
+
+	def all_away?
+		players.away.count == players_count
+	end
+
+	def all_want_pause?
+		players.want_pause.count == players_count
+	end
+
+	def paused?
+		paused != nil
+	end
+
+	def paused_by_away?
+		'by_away' == paused
+	end
+
+	def paused_by_request?
+		'by_request' == paused
+	end
+
+	def resume!
+		update_attribute :paused, nil
+	end
+
+  def pot
+    players.inject(0){|sum, player| sum + player.in_pot}
+  end
+
+  def minimal_bet
+    blind_size * type.bet_multiplier
+  end
 
   def wait_action_from user
     Player.find_by_id_and_user_id active_player_id, user.id
@@ -97,15 +127,11 @@ class Game < ActiveRecord::Base
     update_attribute :active_player_id, player.id
   end
 
-	def active_player_away?
-		action_time_left <= 0
-	end
-
 	def action_time_left
-		unless actions.empty?
-			actions.first(:order => 'id DESC').time_left
+		unless current_distribution_actions.empty?
+			current_distribution_actions.first(:order => 'id DESC').time_left
 		else
-			# начало отсчета - старт игры или новая раздача 
+			# начало отсчета - старт игры или новая раздача или отжим паузы
 			(type.time_for_action - (Time.now - updated_at).to_i)
 		end
 	end
@@ -179,7 +205,7 @@ class Game < ActiveRecord::Base
 		{
 			:blind_position => blind_position,
 			:small_blind_position => small_blind_position,
-			:current_ber => current_bet,
+			:current_bet => current_bet,
 			:next_level_time => next_level_time,
 			:active_player_id => active_player_id,
 			:last_action_id => (actions.any? ? actions.sort_by(&:created_at).last.id : nil),
@@ -199,7 +225,7 @@ class Game < ActiveRecord::Base
 			:small_blind_position => small_blind_position,
 			:blind_size => blind_size,
 			:ante => ante,
-			:current_ber => current_bet,
+			:current_bet => current_bet,
 			:nexl_level_time => next_level_time,
 			:client_hand => current_player(for_user_id).hand.to_s,
 			:action_time_left => action_time_left,

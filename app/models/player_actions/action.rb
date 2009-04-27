@@ -4,6 +4,7 @@ class PlayerActions::Action < ActiveRecord::Base
   belongs_to :player
 
   before_save :perform!
+	before_destroy :mark_as_deleted!
   
   named_scope :omitted, lambda{ |game_id, last_id, player_id|
 		{:conditions => ["game_id = ? AND id > ? AND (player_id <> ? OR type IN ('AutoFoldAction', 'AutoCheckAction', 'TimeoutFoldAction', 'TimeoutCheckAction')) ", game_id, last_id, player_id]}
@@ -55,4 +56,9 @@ class PlayerActions::Action < ActiveRecord::Base
 
   def player_influence
   end
+
+	def mark_as_deleted!
+		update_attribute :deleted, true
+		return false
+	end
 end

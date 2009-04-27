@@ -2,6 +2,7 @@ class CreateGames < ActiveRecord::Migration
   def self.up
     create_table :games do |t|
       t.string :status
+			t.string :paused, :null => true
       t.integer :active_player_id, :default => 0 # id игрока, от которого ожидается действие
       t.integer :blind_position
       t.integer :blind_size

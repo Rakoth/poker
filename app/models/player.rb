@@ -11,10 +11,12 @@ class Player < ActiveRecord::Base
   aasm_state :absent#, :success => :act_on_away!
   aasm_state :pass_away#, :enter => :auto_fold!
   aasm_state :leave
+	
+	STATUS = {:leave => 'leave', :away => 'away', :pass_away => 'pass_away'}
 
 	named_scope :client_sit, lambda { |user_id| {:select => 'sit', :conditions => ['user_id = ?', user_id]} }
-
-	STATUS = {:leave => 'leave'}
+	named_scope :want_pause, lambda { {:conditions => ['want_pause = ?', true]} }
+	named_scope :away, lambda { {:conditions => ["status IN (?, ?)", STATUS[:away], STATUS[:pass_away]]} }
 
 	def fold?
 		pass? or pass_away?
@@ -55,17 +57,13 @@ class Player < ActiveRecord::Base
 		transitions :from => :active, :to => :pass_away
 	end
 
-	aasm_event :back_here do
-		transitions :from => :absent, :to => :active
-		transitions :from => :pass_away, :to => :pass
+	aasm_event :back_to_game do
+		transitions :from => :absent, :to => :active, :on_transition => :resume_game!
+		transitions :from => :pass_away, :to => :pass, :on_transition => :resume_game!
 	end
 
 	aasm_event :lose do
 		transitions :from => [:pass, :allin, :pass_away] , :to => :leave, :guard => lambda {|player| player.has_empty_stack?}
-	end
-
-	def lose!
-		
 	end
 
 	serialize :hand, Poker::Hand
@@ -216,6 +214,10 @@ class Player < ActiveRecord::Base
 
 	def check_on_away!
 		PlayerActions::TimeoutCheckAction.new(:player => self, :game => game).execute
+	end
+
+	def resume_game!
+		game.resume! if game.paused_by_away?
 	end
 
 end

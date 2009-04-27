@@ -101,12 +101,14 @@ var GameMethods = {
 		this.players[this.small_blind_position].stake(this.small_blind());
 		this.players[this.blind_position].stake(this.blind_size);
 	},
-	next_turn: function(){
+	next_turn: function(time_left){
 		this.active_player.end_turn();
-		this._goto_next_stage();
+		// если не началась новая раздача, то продолжаем передавать ход
+		if(!this._goto_next_stage()){
+			this._set_next_active_player();
+			this.active_player.start_turn(time_left);
+		}
 		this.show_necessary_action_buttons();
-		this._set_next_active_player();
-		this.active_player.start_turn();
 	},
 	set_active_player: function(){
 		if(!this.active_player){
@@ -173,10 +175,12 @@ var GameMethods = {
 	_goto_next_stage: function(){
 		if(this._is_one_winner()){
 			GameSynchronizer.new_distribution();
+			return true; // new_distribution сам установит нового active_player -а и начнет его ход
 		}else{
 			if(this._is_next_stage()){
 				GameSynchronizer.next_stage();
 			}
+			return false; // продолжаем передавать ход в обычном порядке
 		}
 	},
 	_is_one_winner: function(){
@@ -253,12 +257,14 @@ var ActionsSynchronizer = {
 		return '/actions/' + Game.id + '/' + this._last_action_id + '.json';
 	},
 	_perform: function(json){
-		var time = json.pop();
+		var last_action_time_left = json.pop();
 		this._last_action_id = json.pop();
+		var last_action = json.pop();
 		$(json).each(function(){
 			ActionsExecuter.perform(this);
 		});
-		Game.active_player.set_time_for_action(time);
+//		Game.active_player.set_time_for_action(time);
+		ActionsExecuter.perform(last_action, last_action_time_left);
 	},
 	notify_about_action_timeout: function(player_id){
 		$.ajax({
@@ -279,7 +285,7 @@ var ActionsSynchronizer = {
 
 var ActionsExecuter = {
 	name_by_kind: ['fold', 'check', 'call', 'bet', 'raise'],
-	perform: function(action){
+	perform: function(action, time_left){
 		var player_sit = action.shift();
 		Game.active_player = Game.players[player_sit];
 		var kind = action[0];
@@ -291,7 +297,7 @@ var ActionsExecuter = {
 			ActionsInfluence[action_name](value);
 		}
 		this._show_action(action_name);
-		Game.next_turn();
+		Game.next_turn(time_left);
 	},
 	_show_action: function(action_name){
 		Game.active_player.say_action(action_name);
@@ -364,12 +370,13 @@ var GameSynchronizer = {
 					current_player.sit.update_stack();
 					current_player.sit.update_status();
 				});
-				json.players_to_load = null;
+				delete this.players_to_load;
 
 				$.extend(Game, json);
 				Game.update_client_hand();
 				Game.update_blinds();
-				
+
+				Game.active_player.end_turn();
 				Game.on_start();
 			});
 	},
@@ -444,16 +451,11 @@ var PlayerMethods = {
 		this.hand = new PlayerHand(new_hand_string);
 		this.sit.update_hand();
 	},
-	set_time_for_action: function(time){
-		this.timer.set_time(time);
-	},
+//	set_time_for_action: function(time){
+//		this.timer.set_time(time);
+//	},
 	start_turn: function(time_left){
-		if(time_left != undefined){
-			this.set_time_for_action(time_left);
-		}else{
-			this.set_time_for_action(Game.time_for_action);
-		}
-		this.timer.start();
+		this.timer.start(time_left);
 	},
 	end_turn: function(){
 		this.timer.stop();
@@ -471,9 +473,7 @@ var PlayerSit = function(player){
 	if(this.player.hand){
 		this.update_hand();
 	}
-	if(this.player.is_fold()){
-		this.cards.hide();
-	}
+	this.update_status();
 	this.timer = $('#timer_' + this.id);
 	this.stack = $('#stack_' + this.id).text(player.stack);
 	this.last_action = $('#last_action_' + this.id);
@@ -489,6 +489,12 @@ var PlayerSitMethods = {
 		//this.in_pot.text(new_value);
 	},
 	update_status: function(){
+		switch(this.player.status){
+			case 'pass': this.cards.hide(); break;
+			case 'pass_away': this.cards.hide(); break;
+			case 'active': this.cards.show(); break;
+			default: this.cards.show(); break;
+		}
 		//this.status.text(new_value);
 	},
 	update_stack: function(){
@@ -511,28 +517,35 @@ var PlayerSitMethods = {
 var PlayerTimer = function(player){
 	this.player = player;
 	this.time = Game.time_for_action;
+	this._activated = false;
 
 	$.extend(this, PlayerTimerMethods);
 };
 var PlayerTimerMethods = {
-	start: function(){
-		this._timer = setInterval(this._reduce_time.bind(this), 2000);
+	start: function(time){
+		if(!this._activated){
+			this._activated = true;
+			this._set_time(time);
+			this._timer = setInterval(this._reduce_time.bind(this), 1000);
+		}
 	},
 	stop: function(){
-		window.clearTimeout(this._timer);
-		this.set_time(0);
-	},
-	set_time: function(time){
-		if(0 <= time){
-			this.time = time;
-			this.player.sit.update_timer();
-		}else{
-			alert("Error in set_time");
+		if(this._activated){
+			this._activated = false;
+			window.clearTimeout(this._timer);
+			this._set_time(0);
 		}
+	},
+	_set_time: function(time){
+		if(undefined == time || time < 0 || Game.time_for_action < time){
+			time = Game.time_for_action;
+		}
+		this.time = time;
+		this.player.sit.update_timer();
 	},
 	_reduce_time: function(){
 		if(this.time  && 0 < this.time){
-			this.set_time(this.time - 1);
+			this._set_time(this.time - 1);
 		}else{
 			if(0 == this.time){
 				this.stop();

@@ -32,6 +32,7 @@ module DistributionSystem
         player.update_attributes :in_pot => 0, :for_call => 0 unless 0 == player.in_pot and 0 == player.for_call
       end
     end
+		actions.each(&:destroy)
   end
 
 	def next_stage?

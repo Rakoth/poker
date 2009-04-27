@@ -6,6 +6,7 @@ class CreatePlayers < ActiveRecord::Migration
       t.integer :for_call, :default => 0
       t.integer :in_pot, :default => 0
       t.string :status
+			t.boolean :want_pause, :default => false
       t.text :hand
 			t.boolean :open_hand
       t.datetime :action_time

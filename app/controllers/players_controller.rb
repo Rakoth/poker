@@ -25,4 +25,9 @@ class PlayersController < ApplicationController
     redirect_to games_url
   end
 
+	def i_am_back
+		player = current_user.players.find params[:id]
+		player.back_to_game!
+	end
+
 end
