@@ -5,5 +5,14 @@
   <td><%=h type.start_stack %></td>
   <td><%=h type.start_blind %></td>
   <td><%=h type.change_level_time %></td>
-  <td><%=h type.min_level %> - <%=h type.max_level %></td>
+	<td class="actions">
+		<%=
+			link_to_remote t(:create),
+				:url => games_path,
+				:method => :post,
+				:with => "'type_id=#{type.id.to_s}'",
+				:success => "game_created(request)",
+				:failure => "alert('#{t('views.game_types.type.cant_create_game')}')"
+		%>
+	</td>
 </tr>

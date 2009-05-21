@@ -240,13 +240,15 @@ ru:
       edit:
         title: "Изменение типа игры"
       index:
-        title: "Просмотр типов покера"
+        title: "Выберите тип игры"
         pay_for_play: "Плата за вход"
         level_for_play: "Уровень для участия"
       new:
         title: "Создание нового типа игры!"
       show:
         title: "Просмотр типа игры"
+      type:
+        cant_create_game: "Вы не можете создавать игру такого типа"
     users:
       new:
         additional_info: "Дополнительно"
@@ -256,7 +258,9 @@ ru:
     games:
       actions:
         leave_game_confirm: "Вы собираетесь покинуть игру {{title}}?"
+        cant_join_game: "Не получилось присоединиться к игре"
       index:
+        title: "Выберите игру"
         pay_for_play: "Плата за вход"
       new:
         title: "Создать новую игру"
@@ -328,6 +332,8 @@ ru:
   type: "Тип"
   actions: "Действия"
   games: "Игры"
+  create_game: "Создать игру"
   game_types: "Типы игр"
   sign_up: "Регистрация"
   really_exit: "Вы действительно желаете выйти?"
+  send: "Отправить"

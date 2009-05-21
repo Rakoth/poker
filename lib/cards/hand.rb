@@ -66,7 +66,7 @@ module Poker
     end
 
     def gutshot?
-      @gutshot ||= !gutshot_cards.empty?
+			@gutshot ||= !gutshot_cards.empty?
     end
 
     def double_gutshot?

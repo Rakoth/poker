@@ -19,9 +19,6 @@ div{
   height:400px;
   width:200px;
 }
-* html #control{
-	margin-left:397px;
-}
 #info{
   height:40px;
   width:500px;
@@ -29,7 +26,7 @@ div{
 #table{
   width:500px;
   height:360px;
-  background:url(/images/game/table.gif);
+  background:url(/images/game/table/table.gif);
 }
 #info_line{
   background:url("/images/game/back/3.gif");
@@ -73,11 +70,16 @@ div{
 	left:140px;
 	width:220px;
 	height:60px;
-	background-color:white;
-	border:1px solid red;
+	background-image:url("/images/game/table/cards.png");
 }
 #cards div{
 	height:60px;
+	float:left;
+}
+#cards div img{
+	margin:5px 5px;
+	width:32px;
+	height:50px;
 	float:left;
 }
 #flop{
@@ -97,20 +99,18 @@ div{
 .sit{
 	position:absolute;
 	width:120px;
-	height:105px;
+	height:85px;
   display:none;
-	background-color:#ccc;
+	background:url("/images/game/sit/back.png") transparent;
 }
 .main_part{
 	float:left;
 	width:70px;
 	height:90px;
-	background:#000;
 }
 .side_part{
 	width:50px;
 	height:90px;
-	background:#fff;
 }
 .last_action{
 	width:120px;
@@ -119,30 +119,26 @@ div{
 .login{
 	height:20px;
 	width:70px;
-	background:#0a0;
 	text-align:center;
 	font-size:13px;
 }
 .cards{
 	height:70px;
 	width:100px;
-	background:#00a;
 }
-#cards div img, .cards img{
-	margin:5px 5px;
-	width:32px;
+.cards img{
+	margin:10px 0 0 1px;
+	width:34px;
 	height:50px;
 	float:left;
 }
 .buttons{
 	height:20px;
 	width:50px;
-	background:#040;
 }
 .side_block{
 	height:35px;
 	width:50px;
-	background:#a00;
 }
 .side_block img{
 	width:50px;

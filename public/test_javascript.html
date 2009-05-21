@@ -4,20 +4,72 @@ and open the template in the editor.
 -->
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
-  <head>
-    <title></title>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <link rel="stylesheet" type="text/css" href="stylesheets/room.css" />
+	<head>
+		<title></title>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<link rel="stylesheet" type="text/css" href="stylesheets/room.css" />
+		<script type="text/javascript" src="javascripts/jquery.js"></script>
 		<script type="text/javascript">
 			function func(){
 				document.getElementById("div").innerHTML = "test_" + Math.random();
 			}
+			function getStatuses(){
+				for(var i = 100; i < 304; i++){
+					$.ajax({
+						async:false,
+						url:'/javascripts/test_response_status',
+						data:{status:i},
+						complete:function(request){
+							//console.log(request);
+							var line = i + ' : ' + request.status;
+							$('#div').html($('#div').html() + '<br />' + (i == request.status ? line : '<span style="color:red;">' + line + '</span>'));
+						}
+					});
+
+					// firefox
+						//  100-118 : 200
+						//	119 : 0
+						//	120-121 : 200
+						//	122-123 : 0
+						//	124-132 : 200
+						//	133 : 0
+						//	134-140 : 200
+						//	141-142 : 0
+						//	142 : 0
+						//	143-145 : 200
+						//	146 : 0
+						//	147-195 : 200
+						//	196-197 : 0
+						//	198-199 : 200
+					  //  408 : 0
+
+					// opera
+					  //  100-199 : 200
+						//  204 : 0
+						//  303 : ?
+					  //  304 : 0
+					  //  401 : 403
+					  //  407 : 403
+					  //  417 : 0
+					  //  504 : 0
+
+				 // IE
+						//  100-199 : 200
+						//  204 : 1223
+						//  301 : 12150
+						//  302 : 12150
+						//	303 : 12150
+						//  307 : 12150
+
+
+				}
+			}
 		</script>
-  </head>
-<body>
-<input type="button" onclick="time = setInterval(func, 2000);" value="add" />
-<input type="button" onclick="clearInterval(time);" value="pass" />
-<br />
-<div id="div"></div>
-</body>
+	</head>
+	<body>
+		<input type="button" onclick="getStatuses();" value="add" />
+		<input type="button" onclick="window.open('http://localhost:3000', 'game_1', '');" value="pass" />
+		<br />
+		<div id="div"></div>
+	</body>
 </html>

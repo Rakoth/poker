@@ -3,11 +3,14 @@ class PlayerActions::Action < ActiveRecord::Base
   belongs_to :game
   belongs_to :player
 
-  before_save :perform!
+  before_create :perform!
 	before_destroy :mark_as_deleted!
   
   named_scope :omitted, lambda{ |game_id, last_id, player_id|
-		{:conditions => ["game_id = ? AND id > ? AND (player_id <> ? OR type IN ('AutoFoldAction', 'AutoCheckAction', 'TimeoutFoldAction', 'TimeoutCheckAction')) ", game_id, last_id, player_id]}
+		{
+			:conditions => ["game_id = ? AND id > ? AND (player_id <> ? OR type IN ('AutoFoldAction', 'AutoCheckAction', 'TimeoutFoldAction', 'TimeoutCheckAction')) ", game_id, last_id, player_id],
+			:order => 'created_at'
+		}
 	}
 
   def has_value?
@@ -31,7 +34,7 @@ class PlayerActions::Action < ActiveRecord::Base
   end
 
   def after_initialize
-    @game_params = {}
+    self.game_params = {}
   end
 
   def execute
@@ -51,7 +54,7 @@ class PlayerActions::Action < ActiveRecord::Base
   end
 
   def game_influence
-    game.update_attributes!(@game_params) unless @game_params.empty?
+    game.update_attributes!(game_params) unless game_params.empty?
   end
 
   def player_influence

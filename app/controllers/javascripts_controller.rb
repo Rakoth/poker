@@ -4,4 +4,8 @@ class JavascriptsController < ApplicationController
 			format.js {}
 		end
 	end
+
+	def test_response_status
+		render :nothing => true, :status => params[:status]
+	end
 end

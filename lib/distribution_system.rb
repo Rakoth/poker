@@ -3,6 +3,9 @@ module DistributionSystem
 		logger.info 'STARTED next_stage'
 		if one_winner?
       final_distribution!
+		elsif allin_and_call?
+			deal_remained_cards!
+			final_distribution!
     elsif next_stage?
       next_stage!
 		else
@@ -22,15 +25,19 @@ module DistributionSystem
 			:deck => Poker::Deck.new.shuffle,
 			:flop => nil,
 			:turn => nil,
-			:river => nil
+			:river => nil,
+
+			:previous_flop => Poker::Hand.new(flop),
+			:previous_turn => Poker::Hand.new(turn),
+			:previous_river => Poker::Hand.new(river)
 		)
     players.each do |player|
-      if player.has_empty_stack?
-        player.lose!
-      else
-				player.activate! unless player.active?
-        player.update_attributes :in_pot => 0, :for_call => 0 unless 0 == player.in_pot and 0 == player.for_call
-      end
+			player.activate! unless player.active?
+			player.update_attributes(
+				:in_pot => 0,
+				:for_call => 0,
+				:previous_hand => (player.open_hand? ? Poker::Hand.new(player.hand) : nil)
+			) unless 0 == player.in_pot and 0 == player.for_call and !player.open_hand?
     end
 		actions.each(&:destroy)
   end
@@ -55,10 +62,10 @@ module DistributionSystem
 
 	def start_distribution!
 		logger.info 'STARTED start_distribution!'
-    before_distribution
-    next_blind_level
-    take_blinds!
-    hands_deal!
+		before_distribution
+		next_blind_level
+		take_blinds!
+		hands_deal!
 	end
 	
   def deal_flop!
@@ -78,6 +85,25 @@ module DistributionSystem
       player.update_attribute :hand, Poker::Hand.new(deck.next(2))
     end
   end
+
+	def deal_remained_cards!
+		if on_preflop?
+			update_attributes(
+				:flop => Poker::Hand.new(deck.next(3)),
+				:turn => Poker::Hand.new(deck.next(1)),
+				:river => Poker::Hand.new(deck.next(1))
+			)
+		elsif on_flop?
+			update_attributes(
+				:turn => Poker::Hand.new(deck.next(1)),
+				:river => Poker::Hand.new(deck.next(1))
+			)
+		elsif on_turn?
+			deal_river!
+		else
+			# ничего не делаем
+		end
+	end
 
 	# метод разделяет банк игры между победителями раздачи,
 	# которые определяются самим методом исходя из карт игроков
@@ -143,6 +169,8 @@ module DistributionSystem
     calculated_groups.flatten.each{ |player| player.save}
 
 		# переходим к новой раздаче или заканчиваем игру
+		players.each { |player| player.lose! if player.has_empty_stack? }
+		players.reload
 	  new_distribution!
   end
 end

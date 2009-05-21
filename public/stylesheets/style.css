@@ -1,12 +1,86 @@
-/* 
-    Document   : style
-    Created on : 28.01.2009, 1:16:28
-    Author     : Sasha
-    Description:
-        Purpose of the stylesheet follows.
-*/
+body{
+	background: #1d1d1d;
+	color:#ccc;
+}
 
-/* 
-   TODO customize this sample style
-   Syntax recommendation http://www.w3.org/TR/REC-CSS2/
-*/
+
+td{
+	background:url('/images/main/fon_content.jpg');
+
+	border-bottom:1px solid #ccc;
+}
+th{
+	background:url('/images/main/fon_index.jpg');
+}
+
+a:link {color: #ccc; text-decoration: none;}
+a:visited{color: #ccc;text-decoration: none;}
+a:active{color: #c96;text-decoration: none;}
+a:hover{color: #ffc; text-decoration: underline;}
+
+input{
+	color:#000;
+	font:8pt sans-serif;
+}
+
+.actions a{
+	color:#f93;
+}
+
+td{
+	white-space:nowrap;
+	overflow:hidden;
+	text-align:center;
+}
+
+#index{
+	width:710px;
+	min-height:500px;
+	background:url('/images/main/fon_content.jpg') #101010;
+	border:0px solid #3f3f3f;
+	position: absolute;
+	top: 10px;
+	margin:0 22%;
+	text-align: center;
+	padding-bottom:50px;
+}
+
+#head{
+	width:710px;
+	height:83px;
+	background-color:#101010;
+	border:0px;
+}
+
+#under_logo{
+	width:710px;
+	border:0px;
+}
+
+#menu{
+	float:left;
+	border:0px solid #fff;
+	width:155px;
+	font:8pt times;
+	color:#ff9933;
+	text-align: left;
+	letter-spacing:1px;
+	padding:5px;
+}
+
+#auth{
+	width:155px;
+	height:45px;
+	border:0px solid #fff;
+}
+
+#reg{
+	width:125px;
+	padding-top:10px;
+}
+
+#body{
+	margin-left:153px;
+	border:0px solid #fff;
+	color:white;
+}

@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20090226132804) do
+ActiveRecord::Schema.define(:version => 20090521151119) do
 
   create_table "actions", :force => true do |t|
     t.integer  "game_id"
@@ -55,13 +55,23 @@ ActiveRecord::Schema.define(:version => 20090226132804) do
     t.integer  "current_bet"
     t.datetime "next_level_time"
     t.integer  "players_count",    :default => 0
-    t.string   "flop"
-    t.string   "turn"
-    t.string   "river"
+    t.text     "flop"
+    t.text     "turn"
+    t.text     "river"
+    t.text     "previous_flop"
+    t.text     "previous_turn"
+    t.text     "previous_river"
     t.text     "deck"
     t.integer  "type_id"
     t.datetime "created_at"
     t.datetime "updated_at"
+  end
+
+  create_table "log_messages", :force => true do |t|
+    t.integer  "user_id"
+    t.integer  "game_id"
+    t.string   "text"
+    t.datetime "created_at"
   end
 
   create_table "notes", :id => false, :force => true do |t|
@@ -79,6 +89,7 @@ ActiveRecord::Schema.define(:version => 20090226132804) do
     t.string   "status"
     t.boolean  "want_pause",          :default => false
     t.text     "hand"
+    t.text     "previous_hand"
     t.boolean  "open_hand"
     t.datetime "action_time"
     t.datetime "control_action_time"

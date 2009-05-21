@@ -33,12 +33,23 @@ class Game < ActiveRecord::Base
 		transitions :from => [:on_preflop, :on_flop, :on_turn, :on_river], :to => :finished
 	end
 
+#	aasm_event :final do
+#		transitions :from =>
+#	end
+
+	STATUS = {:waited => 'waited'}
+
+	named_scope :waited, :conditions => ['status = ?', STATUS[:waited]]
+
   self.inheritance_column = "class"
 
   serialize :deck, Poker::Deck
   serialize :flop, Poker::Hand
   serialize :turn, Poker::Hand
   serialize :river, Poker::Hand
+  serialize :previous_flop, Poker::Hand
+  serialize :previous_turn, Poker::Hand
+  serialize :previous_river, Poker::Hand
 
 	include BlindSystem
 	include DistributionSystem
@@ -117,10 +128,12 @@ class Game < ActiveRecord::Base
     current_player = Player.find self.active_player_id
     player = get_first_player_from current_player.sit, :out => :self
     while !player.active? and player != current_player
-			if player.absent_and_must_call?
-				player.fold!
-			elsif player.absent?
-				player.auto_check!
+			unless player.pass_away?
+				if player.absent_and_must_call?
+					player.fold!
+				elsif player.absent?
+					player.auto_check!
+				end
 			end
       player = get_first_player_from player.sit, :out => :self
     end
@@ -161,6 +174,11 @@ class Game < ActiveRecord::Base
     1 == players.select{|p| !p.fold?}.length
   end
 
+	def allin_and_call?
+#		players.select(&:can_do_stake_and_call?).length <= 1
+		players.select{|p| p.must_call? and !p.fold? }.length == 0 and players.select{|p| !p.fold? and !p.allin? }.length <= 1
+	end
+
   # Ищет первое не пустое место начиная с sit в направлении :direction
   def get_first_player_from sit, params = {}
 		players.reload
@@ -193,7 +211,7 @@ class Game < ActiveRecord::Base
 			:status => status,
 			:blind_size => blind_size,
 			:ante => ante,
-			:client_sit => players.client_sit(for_user_id).first.sit,
+			:client_sit => current_player(for_user_id).sit,
 			:time_for_action => type.time_for_action,
 			:max_players => type.max_players,
 			:start_stack => type.start_stack,
@@ -210,9 +228,9 @@ class Game < ActiveRecord::Base
 			:active_player_id => active_player_id,
 			:last_action_id => (actions.any? ? actions.sort_by(&:created_at).last.id : nil),
 			:action_time_left => action_time_left,
-			:flop  => (flop.nil? ? flop.to_s : nil),
-			:turn  => (turn.nil? ? turn.to_s : nil),
-			:river => (river.nil? ? river.to_s : nil),
+			:flop_to_load  => (flop.nil? ? flop.to_s : nil),
+			:turn_to_load  => (turn.nil? ? turn.to_s : nil),
+			:river_to_load => (river.nil? ? river.to_s : nil),
 			:players_to_load => players.map{|p| p.build_synch_data(:after_start_game, for_user_id)}
 		}
 	end
@@ -227,9 +245,10 @@ class Game < ActiveRecord::Base
 			:ante => ante,
 			:current_bet => current_bet,
 			:nexl_level_time => next_level_time,
-			:client_hand => current_player(for_user_id).hand.to_s,
+			:client_hand => (current_player(for_user_id) ? current_player(for_user_id).hand.to_s : nil),
 			:action_time_left => action_time_left,
-			:players_to_load => players.map{|p| p.build_synch_data(:on_distribution)}
+			:players_to_load => players.map{|p| p.build_synch_data(:on_distribution)},
+			:previous_final => build_previous_final
 		}
 	end
 
@@ -248,13 +267,22 @@ class Game < ActiveRecord::Base
   def data_for_synch_on_next_stage
     {
       :status => status,
-      :flop => flop.to_s,
-      :turn => turn.to_s,
-      :river => river.to_s
+      :flop_to_load => flop.to_s,
+      :turn_to_load => turn.to_s,
+      :river_to_load => river.to_s
     }
   end
 
 	def give_prize_to_winners
-		
+		#TODO
+	end
+
+	def build_previous_final
+		{
+			:players => players.map{|p| p.build_synch_data :previous_final},
+			:flop => previous_flop.to_s,
+			:turn => previous_turn.to_s,
+			:river => previous_river.to_s
+		}
 	end
 end

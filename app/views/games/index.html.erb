@@ -1,12 +1,7 @@
-<% content_for :games_menu do %>
-  <ul>
-    <li><%= link_to t(:create), new_game_path %></li>
-  </ul>
-<% end %>
+<h3><%=t 'views.games.index.title' %></h3>
 <table>
   <thead>
     <tr>
-      <th><%=h Game.human_attribute_name("state") %></th>
       <th><%=t :type %></th>
       <th><%=t 'views.games.index.pay_for_play' %></th>
       <th><%=h GameType.human_attribute_name("start_stack") %></th>

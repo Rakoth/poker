@@ -4,7 +4,7 @@
 	:method => :post,
 	:html => {:id => action[:name], :class => "action_button", :style => action[:no_display]},
 	:condition => 'Game.is_started() && Game.active_player.sit.id == Game.client_sit',
-	:with => (action[:value] ? "'value=' + $('#stake_value').value" : ""),
+	:with => (action[:value] ? "'value=' + $('#stake_value').attr('value')" : ""),
 	:success => "Game.client_action(#{action[:kind]})",
 	:failure => "alert('#{t 'views.games.show.action_failed'}');"
 )%>

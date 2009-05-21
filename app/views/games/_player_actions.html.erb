@@ -6,4 +6,4 @@
 	{:name => 'raise', :kind => PlayerActions::RaiseAction::KIND, :no_display => 'display:none;', :value => true}
 ] %>
 <%= render :partial => 'player_action_button', :collection => actions, :as => :action %>
-<input id="stake_value" class="stake_value" value="0" />
+<input id="stake_value" class="stake_value" value="<%= @game.minimal_bet %>" />

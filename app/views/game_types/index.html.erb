@@ -1,9 +1,4 @@
 <h3><%=t 'views.game_types.index.title' %></h3>
-<%- content_for :game_types_menu do -%>
-  <ul>
-    <li><%= link_to t(:create), new_game_type_path %></li>
-  </ul>
-<%- end -%>
 <table id="gameTypesTable">
   <thead>
     <tr>
@@ -13,7 +8,7 @@
       <th><%=GameType.human_attribute_name "start_stack" %></th>
       <th><%=GameType.human_attribute_name "start_blind" %></th>
       <th><%=GameType.human_attribute_name "change_level_time" %></th>
-      <th><%=t 'views.game_types.index.level_for_play' %></th>
+			<th><%=t :actions %></th>
     </tr>
   </thead>
   <tbody>

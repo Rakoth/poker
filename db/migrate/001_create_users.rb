@@ -23,13 +23,13 @@ class CreateUsers < ActiveRecord::Migration
 
       t.timestamps
     end
-    
+
     5.times do |i|
       user = User.new :password => '1111', :password_confirmation => '1111'
       user.login = "user#{i}"
       user.email = "user#{i}@mail.ru"
       user.cash = 1000
-      user.save
+      user.save!
     end
   end
 

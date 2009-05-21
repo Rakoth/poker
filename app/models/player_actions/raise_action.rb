@@ -2,7 +2,6 @@ class PlayerActions::RaiseAction < PlayerActions::BetAction
   KIND = 4
 
   def can_perform?
-    return (player.stack >= player.for_call + value and
-      player.in_pot + player.for_call + value > game.current_bet)
+    return (value <= player.stack and game.current_bet < player.in_pot + value)
   end
 end

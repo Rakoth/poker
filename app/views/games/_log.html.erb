@@ -1,0 +1,8 @@
+<div id="log_body"></div>
+<%- remote_form_for :log_message,
+	:url => log_messages_path,
+	:html => { :method => :post, :class => "edit_comment", :id => "edit_comment_45" } do |form| -%>
+		<%= form.text_field :text %>&nbsp;
+		<%= form.hidden_field :game_id, :value => @game.id %>
+		<%= form.submit t(:send) %>
+<%- end -%>

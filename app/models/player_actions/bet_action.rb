@@ -3,6 +3,7 @@ class PlayerActions::BetAction < PlayerActions::Action
 
 	def after_initialize
 		self.value += player.for_call
+		super
 	end
 
 	def has_value?
@@ -10,12 +11,11 @@ class PlayerActions::BetAction < PlayerActions::Action
 	end
 
   def can_perform?
-    return (player.stack >= player.for_call + value and
-      value >= game.minimal_bet and game.current_bet == game.blind_size)
+    return (value <= player.stack and game.minimal_bet <= value and game.current_bet == game.blind_size)
   end
 
   def game_influence
-    game_params[:current_bet] = game.current_bet + value
+    game_params[:current_bet] = game.current_bet + value - player.for_call
     super
   end
 

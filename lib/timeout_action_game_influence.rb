@@ -2,9 +2,7 @@ module TimeoutActionGameInfluence
 	private
 	
 	def game_influence
-		if game.all_away?
-			@game_params = {:paused => true}
-		end
+		@game_params = {:paused => true} if game.all_away?
 		super
 	end
 end

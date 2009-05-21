@@ -32,13 +32,13 @@ ActionController::Routing::Routes.draw do |map|
   # Install the default routes as the lowest priority.
 
   map.root :controller => 'games'
-	map.connect 'javascripts/initialize_game.js', :controller => 'javascripts', :action => 'initialize_game'
 	map.resource :user_session
   map.login 'login', :controller => 'user_sessions', :action => 'new'
   map.leave_game ':game_id/leave', :controller => 'players', :action => 'destroy'
 	map.omitted_actions 'actions/:game_id/:last_action_id.:format', :controller => 'actions', :action => 'omitted'
   map.resources :users
   map.resources :actions
+  map.resources :log_messages
   map.resources :games, :has_many => 'players'
   map.resources :players
   map.resources :game_types
