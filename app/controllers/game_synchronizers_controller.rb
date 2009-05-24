@@ -15,7 +15,7 @@ class GameSynchronizersController < ApplicationController
 				unless changes.empty?
 					render :json => changes
 				else
-					render :nothing => true, :status => :no_content
+					render :nothing => true #, :status => :no_content
 				end
 				#return
 			}

@@ -95,6 +95,45 @@ div{
 	border:0;
 	padding-left:5px;
 }
+/* лог событий + чат */
+#log_body{
+	border:1px solid #996600;
+	width:190px;
+	height:70px;
+	margin:2px 0 0 5px;
+	overflow-y:scroll;
+	background-color:black;
+	color:white;
+}
+#log_message_text{
+	background:transparent;
+	height:12px;
+	width:150px;
+	color:#ccc;
+	border:1px solid #996600;
+	font:10px Verdana,monospase;
+	margin-left:5px;
+}
+.log_message_submit{
+	padding-top:5px;
+}
+.log_message_submit input{
+	outline:none;
+}
+.log_record{
+	white-space:nowrap;
+	font:10px Verdana;
+}
+.log_user_login{
+	font-weight:bold;
+}
+.log_action_body, .log_player_login{
+	color:#444;
+}
+.log_message_text{
+	white-space:normal;
+	font-style:italic;
+}
 /* место игрока */
 .sit{
 	position:absolute;

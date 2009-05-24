@@ -1,8 +1,18 @@
 <div id="log_body"></div>
 <%- remote_form_for :log_message,
 	:url => log_messages_path,
-	:html => { :method => :post, :class => "edit_comment", :id => "edit_comment_45" } do |form| -%>
-		<%= form.text_field :text %>&nbsp;
+	:condition => '$("#log_message_text")[0].value != ""',
+	:before => 'disable_image("log_message_submit")',
+	:success => 'move_message_to_log();',
+	:complete => 'enable_image("log_message_submit")',
+	:html => { :method => :post, :id => 'log_message' } do |form| -%>
 		<%= form.hidden_field :game_id, :value => @game.id %>
-		<%= form.submit t(:send) %>
+		<div>
+			<div style="float:left;">
+				<%= form.text_field :text, :id => 'log_message_text' %>&nbsp;
+			</div>
+			<div style="float:left;padding-top:3px;">
+				<%= image_submit_tag 'game/log/send.gif', :id => 'log_message_submit'%>
+			</div>
+		</div>
 <%- end -%>

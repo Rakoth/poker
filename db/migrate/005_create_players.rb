@@ -9,6 +9,7 @@ class CreatePlayers < ActiveRecord::Migration
 			t.boolean :want_pause, :default => false
       t.text :hand
       t.text :previous_hand
+			t.integer :previous_win
 			t.boolean :open_hand
       t.datetime :action_time
       t.datetime :control_action_time

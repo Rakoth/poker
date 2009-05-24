@@ -5,6 +5,12 @@ Function.prototype.bind = function(object) {
 	}
 }
 
+$.extend({
+	escape: function(html_to_escape){
+		return html_to_escape.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+	}
+});
+
 //=============================================================================
 $(function(){
 	$.extend(Game, GameMethods);
@@ -15,6 +21,8 @@ $(function(){
 	}else{
 		ActionsSynchronizer.start();
 	}
+	ChatSynchronizer.last_message_id = Game.last_message_id || 0;
+	ChatSynchronizer.start();
 });
 
 //=============================================================================
@@ -29,9 +37,9 @@ var GameMethods = {
 	},
 	is_started: function(){
 		return 'on_preflop' == this.status ||
-		'on_flop'    == this.status ||
-		'on_turn'    == this.status ||
-		'on_river'   == this.status;
+			'on_flop'    == this.status ||
+			'on_turn'    == this.status ||
+			'on_river'   == this.status;
 	},
 	small_blind: function(){
 		return this.blind_size / 2;
@@ -72,7 +80,9 @@ var GameMethods = {
 		}
 	},
 	add_player: function(player){
-		this.players[player.sit] = new Player(player);
+		var new_player = new Player(player);
+		this.players[player.sit] = new_player;
+		ChatSynchronizer.add_system_message('join', new_player.login);
 		this.players_count++;
 	},
 	remove_player: function(id){
@@ -83,6 +93,7 @@ var GameMethods = {
 			}
 		}
 		if(sit){
+			ChatSynchronizer.add_system_message('leave', this.players[sit].login);
 			this.players[sit].sit.disable();
 			delete(this.players[sit]);
 			this.players_count--;
@@ -102,8 +113,8 @@ var GameMethods = {
 		}), function(player){
 			return player.id;
 		});
-	// убивающий firefox код :
-	//return $($.grep(this.players, function(){return this;})).map(function(){return this.id});
+		// убивающий firefox код :
+		//return $($.grep(this.players, function(){return this;})).map(function(){return this.id});
 	},
 	take_blinds: function(){
 		if(this.ante > 0){
@@ -163,21 +174,17 @@ var GameMethods = {
 		$('#blinds').text(this.blind_size + '/' + this.small_blind());
 	},
 	update_cards: function(){
-		if(this.flop_to_load){
-			this.flop.set_cards(this.flop_to_load);
-		}else{
-			this.flop.hide();
-		}
-		if(this.turn_to_load){
-			this.turn.set_cards(this.turn_to_load);
-		}else{
-			this.turn.hide();
-		}
-		if(this.river_to_load){
-			this.river.set_cards(this.river_to_load);
-		}else{
-			this.river.hide();
-		}
+		var stages_array = ['flop', 'turn', 'river'];
+		$.each(stages_array, function(i, stage){
+			if(this[stage + '_to_load']){
+				if('on_' + stage == Game.status){
+					ChatSynchronizer.add_system_message(this[stage + '_to_load'], stage)
+				}
+				this[stage].set_cards(this[stage + '_to_load']);
+			}else{
+				this[stage].hide();
+			}
+		}.bind(this));
 	},
 	clear_cards: function(){
 		this.flop.hide();
@@ -269,7 +276,7 @@ var GameMethods = {
 			}
 		});
 
-	//console.log(final_in_json);
+		//console.log(final_in_json);
 	},
 	notify_about_lose: function(){
 		ActionsSynchronizer.stop();
@@ -354,6 +361,7 @@ var ActionsExecuter = {
 			ActionsInfluence[action_name](value);
 		}
 		this._show_action(action_name);
+		ChatSynchronizer.add_player_action(action_name, value)
 		Game.next_turn(time_left);
 	},
 	_show_action: function(action_name){
@@ -386,12 +394,12 @@ var GameSynchronizer = {
 	_check_for_new_players: function(){
 		var players = Game.get_players_ids();
 		$.getJSON(
-			'/game_synchronizers/wait_for_start/' + Game.id + '.json',
-			{
-				'players[]': players
-			},
-			this._sync_game
-			);
+		'/game_synchronizers/wait_for_start/' + Game.id + '.json',
+		{
+			'players[]': players
+		},
+		this._sync_game
+	);
 	},
 	_sync_game: function(json){
 		if(json.remove && 0 < json.remove.length){
@@ -424,7 +432,7 @@ var GameSynchronizer = {
 				delete json.previous_final;
 				setTimeout(function(){
 					GameSynchronizer.synchronize_on_new_distribution(json)
-					}, 3000);
+				}, 3000);
 			}else{
 				GameSynchronizer.synchronize_on_new_distribution(json);
 			}
@@ -460,6 +468,7 @@ var GameSynchronizer = {
 			sit_id = this.sit;
 			delete this.sit;
 			$.extend(Game.players[sit_id], this);
+			Game.players[sit_id].show_previous_win();
 			current_player = Game.players[sit_id];
 			current_player.sit.update_stack();
 			current_player.sit.update_status();
@@ -485,6 +494,74 @@ var GameSynchronizer = {
 	}
 };
 
+//=============================================================================
+var ChatSynchronizer = {
+	_period: 5,
+	last_message_id: 0,
+	start: function(){
+		this._timer = setInterval(this._check_for_new_messages.bind(this), this._period * 1000);
+	},
+	_check_for_new_messages: function(){
+		$.getJSON(
+			'/log_messages',
+			{
+				'last_message_id': this.last_message_id,
+				'game_id': Game.id
+			},
+			this._add_messages.bind(this)
+		);
+	},
+	_add_messages: function(json){
+		$.each(json, function(i, message){
+			this.last_message_id = message.id;
+			this.add_player_message(message.login, message.text);
+		}.bind(this));
+	},
+	add_player_message: function(login, text){
+		var user_message = this._build_user_message(login, text);
+		this._add_to_log(user_message);
+	},
+	add_client_message: function(text){
+		this.add_player_message(Game.players[Game.client_sit].login, text);
+	},
+	add_player_action: function(action_name, value){
+		var player_action = this._build_player_action(action_name, value);
+		this._add_to_log(player_action);
+	},
+	add_system_message: function(text, title){
+		var system_message;
+		if(title){
+			system_message = this._build_system_message_with_title(title, text);
+		}else{
+			system_message = this._build_system_message_without_title(text);
+		}
+		this._add_to_log(system_message);
+	},
+	_build_user_message: function(login, text){
+		return '<div class="log_record">' +
+			'<span class="log_user_login">' + $.escape(login) + ': </span>' +
+			'<span class="log_message_text">' + $.escape(text) + '</span>' +
+		'</div>';
+	},
+	_build_player_action: function(action, value){
+		var text = value ? action + ' to ' + value : action;
+		return this._build_system_message_with_title(Game.active_player.login, text);
+	},
+	_build_system_message_with_title: function(title, text){
+		return '<div class="log_record">' +
+			'<span class="log_player_login">' + $.escape(title) + ': </span>' +
+			'<span class="log_action_body">' + $.escape(text) + '</span>' +
+		'</div>';
+	},
+	_build_system_message_without_title: function(text){
+		return '<div class="log_record">' +
+			'<span class="log_action_body">' + $.escape(text) + '</span>' +
+		'</div>';
+	},
+	_add_to_log: function(html){
+		$('#log_body').html(html + $('#log_body').html());
+	}
+};
 //=============================================================================
 var Player = function(params){
 	default_params = {
@@ -520,16 +597,23 @@ var PlayerMethods = {
 	},
 	has_called: function(){
 		return (
-			0 == this.for_call &&
+		0 == this.for_call &&
 			(this.id == Game.active_player.id || this.sit.id != Game.blind_position || Game.current_bet != Game.blind_size)
-			);
+	);
 	},
 	is_allin: function(){
 		return 0 == this.stack;
 	},
 	add_for_call: function(value){
 		this.for_call += value;
-	//this.sit.for_call.update(this.for_call);
+		//this.sit.for_call.update(this.for_call);
+	},
+	show_previous_win: function(){
+		if(0 != this.previous_win){
+			var text = 'win ' + this.previous_win;
+			ChatSynchronizer.add_system_message(text, this.login)
+		}
+		//TODO
 	},
 	_update_stack: function(value, direction){
 		if('out' == direction){
@@ -543,7 +627,7 @@ var PlayerMethods = {
 
 		this.sit.update_stack();
 		this.sit.update_in_pot(this.in_pot);
-	//this.sit.for_call.update(this.for_call);
+		//this.sit.for_call.update(this.for_call);
 	},
 	update_hand: function(new_hand_string){
 		this.hand_to_load = new_hand_string;
@@ -581,7 +665,7 @@ var PlayerSitMethods = {
 		this.timer.attr('src', this._timer_src());
 	},
 	update_in_pot: function(new_value){
-	//this.in_pot.text(new_value);
+		//this.in_pot.text(new_value);
 	},
 	update_status: function(){
 		switch(this.player.status){
@@ -592,14 +676,14 @@ var PlayerSitMethods = {
 				//this.cards.show();
 				break;
 		}
-	//this.status.text(new_value);
+		//this.status.text(new_value);
 	},
 	update_stack: function(){
 		this.stack.text(this.player.stack);
 	},
 	update_hand: function(){
 		this.cards.set_cards(this.player.hand_to_load);
-	//this.player.hand.show('card_' + this.id);
+		//this.player.hand.show('card_' + this.id);
 	},
 	_timer_src: function(){
 		var time = this.player.timer.time;

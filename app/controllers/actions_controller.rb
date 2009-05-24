@@ -18,7 +18,7 @@ class ActionsController < ApplicationController
 					j_array.push(@action.time_left)
 					render :json => j_array
 				else
-					render :nothing => true, :status => :no_content
+					render :nothing => true #, :status => :no_content
 				end
       }
     end
@@ -27,7 +27,7 @@ class ActionsController < ApplicationController
   def create
     game = current_user.games.find(params[:game_id])
     if game and !game.paused? and player = game.wait_action_from(current_user) and player.act!(params)
-      status = :no_content
+      status = :ok # :no_content
     else
       status = :bad_request
     end
@@ -40,7 +40,7 @@ class ActionsController < ApplicationController
 		params[:player_id] = params[:player_id].to_i
 		if(!game.paused? and game.active_player_id == params[:player_id] and game.active_player_away?)
 			Player.find(params[:player_id]).act_on_away!
-			status = :no_content
+			status = :ok # :no_content
 		elsif game.paused?
 			status = :bad_request
 		elsif game.active_player_id != params[:player_id]

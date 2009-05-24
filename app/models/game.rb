@@ -59,6 +59,7 @@ class Game < ActiveRecord::Base
   has_many :users, :through => :players
   has_many :actions, :class_name => 'PlayerActions::Action'
   has_many :current_distribution_actions, :class_name => 'PlayerActions::Action', :conditions => ['deleted = ?', false]
+	has_many :log_messages
 
 
 	def started?
@@ -215,7 +216,8 @@ class Game < ActiveRecord::Base
 			:time_for_action => type.time_for_action,
 			:max_players => type.max_players,
 			:start_stack => type.start_stack,
-			:players_to_load => players.map(&:build_synch_data)
+			:players_to_load => players.map(&:build_synch_data),
+			:last_message_id => log_messages.any? ? log_messages.first(:order => 'id DESC').id : 0
 		}
 	end
 

@@ -93,7 +93,9 @@ class Player < ActiveRecord::Base
   before_destroy :return_user_money, :if => lambda {|player| player.game.waited?}
 	after_destroy :give_prize, :unless => lambda {|player| player.game.waited?}
 	after_destroy :destroy_game, :if => lambda {|player| player.game.empty_players_set?}
-	
+	before_save :calculate_winning, :unless => lambda {|player| player.previous_stack.nil? }
+
+	attr_accessor :previous_stack
   attr_writer :persent # процент выйгрыша
 	
   def persent
@@ -196,6 +198,7 @@ class Player < ActiveRecord::Base
 			:stack => stack,
 			:for_call => for_call,
 			:in_pot => in_pot,
+			:previous_win => previous_win
 		}
 	end
 
@@ -240,6 +243,10 @@ class Player < ActiveRecord::Base
 
 	def resume_game!
 		game.resume! if game.paused_by_away?
+	end
+
+	def calculate_winning
+		self.previous_win = stack - previous_stack
 	end
 
 end

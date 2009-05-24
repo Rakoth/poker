@@ -109,6 +109,8 @@ module DistributionSystem
 	# которые определяются самим методом исходя из карт игроков
   def final_distribution!
 		logger.info 'STARTED final_distribution!'
+		# сохраним текущее значение стэка для каждого игрока
+		players.each_index{|i| players[i].previous_stack = players[i].stack}
 		# выделить не сделавших пасс игроков
 		winners = players.select {|player| !player.fold?}
 

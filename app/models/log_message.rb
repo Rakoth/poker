@@ -6,7 +6,7 @@ class LogMessage < ActiveRecord::Base
 
 	named_scope :omitted, lambda{ |game_id, last_id, user_id|
 		{
-			:conditions => ["game_id = ? AND id > ? AND player_id <> ?", game_id, last_id, user_id],
+			:conditions => ["game_id = ? AND id > ? AND user_id <> ?", game_id, last_id, user_id],
 			:order => 'created_at',
 			:include => :user
 		}
