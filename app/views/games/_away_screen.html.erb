@@ -1,0 +1,13 @@
+<div id="away_screen" style="display:none;">
+	<div id="away_message_container">
+		<p><%= t('views.games._away_screen.away_message')%></p>
+		<%= link_to_remote(
+				t('views.games._away_screen.i_am_back'),
+				:url => player_back_path(:game_id => @game.id),
+				:method => :post,
+				:html => {},
+				:success => '$("#away_screen").hide("slow")',
+				:failure => "$('#away_message_container p').text('#{t 'views.games._away_screen.back_failed'}')"
+		) %>
+	</div>
+</div>

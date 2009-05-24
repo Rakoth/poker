@@ -63,9 +63,14 @@ class Player < ActiveRecord::Base
 		transitions :from => :absent, :to => :pass_away, :on_transition => :auto_fold!
 	end
 	
-	# пасс по таймауту
-	aasm_event :fold_on_away do
-		transitions :from => :active, :to => :pass_away, :success => :do_fold_on_away!
+	# пасс по таймауту - ставим статус отошел
+	aasm_event :away_on_fold do
+		transitions :from => :active, :to => :pass_away
+	end
+
+	# чек по таймауту - ставим статус отошел
+	aasm_event :away_on_check do
+		transitions :from => :active, :to => :absent
 	end
 
 	aasm_event :back_to_game do
@@ -141,7 +146,7 @@ class Player < ActiveRecord::Base
 	def act_on_away!
 		if must_call?
 			fold_on_away!
-			do_fold_on_away!
+			#do_fold_on_away!
 		else
 			check_on_away!
 		end
@@ -233,7 +238,7 @@ class Player < ActiveRecord::Base
 		PlayerActions::AutoFoldAction.new(:player => self, :game => game).execute
 	end
 
-	def do_fold_on_away!
+	def fold_on_away!
 		PlayerActions::TimeoutFoldAction.new(:player => self, :game => game).execute
 	end
 

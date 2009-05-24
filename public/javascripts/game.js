@@ -288,6 +288,10 @@ var GameMethods = {
 	notify_about_win: function(){
 		alert("Вы выйграли");
 		setTimeout("window.close();", 2000);
+	},
+	client_away: function(){
+		$('#away_screen').show();
+		$('#away_screen').fadeTo('fast', 0.5);
 	}
 };
 
@@ -331,6 +335,10 @@ var ActionsSynchronizer = {
 		ActionsExecuter.perform(last_action, last_action_time_left);
 	},
 	notify_about_action_timeout: function(player_id){
+		// показываем окошко "я вернулся", если это клиент
+		if(Game.players[Game.client_sit].id == player_id){
+			Game.client_away();
+		}
 		$.ajax({
 			url: '/actions/timeout/',
 			type: 'POST',
@@ -388,6 +396,7 @@ ActionsInfluence = {
 //=============================================================================
 var GameSynchronizer = {
 	_period: 5,
+	_show_final_time: 3,
 	start: function(){
 		this._timer = setInterval(this._check_for_new_players.bind(this), this._period * 1000);
 	},
@@ -432,7 +441,7 @@ var GameSynchronizer = {
 				delete json.previous_final;
 				setTimeout(function(){
 					GameSynchronizer.synchronize_on_new_distribution(json)
-				}, 3000);
+				}, this._show_final_time * 1000);
 			}else{
 				GameSynchronizer.synchronize_on_new_distribution(json);
 			}

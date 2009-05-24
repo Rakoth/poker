@@ -95,13 +95,28 @@ div{
 	border:0;
 	padding-left:5px;
 }
+/* окно возврата из статуса "отошел" */
+#away_screen{
+	position:absolute;
+	top:0;
+	left:0;
+	width:700px;
+	height:400px;
+	background:white;
+}
+#away_message_container{
+	margin:150px 0 0 200px;
+	width:300px;
+	height:100px;
+	padding:10px;
+}
 /* лог событий + чат */
 #log_body{
 	border:1px solid #996600;
 	width:190px;
 	height:70px;
 	margin:2px 0 0 5px;
-	overflow-y:scroll;
+	overflow-y:auto;
 	background-color:black;
 	color:white;
 }

@@ -28,8 +28,9 @@ class PlayersController < ApplicationController
   end
 
 	def i_am_back
-		player = current_user.players.find params[:id]
-		player.back_to_game!
+		player = current_user.current_player params[:game_id]
+		status = (player.back_to_game! ? :ok : :bad_request)
+		render :nothing => true, :status => status
 	end
 
 end

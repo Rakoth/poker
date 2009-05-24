@@ -35,6 +35,7 @@ ActionController::Routing::Routes.draw do |map|
 	map.resource :user_session
   map.login 'login', :controller => 'user_sessions', :action => 'new'
   map.leave_game ':game_id/leave', :controller => 'players', :action => 'destroy'
+  map.player_back 'player_back/:game_id', :controller => 'players', :action => 'i_am_back'
 	map.omitted_actions 'actions/:game_id/:last_action_id.:format', :controller => 'actions', :action => 'omitted'
   map.resources :users
   map.resources :actions

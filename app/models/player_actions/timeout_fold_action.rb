@@ -4,5 +4,6 @@ class PlayerActions::TimeoutFoldAction < PlayerActions::FoldAction
 	protected
 
   def player_influence
+		player.away_on_fold!
   end
 end

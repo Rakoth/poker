@@ -38,6 +38,10 @@ class Game < ActiveRecord::Base
 #	end
 
 	STATUS = {:waited => 'waited'}
+	PAUSE_TYPE = {
+		:by_away => 'by_away',
+		:by_request => 'by_request'
+	}
 
 	named_scope :waited, :conditions => ['status = ?', STATUS[:waited]]
 
@@ -93,11 +97,11 @@ class Game < ActiveRecord::Base
 	end
 
 	def paused_by_away?
-		'by_away' == paused
+		PAUSE_TYPE[:by_away] == paused
 	end
 
 	def paused_by_request?
-		'by_request' == paused
+		PAUSE_TYPE[:by_request] == paused
 	end
 
 	def resume!
