@@ -4,7 +4,7 @@
 class ApplicationController < ActionController::Base
   helper :all
   helper_method :current_user_session, :current_user
-  filter_parameter_logging :password, :password_confirmation
+  filter_parameter_logging :password
 
   # See ActionController::RequestForgeryProtection for details
   # Uncomment the :secret if you're not using the cookie session store
@@ -15,7 +15,6 @@ class ApplicationController < ActionController::Base
 	#  before_filter :find_user, :set_locate
 
   protected
-
 
 	def current_user_session
 		@current_user_session ||= UserSession.find
@@ -30,7 +29,7 @@ class ApplicationController < ActionController::Base
 	#  end
 
   def set_locate
-    I18n.locale = (@current_user.locate if @current_user) or params[:locale] or I18n.default_locale
+    I18n.locale = (current_user.locate if current_user) or params[:locale] or I18n.default_locale
   end
 
 	def check_authorization

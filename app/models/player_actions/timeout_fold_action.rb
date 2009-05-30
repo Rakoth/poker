@@ -1,5 +1,5 @@
 class PlayerActions::TimeoutFoldAction < PlayerActions::FoldAction
-	include TimeoutActionGameInfluence
+	KIND = -1
 
 	protected
 

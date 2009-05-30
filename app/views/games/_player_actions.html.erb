@@ -5,5 +5,10 @@
 	{:name => 'bet',   :kind => PlayerActions::BetAction::KIND,   :no_display => '', :value => true},
 	{:name => 'raise', :kind => PlayerActions::RaiseAction::KIND, :no_display => 'display:none;', :value => true}
 ] %>
-<%= render :partial => 'player_action_button', :collection => actions, :as => :action %>
-<input id="stake_value" class="stake_value" value="<%= @game.minimal_bet %>" />
+<div id ="actions">
+	<%= render :partial => 'player_action_button', :collection => actions, :as => :action %>
+</div>
+<div>
+	<div style="float:left;width:70%;margin:5px 5px 0 0;"><div id="stake_slider"></div></div>
+	<div style="margin-top:2px;"><input id="stake_value" adisabled="disabled" value="<%= @game.minimal_bet %>" size="5"/></div>
+</div>

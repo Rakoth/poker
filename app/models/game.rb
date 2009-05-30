@@ -29,13 +29,9 @@ class Game < ActiveRecord::Base
 	end
 
 	aasm_event :new_distribution do
-		transitions :from => [:on_preflop, :on_flop, :on_turn, :on_river], :to => :on_preflop, :guard => lambda {|game| 1 < game.players.count}
+		transitions :from => [:on_preflop, :on_flop, :on_turn, :on_river], :to => :on_preflop, :guard => lambda {|game| 1 < game.players.size	}
 		transitions :from => [:on_preflop, :on_flop, :on_turn, :on_river], :to => :finished
 	end
-
-#	aasm_event :final do
-#		transitions :from =>
-#	end
 
 	STATUS = {:waited => 'waited'}
 	PAUSE_TYPE = {
@@ -43,7 +39,7 @@ class Game < ActiveRecord::Base
 		:by_request => 'by_request'
 	}
 
-	named_scope :waited, :conditions => ['status = ?', STATUS[:waited]]
+	named_scope :waited, :conditions => { :status => STATUS[:waited] }, :include => [:type]
 
   self.inheritance_column = "class"
 
@@ -65,6 +61,14 @@ class Game < ActiveRecord::Base
   has_many :current_distribution_actions, :class_name => 'PlayerActions::Action', :conditions => ['deleted = ?', false]
 	has_many :log_messages
 
+	def active_player
+		@active_player ||= Player.find active_player_id
+	end
+
+	def active_player= player
+		@active_player = player
+		update_attribute :active_player_id, player.id
+	end
 
 	def started?
 		on_preflop? or on_flop? or on_turn? or on_river?
@@ -104,6 +108,10 @@ class Game < ActiveRecord::Base
 		PAUSE_TYPE[:by_request] == paused
 	end
 
+	def pause_by_away!
+		update_attribute :paused, PAUSE_TYPE[:by_away]
+	end
+
 	def resume!
 		update_attribute :paused, nil
 	end
@@ -120,30 +128,21 @@ class Game < ActiveRecord::Base
     Player.find_by_id_and_user_id active_player_id, user.id
   end
 
-	def active_player_sit
-		player = players.select{|p| active_player_id == p.id}.first
-		player.sit if player
-	end
-
 	def first_free_sit
 		(0...(type.max_players)).to_a.select{|sit| !players.map(&:sit).include?(sit)}.min
 	end
 
-  def next_active_player_id
-    current_player = Player.find self.active_player_id
-    player = get_first_player_from current_player.sit, :out => :self
-    while !player.active? and player != current_player
-			unless player.pass_away?
-				if player.absent_and_must_call?
-					player.fold!
-				elsif player.absent?
-					player.auto_check!
-				end
-			end
-      player = get_first_player_from player.sit, :out => :self
-    end
-    update_attribute :active_player_id, player.id
-  end
+	def next_player
+    player = active_player
+		begin
+			player = get_first_player_from player.sit, :out => :self
+		end while player.fold?
+#   player = get_first_player_from current_player.sit, :out => :self
+#		while player.fold?# and player != current_player
+#			 player = get_first_player_from player.sit, :out => :self
+#		end
+		return player
+	end
 
 	def action_time_left
 		unless current_distribution_actions.empty?
@@ -173,30 +172,29 @@ class Game < ActiveRecord::Base
 		players.find_by_user_id user_id
 	end
 
-  private
-
   def one_winner?
     1 == players.select{|p| !p.fold?}.length
   end
 
 	def allin_and_call?
-#		players.select(&:can_do_stake_and_call?).length <= 1
 		players.select{|p| p.must_call? and !p.fold? }.length == 0 and players.select{|p| !p.fold? and !p.allin? }.length <= 1
 	end
+
+  private
 
   # Ищет первое не пустое место начиная с sit в направлении :direction
   def get_first_player_from sit, params = {}
 		players.reload
     params[:out] ||= :id
     params[:direction] ||= :asc
-    conditions = case params[:direction]
+    options = case params[:direction]
     when :asc
       {:first => ['sit > ?', sit], :order => 'sit ASC'}
     else
       {:first => ['sit < ?', sit], :order => 'sit DESC'}
     end
-    player = players.first :conditions => conditions[:first], :order => conditions[:order]
-    player = players.first(:order => conditions[:order]) unless player
+    player = players.first :conditions => options[:first], :order => options[:order]
+    player = players.first(:order => options[:order]) unless player
     if :self == params[:out]
       player
     else
@@ -237,7 +235,8 @@ class Game < ActiveRecord::Base
 			:flop_to_load  => (flop.nil? ? flop.to_s : nil),
 			:turn_to_load  => (turn.nil? ? turn.to_s : nil),
 			:river_to_load => (river.nil? ? river.to_s : nil),
-			:players_to_load => players.map{|p| p.build_synch_data(:after_start_game, for_user_id)}
+			:players_to_load => players.map{|p| p.build_synch_data(:after_start_game, for_user_id)},
+			:paused => paused
 		}
 	end
 
@@ -250,11 +249,12 @@ class Game < ActiveRecord::Base
 			:blind_size => blind_size,
 			:ante => ante,
 			:current_bet => current_bet,
-			:nexl_level_time => next_level_time,
+			:next_level_time => next_level_time,
 			:client_hand => (current_player(for_user_id) ? current_player(for_user_id).hand.to_s : nil),
 			:action_time_left => action_time_left,
 			:players_to_load => players.map{|p| p.build_synch_data(:on_distribution)},
-			:previous_final => build_previous_final
+			:previous_final => build_previous_final,
+			:paused => paused
 		}
 	end
 
@@ -263,7 +263,7 @@ class Game < ActiveRecord::Base
 			:blind_position => blind_position,
 			:small_blind_position => small_blind_position,
 			:next_level_time => next_level_time,
-			:current_ber => current_bet,
+			:current_bet => current_bet,
 			:active_player_id => active_player_id,
 			:action_time_left => action_time_left,
 			:client_hand => current_player(for_user_id).hand.to_s

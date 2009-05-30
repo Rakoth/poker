@@ -28,8 +28,12 @@ class PlayersController < ApplicationController
   end
 
 	def i_am_back
-		player = current_user.current_player params[:game_id]
-		status = (player.back_to_game! ? :ok : :bad_request)
+		player = Player.find params[:id]
+		if(player.user == current_user)
+			status = (!player.away? or player.back_to_game! ? :ok : :bad_request)
+		else
+			status = :forbidden
+		end
 		render :nothing => true, :status => status
 	end
 

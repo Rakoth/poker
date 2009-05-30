@@ -1,13 +1,33 @@
-<div id="away_screen" style="display:none;">
-	<div id="away_message_container">
-		<p><%= t('views.games._away_screen.away_message')%></p>
-		<%= link_to_remote(
-				t('views.games._away_screen.i_am_back'),
-				:url => player_back_path(:game_id => @game.id),
-				:method => :post,
-				:html => {},
-				:success => '$("#away_screen").hide("slow")',
-				:failure => "$('#away_message_container p').text('#{t 'views.games._away_screen.back_failed'}')"
-		) %>
-	</div>
-</div>
+<div id="away_dialog"><p><%= t('views.games._away_screen.away_message')%></p></div>
+<script type="text/javascript">
+	var away_dialog = $('#away_dialog').dialog({
+		resizable: false,
+		modal: true,
+		autoOpen: false,
+		closeOnEscape: false,
+		width: 300,
+		buttons: {
+			"<%= t('views.games._away_screen.i_am_back')%>": function() {
+				$(this).dialog("close");
+			}
+		},
+		beforeclose: function(event, ui){
+			$.ajax({
+				url:"<%= i_am_back_player_path(@game.current_player(current_user.id)) %>",
+				type:"post",
+				async: false,
+				data:{
+					"_method":"put"
+				},
+				success:function(){
+					$('#away_dialog p').text('<%= t('views.games._away_screen.away_message')%>');
+					Game.players[Game.client_sit].set_status('active');
+				},
+				error:function(){
+					$('#away_dialog p').text('<%= t('views.games._away_screen.back_failed')%>');
+					away_dialog.dialog("open");
+				}
+			});
+		}
+	});
+</script>

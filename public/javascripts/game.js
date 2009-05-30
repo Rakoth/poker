@@ -37,12 +37,18 @@ var GameMethods = {
 	},
 	is_started: function(){
 		return 'on_preflop' == this.status ||
-			'on_flop'    == this.status ||
-			'on_turn'    == this.status ||
-			'on_river'   == this.status;
+		'on_flop'    == this.status ||
+		'on_turn'    == this.status ||
+		'on_river'   == this.status;
+	},
+	is_paused: function(){
+		return (null != this.paused);
 	},
 	small_blind: function(){
 		return this.blind_size / 2;
+	},
+	minimal_bet: function(){
+		return this.blind_size;
 	},
 	on_load: function(){
 		this._add_players_from_game();
@@ -58,10 +64,13 @@ var GameMethods = {
 		}
 		this.update_pot();
 		this.update_blinds();
+		this._init_client_actions_area();
 	},
 	on_start: function(){
 		this.set_active_player();
-		this.active_player.start_turn(this.action_time_left);
+		if(!this.is_paused()){
+			this.active_player.start_turn(this.action_time_left);
+		}
 		this.show_necessary_action_buttons();
 	},
 	_add_players_from_game: function(){
@@ -113,8 +122,8 @@ var GameMethods = {
 		}), function(player){
 			return player.id;
 		});
-		// убивающий firefox код :
-		//return $($.grep(this.players, function(){return this;})).map(function(){return this.id});
+	// убивающий firefox код :
+	//return $($.grep(this.players, function(){return this;})).map(function(){return this.id});
 	},
 	take_blinds: function(){
 		if(this.ante > 0){
@@ -195,21 +204,35 @@ var GameMethods = {
 		action_name = ActionsExecuter.name_by_kind[action_kind];
 		action = [this.client_sit, action_kind];
 		if('bet' == action_name || 'raise' == action_name){
-			value = this.active_player.for_call + parseInt($('#stake_value').attr('value'));
+			value = this.active_player.for_call + parseInt($('#stake_value').val());
 			action.push(value);
 		}
 		ActionsExecuter.perform(action);
 	},
 	_goto_next_stage: function(){
-		if(this._is_one_winner() || (this._is_next_stage() && this.is_on_river()) || this._is_allin_and_call()){
-			GameSynchronizer.new_distribution();
-			return true; // new_distribution сам установит нового active_player -а и начнет его ход
-		}else{
-			if(this._is_next_stage()){
-				GameSynchronizer.next_stage();
+		if(!this.is_paused()){
+			if(this._is_new_distribution()){
+				this._refresh_players_acted_flag();
+				GameSynchronizer.new_distribution();
+				return true; // new_distribution сам установит нового active_player -а и начнет его ход
+			}else{
+				if(this._is_next_stage()){
+					this._refresh_players_acted_flag();
+					GameSynchronizer.next_stage();
+				}
+				return false; // продолжаем передавать ход в обычном порядке
 			}
-			return false; // продолжаем передавать ход в обычном порядке
 		}
+	},
+	_is_new_distribution: function(){
+		return this._is_one_winner() || (this._is_next_stage() && this.is_on_river()) || this._is_allin_and_call();
+	},
+	_refresh_players_acted_flag: function(){
+		$.each(this.players, function(){
+			if(this){
+				this.act_in_this_round = false;
+			}
+		});
 	},
 	_is_one_winner: function(){
 		var count = 0;
@@ -223,7 +246,7 @@ var GameMethods = {
 	_is_next_stage: function(){
 		var next_stage = true;
 		$.each(this.players, function(i, player){
-			if(player && !player.has_called() && !player.is_fold()){
+			if(player && !player.act_in_this_round){ // !player.has_called() && !player.is_fold()){
 				next_stage = false;
 				return;
 			}
@@ -247,14 +270,14 @@ var GameMethods = {
 	},
 	show_necessary_action_buttons: function(){
 		$('#actions a').each(function(){
-			if(Game._need_show_button(this.id)){
+			if(Game._is_need_show_button(this.id)){
 				$(this).show();
 			}else{
 				$(this).hide();
 			}
 		});
 	},
-	_need_show_button: function(action_name){
+	_is_need_show_button: function(action_name){
 		var client = this.players[this.client_sit];
 		switch(action_name){
 			case 'fold': return true;
@@ -276,7 +299,7 @@ var GameMethods = {
 			}
 		});
 
-		//console.log(final_in_json);
+	//console.log(final_in_json);
 	},
 	notify_about_lose: function(){
 		ActionsSynchronizer.stop();
@@ -290,8 +313,41 @@ var GameMethods = {
 		setTimeout("window.close();", 2000);
 	},
 	client_away: function(){
-		$('#away_screen').show();
-		$('#away_screen').fadeTo('fast', 0.5);
+		away_dialog.dialog('open');
+	},
+	is_last_active: function(){
+		return 1 == $.grep(this.players, function(player){ 
+			return player && player.is_active();
+		}).length;
+	},
+	_init_client_actions_area: function(){
+		$('#stake_slider').slider({
+			value:Game.minimal_bet(),
+			min: Game.minimal_bet(),
+			max: Game.players[Game.client_sit].stack,
+			step: Game.small_blind(),
+			slide: function(event, ui) {
+				$("#stake_value").attr('value', ui.value);
+			}
+		});
+		
+		$("#stake_value").val($("#stake_slider").slider("value"));
+
+		$('#stake_value').change(function(){
+			var slider_value = parseInt($(this).attr('value'));
+			if(Game.minimal_bet() <= slider_value && slider_value <= Game.players[Game.client_sit].stack){
+				$('#stake_slider').slider('value', slider_value);
+			}else{
+				var stake_value;
+				if(slider_value < Game.minimal_bet()){
+					stake_value = Game.minimal_bet();
+				}else{
+					stake_value = Game.players[Game.client_sit].stack;
+				}
+				$('#stake_slider').slider('value', stake_value);
+				$(this).attr('value', stake_value);
+			}
+		});
 	}
 };
 
@@ -317,12 +373,16 @@ var ActionsSynchronizer = {
 		clearTimeout(this._timer);
 	},
 	_get_omitted: function(){
-		if(!this.currentRequest || 4 == this.currentRequest.readyState){
-			this.currentRequest = $.getJSON(this._url(), this._perform.bind(this));
+		if(!this.currentRequest || 4 == this._currentRequest.readyState){
+			this._currentRequest = $.getJSON(
+				'/actions/omitted',
+				{
+					game_id: Game.id,
+					last_action_id: this._last_action_id
+				},
+				this._perform.bind(this)
+				);
 		}
-	},
-	_url: function(){
-		return '/actions/' + Game.id + '/' + this._last_action_id + '.json';
 	},
 	_perform: function(json){
 		var last_action_time_left = json.pop();
@@ -331,8 +391,11 @@ var ActionsSynchronizer = {
 		$(json).each(function(){
 			ActionsExecuter.perform(this);
 		});
-		//		Game.active_player.set_time_for_action(time);
+		
 		ActionsExecuter.perform(last_action, last_action_time_left);
+		if(!Game.is_paused()){
+			Game.active_player.set_status('active');
+		}
 	},
 	notify_about_action_timeout: function(player_id){
 		// показываем окошко "я вернулся", если это клиент
@@ -340,7 +403,7 @@ var ActionsSynchronizer = {
 			Game.client_away();
 		}
 		$.ajax({
-			url: '/actions/timeout/',
+			url: '/actions/timeout',
 			type: 'POST',
 			data: ({
 				game_id: Game.id,
@@ -356,20 +419,38 @@ var ActionsSynchronizer = {
 };
 
 var ActionsExecuter = {
-	name_by_kind: ['fold', 'check', 'call', 'bet', 'raise'],
+	name_by_kind: {
+		'-4': 'check',
+		'-3': 'check',
+		'-2': 'fold',
+		'-1': 'fold',
+		'0': 'fold',
+		'1': 'check',
+		'2': 'call',
+		'3': 'bet',
+		'4': 'raise'
+	},
 	perform: function(action, time_left){
 		var player_sit = action.shift();
 		Game.active_player = Game.players[player_sit];
 		var kind = action[0];
+		// тип < 0 имеют автоматические действия, и действия по таймауту
+		if(kind < 0){
+			Game.active_player.set_status('away');
+		}else{
+			Game.active_player.set_status('active');
+		}
 		action_name = this.name_by_kind[kind];
 		if(action.length == 1){
 			ActionsInfluence[action_name]();
+			ChatSynchronizer.add_player_action(action_name);
 		}else{
 			var value = action[1];
+			ChatSynchronizer.add_player_action(action_name, value - Game.active_player.for_call);
 			ActionsInfluence[action_name](value);
 		}
+		Game.players[Game.active_player.sit.id].act_in_this_round = true;
 		this._show_action(action_name);
-		ChatSynchronizer.add_player_action(action_name, value)
 		Game.next_turn(time_left);
 	},
 	_show_action: function(action_name){
@@ -378,7 +459,7 @@ var ActionsExecuter = {
 };
 ActionsInfluence = {
 	fold: function(){
-		Game.active_player.fold();
+		Game.active_player.set_status('fold');
 	},
 	check: function(){},
 	call: function(){
@@ -387,7 +468,12 @@ ActionsInfluence = {
 	},
 	bet: function(value){
 		player = Game.active_player;
-		player.stake(value);
+		player.stake(value, true);
+		$.each(Game.players, function(){
+			if(this && this.id != Game.active_player.id){
+				this.act_in_this_round = false;
+			}
+		});
 	},
 	raise: function(value){
 		this.bet(value);
@@ -396,19 +482,19 @@ ActionsInfluence = {
 //=============================================================================
 var GameSynchronizer = {
 	_period: 5,
-	_show_final_time: 3,
+	_show_final_time: 4,
 	start: function(){
 		this._timer = setInterval(this._check_for_new_players.bind(this), this._period * 1000);
 	},
 	_check_for_new_players: function(){
 		var players = Game.get_players_ids();
 		$.getJSON(
-		'/game_synchronizers/wait_for_start/' + Game.id + '.json',
-		{
-			'players[]': players
-		},
-		this._sync_game
-	);
+			'/game_synchronizers/wait_for_start/' + Game.id,
+			{
+				'players[]': players
+			},
+			this._sync_game
+		);
 	},
 	_sync_game: function(json){
 		if(json.remove && 0 < json.remove.length){
@@ -434,8 +520,16 @@ var GameSynchronizer = {
 		Game.status = 'on_preflop';
 		ActionsSynchronizer.start();
 	},
+	paused_by_away: function(){
+		$.get('/game_synchronizer/' + Game.id + '/really_pause', function(data){
+			Game.paused = 'by_away';
+			Game._refresh_players_acted_flag();
+			GameSynchronizer.new_distribution();
+			ChatSynchronizer.stop();
+		});
+	},
 	new_distribution: function(){
-		$.getJSON('/game_synchronizers/distribution/' + Game.id + '.json', function(json){
+		$.getJSON('/game_synchronizers/distribution/' + Game.id, function(json){
 			if(json.previous_final){
 				Game.show_final(json.previous_final);
 				delete json.previous_final;
@@ -445,7 +539,7 @@ var GameSynchronizer = {
 			}else{
 				GameSynchronizer.synchronize_on_new_distribution(json);
 			}
-		});
+		}.bind(this));
 	},
 	synchronize_on_new_distribution: function(game_state_in_json){
 		GameSynchronizer.synchronize_players_on_new_distribution(game_state_in_json.players_to_load);
@@ -494,11 +588,18 @@ var GameSynchronizer = {
 		Game.on_start();
 	},
 	next_stage: function(){
-		$.getJSON('/game_synchronizers/stage/' + Game.id + '.json', {
-			current_status: Game.status
-		}, function(json){
-			$.extend(Game, json);
-			Game.update_cards();
+		$.ajax({
+			async: false,
+			type: "GET",
+			url: '/game_synchronizers/stage/' + Game.id,
+			data: {
+				current_status: Game.status
+			},
+			dataType: 'json',
+			success: function(json){
+				$.extend(Game, json);
+				Game.update_cards();
+			}
 		});
 	}
 };
@@ -510,6 +611,9 @@ var ChatSynchronizer = {
 	start: function(){
 		this._timer = setInterval(this._check_for_new_messages.bind(this), this._period * 1000);
 	},
+	stop: function(){
+		clearTimeout(this._timer);
+	},
 	_check_for_new_messages: function(){
 		$.getJSON(
 			'/log_messages',
@@ -518,7 +622,7 @@ var ChatSynchronizer = {
 				'game_id': Game.id
 			},
 			this._add_messages.bind(this)
-		);
+			);
 	},
 	_add_messages: function(json){
 		$.each(json, function(i, message){
@@ -548,23 +652,24 @@ var ChatSynchronizer = {
 	},
 	_build_user_message: function(login, text){
 		return '<div class="log_record">' +
-			'<span class="log_user_login">' + $.escape(login) + ': </span>' +
-			'<span class="log_message_text">' + $.escape(text) + '</span>' +
+		'<span class="log_user_login">' + $.escape(login) + ': </span>' +
+		'<span class="log_message_text">' + $.escape(text) + '</span>' +
 		'</div>';
 	},
 	_build_player_action: function(action, value){
-		var text = value ? action + ' to ' + value : action;
+		var text = action;
+		text += value ? ' to ' + value : '';
 		return this._build_system_message_with_title(Game.active_player.login, text);
 	},
 	_build_system_message_with_title: function(title, text){
 		return '<div class="log_record">' +
-			'<span class="log_player_login">' + $.escape(title) + ': </span>' +
-			'<span class="log_action_body">' + $.escape(text) + '</span>' +
+		'<span class="log_player_login">' + $.escape(title) + ': </span>' +
+		'<span class="log_action_body">' + $.escape(text) + '</span>' +
 		'</div>';
 	},
 	_build_system_message_without_title: function(text){
 		return '<div class="log_record">' +
-			'<span class="log_action_body">' + $.escape(text) + '</span>' +
+		'<span class="log_action_body">' + $.escape(text) + '</span>' +
 		'</div>';
 	},
 	_add_to_log: function(html){
@@ -589,43 +694,84 @@ var PlayerMethods = {
 	say_action: function(action_name){
 		this.sit.last_action.text(action_name);
 	},
-	stake: function(value){
+	stake: function(value, increase_current_bet){
 		if(this.for_call < value){
-			Game.add_for_call_exept_sit(value - this.for_call, this.sit);
-			Game.current_bet = value;
+			var raise = value - this.for_call;
+			Game.add_for_call_exept_sit(raise, this.sit);
+			if(increase_current_bet){
+				Game.current_bet += raise;
+			}
 		}
 		this._update_stack(value, 'out');
 		Game.update_pot();
 	},
-	fold: function(){
-		this.sit.cards.hide();
-		this.status = 'pass';
+	set_status: function(status){
+		var new_status;
+		switch(status){
+			case 'away':
+				if('pass' == this.status){
+					new_status = 'pass_away';
+				}else{
+					new_status = 'absent';
+				}
+				if(Game.is_last_active()){
+					GameSynchronizer.paused_by_away();
+				}
+				break;
+			case 'fold':
+				if('absent' == this.status){
+					new_status = 'pass_away';
+				}else{
+					new_status = 'pass';
+				}
+				break;
+			case 'active':
+				new_status = 'active';
+				break;
+			case 'allin':
+				new_status = 'allin';
+				break;
+			default:
+				new_status = status;
+				break;
+		}
+		this.status = new_status;
+		this.sit.update_status();
 	},
 	is_fold: function(){
 		return 'pass' == this.status || 'pass_away' == this.status;
 	},
+	is_active: function(){
+		return !this.is_away();
+	},
+	is_away: function(){
+		return 'absent' == this.status || 'pass_away' == this.status;
+	},
 	has_called: function(){
 		return (
-		0 == this.for_call &&
-			(this.id == Game.active_player.id || this.sit.id != Game.blind_position || Game.current_bet != Game.blind_size)
-	);
+			0 == this.for_call// &&
+			//(this.id == Game.active_player.id || this.sit.id != Game.blind_position || Game.current_bet != Game.blind_size)
+			);
 	},
 	is_allin: function(){
 		return 0 == this.stack;
 	},
 	add_for_call: function(value){
 		this.for_call += value;
-		//this.sit.for_call.update(this.for_call);
+	//this.sit.for_call.update(this.for_call);
 	},
 	show_previous_win: function(){
 		if(0 != this.previous_win){
 			var text = 'win ' + this.previous_win;
 			ChatSynchronizer.add_system_message(text, this.login)
 		}
-		//TODO
+	//TODO
 	},
 	_update_stack: function(value, direction){
 		if('out' == direction){
+			if(this.stack < value){
+				value = this.stack;
+			}
 			this.stack -= value;
 			this.in_pot += value;
 		}else{
@@ -634,9 +780,13 @@ var PlayerMethods = {
 		}
 		this.for_call = 0;
 
+		if(0 == this.stack){
+			this.set_status('allin');
+		}
+
 		this.sit.update_stack();
 		this.sit.update_in_pot(this.in_pot);
-		//this.sit.for_call.update(this.for_call);
+	//this.sit.for_call.update(this.for_call);
 	},
 	update_hand: function(new_hand_string){
 		this.hand_to_load = new_hand_string;
@@ -658,15 +808,17 @@ var PlayerSit = function(player){
 	this.main = $('#sit_' + this.id).show('slow');
 	this.login = $('#login_' + this.id).attr('title', player.login).text(player.login);
 	this.cards = new CardsSet('cards_' + this.id, 'player');
-	if(this.player.hand_to_load){
-		this.update_hand();
-	}
-	this.update_status();
 	this.timer = $('#timer_' + this.id);
 	this.stack = $('#stack_' + this.id).text(player.stack);
 	this.last_action = $('#last_action_' + this.id);
 	this.for_call = null;
 	this.in_pot = null;
+	this.away_layer = $('#away_layer_' + this.id);
+
+	if(this.player.hand_to_load){
+		this.update_hand();
+	}
+	this.update_status();
 };
 
 var PlayerSitMethods = {
@@ -674,25 +826,15 @@ var PlayerSitMethods = {
 		this.timer.attr('src', this._timer_src());
 	},
 	update_in_pot: function(new_value){
-		//this.in_pot.text(new_value);
-	},
-	update_status: function(){
-		switch(this.player.status){
-			case 'pass': this.cards.hide(); break;
-			case 'pass_away': this.cards.hide(); break;
-			case 'active': /*this.cards.show(); */ break;
-			default:
-				//this.cards.show();
-				break;
-		}
-		//this.status.text(new_value);
+	//this.in_pot.text(new_value);
 	},
 	update_stack: function(){
-		this.stack.text(this.player.stack);
+		var stack_text = this.player.stack || 'allin';
+		this.stack.text(stack_text);
 	},
 	update_hand: function(){
 		this.cards.set_cards(this.player.hand_to_load);
-		//this.player.hand.show('card_' + this.id);
+	//this.player.hand.show('card_' + this.id);
 	},
 	_timer_src: function(){
 		var time = this.player.timer.time;
@@ -701,6 +843,38 @@ var PlayerSitMethods = {
 	},
 	disable: function(){
 		this.main.hide('slow');
+	},
+	player_away: function(){
+		this.away_layer.show();
+		this.away_layer.fadeTo('fast', 0.5);
+	},
+	player_fold: function(){
+		this.cards.hide();
+	},
+	player_active: function(){
+		this.away_layer.hide();
+		this.cards.show();
+	},
+	update_status: function(){
+		this.player_active();
+		switch(this.player.status){
+			case 'active':
+				break;
+			case 'pass':
+				this.player_fold();
+				break;
+			case 'absent':
+				this.player_away();
+				break;
+			case 'allin':
+				break;
+			case 'pass_away':
+				this.player_fold();
+				this.player_away();
+				break;
+			default:
+				break;
+		}
 	}
 };
 
@@ -780,9 +954,9 @@ var CardsSetMethods = {
 		this.cards.each(function(i, card){
 			$(this.container_id + '_' + i).attr('src', card.src).attr('alt', card.alt);
 		}.bind(this));
-		this._show();
+		this.show();
 	},
-	_show: function(){
+	show: function(){
 		$(this.container_id).show();
 	},
 	hide: function(){
@@ -794,6 +968,7 @@ var CardsSetMethods = {
 						return null;
 					}.bind(this));
 				}
+				$(this.container_id).dropOut('slow');
 				break;
 			case 'game':
 				$(this.container_id).hide();

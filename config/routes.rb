@@ -35,17 +35,14 @@ ActionController::Routing::Routes.draw do |map|
 	map.resource :user_session
   map.login 'login', :controller => 'user_sessions', :action => 'new'
   map.leave_game ':game_id/leave', :controller => 'players', :action => 'destroy'
-  map.player_back 'player_back/:game_id', :controller => 'players', :action => 'i_am_back'
-	map.omitted_actions 'actions/:game_id/:last_action_id.:format', :controller => 'actions', :action => 'omitted'
+	map.really_pause 'game_synchronizer/:game_id/really_pause', :controller => 'game_synchronizers', :action => 'really_pause'
   map.resources :users
-  map.resources :actions
+  map.resources :actions, :collection => { :omitted => :get, :timeout => :post }
   map.resources :log_messages
   map.resources :games, :has_many => 'players'
-  map.resources :players
+  map.resources :players, :member => { :i_am_back => :put }
   map.resources :game_types
-  map.create_note 'notes', :controller => 'notes', :action => 'create'
-  map.update_note 'notes/:about_user_id', :controller => 'notes', :action => 'update'
-  map.show_note 'note/:about_user_id', :controller => 'notes', :action => 'show'
+  map.resources :notes
   map.connect ':controller/:action/:id'
   map.connect ':controller/:action/:id.:format'
   

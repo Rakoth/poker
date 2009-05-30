@@ -87,6 +87,7 @@ ActiveRecord::Schema.define(:version => 20090521151119) do
     t.integer  "for_call",            :default => 0
     t.integer  "in_pot",              :default => 0
     t.string   "status"
+    t.boolean  "act_in_this_round",   :default => false
     t.boolean  "want_pause",          :default => false
     t.text     "hand"
     t.text     "previous_hand"

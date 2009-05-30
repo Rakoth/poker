@@ -3,7 +3,7 @@ class GamesController < ApplicationController
   before_filter :check_authorization, :except => :index
 
   def index
-    @games = Game.waited :include => [:type]
+    @games = Game.waited
   end
 
   def show

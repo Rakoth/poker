@@ -14,8 +14,8 @@ class Player < ActiveRecord::Base
 	
 	STATUS = {:leave => 'leave', :away => 'absent', :pass_away => 'pass_away'}
 
-	named_scope :want_pause, :conditions => ['want_pause = ?', true]
-	named_scope :away, :conditions => ["status IN (?, ?)", STATUS[:away], STATUS[:pass_away]]
+	named_scope :want_pause, :conditions => {:want_pause => true}
+	named_scope :away, :conditions => {:status => [STATUS[:away], STATUS[:pass_away]]}
 
 	def fold?
 		pass? or pass_away?
@@ -25,17 +25,22 @@ class Player < ActiveRecord::Base
 		absent? or pass_away?
 	end
 
-	def act_now?
-		id == game.active_player_id
-	end
+#	def act_now?
+#		id == game.active_player_id
+#	end
 
 	def ready_for_next_stage?
-		fold? or (has_called? and (act_now? or !on_big_blind_and_not_do_action?))
+		act_in_this_round?
+		#fold? or (has_called? and (act_now? or !on_big_blind_and_not_do_action?))
 	end
 
-	def on_big_blind_and_not_do_action?
-		sit == game.blind_position and game.current_bet == game.blind_size
+	def act_in_this_round?
+		act_in_this_round
 	end
+
+#	def on_big_blind_and_not_do_action?
+#		sit == game.blind_position and game.current_bet == game.blind_size
+#	end
 
 	def absent_and_must_call?
 		absent? and must_call?
@@ -60,7 +65,7 @@ class Player < ActiveRecord::Base
 		transitions :from => :active, :to => :pass
 		#transitions :from => :pass_away, :to => :pass_away
 		# автопасс для отошедшего ранее игрока
-		transitions :from => :absent, :to => :pass_away, :on_transition => :auto_fold!
+		transitions :from => :absent, :to => :pass_away #, :on_transition => :auto_fold!
 	end
 	
 	# пасс по таймауту - ставим статус отошел
@@ -88,8 +93,8 @@ class Player < ActiveRecord::Base
   # validates_presence_of :user_id, :game_id, :sit, :stack
 
   belongs_to :user
-  belongs_to :game, :counter_cache => :players_count
-  has_many :actions, :class_name => 'Actions::Action'
+  belongs_to :game, :counter_cache => true
+  has_many :actions, :class_name => 'PlayerActions::Action'
 
 	delegate :login, :level, :to => :user
 
@@ -125,6 +130,10 @@ class Player < ActiveRecord::Base
 			raise 'Unexpected action type in Player#act!: "' + params[:kind] + '"'
     end
     action.execute
+	end
+
+	def has_acted!
+		update_attribute :act_in_this_round, true
 	end
 
 	def has_called?
@@ -180,6 +189,18 @@ class Player < ActiveRecord::Base
 		PlayerActions::AutoCheckAction.new(:player => self, :game => game).execute
 	end
 
+	def auto_fold!
+		PlayerActions::AutoFoldAction.new(:player => self, :game => game).execute
+	end
+
+	def fold_on_away!
+		PlayerActions::TimeoutFoldAction.new(:player => self, :game => game).execute
+	end
+
+	def check_on_away!
+		PlayerActions::TimeoutCheckAction.new(:player => self, :game => game).execute
+	end
+
 	private
 	
 	def init_data
@@ -203,7 +224,8 @@ class Player < ActiveRecord::Base
 			:stack => stack,
 			:for_call => for_call,
 			:in_pot => in_pot,
-			:previous_win => previous_win
+			:previous_win => previous_win,
+			:act_in_this_round => act_in_this_round
 		}
 	end
 
@@ -232,18 +254,6 @@ class Player < ActiveRecord::Base
 
 	def start_game
 		game.start!
-	end
-
-	def auto_fold!
-		PlayerActions::AutoFoldAction.new(:player => self, :game => game).execute
-	end
-
-	def fold_on_away!
-		PlayerActions::TimeoutFoldAction.new(:player => self, :game => game).execute
-	end
-
-	def check_on_away!
-		PlayerActions::TimeoutCheckAction.new(:player => self, :game => game).execute
 	end
 
 	def resume_game!

@@ -9,10 +9,10 @@
 		<%= form.hidden_field :game_id, :value => @game.id %>
 		<div>
 			<div style="float:left;">
-				<%= form.text_field :text, :id => 'log_message_text' %>&nbsp;
+				<%= form.text_field :text %>&nbsp;
 			</div>
 			<div style="float:left;padding-top:3px;">
-				<%= image_submit_tag 'game/log/send.gif', :id => 'log_message_submit'%>
+				<%= image_submit_tag 'game/log/send.gif', :id => 'log_message_submit' %>
 			</div>
 		</div>
 <%- end -%>

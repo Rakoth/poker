@@ -3,6 +3,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <%= stylesheet_link_tag "game", :media => "all" %>
+    <%= stylesheet_link_tag "jquery-ui", :media => "all" %>
 		<%= javascript_include_tag :defaults %>
 		<%= javascript_include_tag 'game.js' %>
     <title>Game</title>
@@ -15,7 +16,7 @@
           <div id="info_line" class="block"></div>
           <div id="game_info" class="block">
 						<div class="info_part"><%= @game.type.title %></div>
-						<div class="info_part"><%=t 'views.games.show.blinds' %> <span id="blinds"></span>&nbsp;&nbsp;&nbsp;<%=t 'views.games.show.in_pot' %> <span id="pot"></span></div>
+						<div class="info_part">blinds: <span id="blinds"></span>&nbsp;&nbsp;&nbsp;pot: <span id="pot"></span></div>
 					</div>
         </div>
         <div id="table">
@@ -32,7 +33,7 @@
 					<%= render :partial => 'log' %>
 				</div>
         <div id="help" class="block"></div>
-        <div id="actions" class="block">
+        <div class="block">
 					<%= render :partial => 'player_actions' %>
 				</div>
         <div id="notes" class="block"></div>

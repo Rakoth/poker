@@ -7,7 +7,7 @@ class ActionsController < ApplicationController
   def omitted
     respond_to do |format|
       format.html {render :text => 'Здесь ничего нет..неверный формат!!!' and return}
-      format.json {
+      format.js {
 				@actions = PlayerActions::Action.omitted(params[:game_id], params[:last_action_id], current_user.current_player(params[:game_id]).id)
         unless @actions.empty?
 					j_array = @actions.map do |action|
@@ -25,7 +25,7 @@ class ActionsController < ApplicationController
   end
 
   def create
-    game = current_user.games.find(params[:game_id])
+    game = current_user.games.find params[:game_id]
     if game and !game.paused? and player = game.wait_action_from(current_user) and player.act!(params)
       status = :ok # :no_content
     else

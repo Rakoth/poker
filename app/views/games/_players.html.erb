@@ -1,4 +1,5 @@
 <%- @game.type.max_players.times do |sit| -%>
+<div id="away_layer_<%= sit %>" class="away_layer" style="<%=player_window_position(@game.type_id, sit)%>"></div>
 <div id="sit_<%= sit %>" class="sit" style="<%=player_window_position(@game.type_id, sit)%>">
 	<!--div id="<%= sits_element_id 'last_action', sit %>" class="last_action"></div-->
 	<div class="main_part">

@@ -2,7 +2,7 @@ class GameSynchronizersController < ApplicationController
 
 	def wait_for_start
 		respond_to do |format|
-			format.json {
+			format.js {
 				game = current_user.games.find params[:id]
 				add_players = game.players.select{|p| !params[:players].to_a.include?(p.id.to_s)}
 				remove_players = params[:players].select{|id| !game.players.map(&:id).include?(id.to_i)}
@@ -24,13 +24,19 @@ class GameSynchronizersController < ApplicationController
 
 	def distribution
 		respond_to do |format|
-			format.json {render :json => current_user.games.find(params[:id]).build_synch_data(:on_distribution, current_user.id)}
+			format.js {render :json => current_user.games.find(params[:id]).build_synch_data(:on_distribution, current_user.id)}
 		end
 	end
 
 	def stage
     respond_to do |format|
-      format.json {render :json => current_user.games.find(params[:id]).build_synch_data(:on_next_stage, current_user.id)}
+      format.js {render :json => current_user.games.find(params[:id]).build_synch_data(:on_next_stage, current_user.id)}
     end
+	end
+
+	def really_pause
+		game = Game.find params[:game_id]
+		status = game.paused_by_away? ? :ok : :bad_request
+		render :nothing => true, :status => status
 	end
 end

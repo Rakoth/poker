@@ -1,6 +1,3 @@
-<%#= link_to_function(t(:detail), 'game_window("' + game_url(game) + '")') %>
-
-
 <%= link_to_remote(t(:join),
 	:url => game_players_path(game),
 	:method => :post,

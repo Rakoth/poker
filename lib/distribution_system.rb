@@ -1,53 +1,11 @@
 module DistributionSystem
-	def goto_next_stage
-		logger.info 'STARTED next_stage'
-		if one_winner?
-      final_distribution!
-		elsif allin_and_call?
-			deal_remained_cards!
-			final_distribution!
-    elsif next_stage?
-      next_stage!
-		else
-			next_active_player_id
-    end
-  end
-
-	private
-
-  def before_distribution
-		logger.info 'STARTED before_distribution'
-		new_blind_position = next_blind_position
-    update_attributes(
-			:current_bet => 0,
-			:blind_position => new_blind_position,
-			:active_player_id => get_first_player_from(new_blind_position),
-			:deck => Poker::Deck.new.shuffle,
-			:flop => nil,
-			:turn => nil,
-			:river => nil,
-
-			:previous_flop => Poker::Hand.new(flop),
-			:previous_turn => Poker::Hand.new(turn),
-			:previous_river => Poker::Hand.new(river)
-		)
-    players.each do |player|
-			player.activate! unless player.active?
-			player.update_attributes(
-				:in_pot => 0,
-				:for_call => 0,
-				:previous_hand => (player.open_hand? ? Poker::Hand.new(player.hand) : nil)
-			) unless 0 == player.in_pot and 0 == player.for_call and !player.open_hand?
-    end
-		actions.each(&:destroy)
-  end
-
 	def next_stage?
-		players.all? { |p| p.ready_for_next_stage? }
+		players.all?(&:ready_for_next_stage?)
 	end
 
   def next_stage!
-		logger.info 'STARTED goto_next_stage!'
+		logger.info 'STARTED next_stage!'
+		Player.update_all 'act_in_this_round = 0', {:game_id => id}
     if on_preflop?
       show_flop!
     elsif on_flop?
@@ -55,60 +13,20 @@ module DistributionSystem
     elsif on_turn?
       show_river!
     else
-      final_distribution! and return
-    end
-		next_active_player_id
-  end
-
-	def start_distribution!
-		logger.info 'STARTED start_distribution!'
-		before_distribution
-		next_blind_level
-		take_blinds!
-		hands_deal!
-	end
-	
-  def deal_flop!
-		update_attribute :flop, Poker::Hand.new(deck.next(3))
-  end
-
-  def deal_turn!
-		update_attribute :turn, Poker::Hand.new(deck.next(1))
-  end
-
-  def deal_river!
-		update_attribute :river, Poker::Hand.new(deck.next(1))
-  end
-
-  def hands_deal!
-    players.each do |player|
-      player.update_attribute :hand, Poker::Hand.new(deck.next(2))
+      # ничего не делаем, все карты показаны
     end
   end
 
-	def deal_remained_cards!
-		if on_preflop?
-			update_attributes(
-				:flop => Poker::Hand.new(deck.next(3)),
-				:turn => Poker::Hand.new(deck.next(1)),
-				:river => Poker::Hand.new(deck.next(1))
-			)
-		elsif on_flop?
-			update_attributes(
-				:turn => Poker::Hand.new(deck.next(1)),
-				:river => Poker::Hand.new(deck.next(1))
-			)
-		elsif on_turn?
-			deal_river!
-		else
-			# ничего не делаем
-		end
+	def final_distribution?
+		one_winner? or allin_and_call? or (on_river? and next_stage?)
 	end
 
 	# метод разделяет банк игры между победителями раздачи,
 	# которые определяются самим методом исходя из карт игроков
   def final_distribution!
 		logger.info 'STARTED final_distribution!'
+		# если торги продолжать невозможно, но показаны еще не все карты на столе
+		deal_remained_cards! if allin_and_call?
 		# сохраним текущее значение стэка для каждого игрока
 		players.each_index{|i| players[i].previous_stack = players[i].stack}
 		# выделить не сделавших пасс игроков
@@ -175,4 +93,93 @@ module DistributionSystem
 		players.reload
 	  new_distribution!
   end
+
+	def continue_distribution!
+		logger.info "STARTED continue_distribution!"
+		next_stage! if next_stage?
+		next_player_temp = next_player
+		self.active_player = next_player_temp
+		unless next_player_temp.active?
+			if next_player_temp.absent_and_must_call?
+				next_player_temp.auto_fold!
+			else # allin или absent
+				next_player_temp.auto_check!
+			end
+		end
+	end
+
+	private
+
+  def before_distribution
+		logger.info 'STARTED before_distribution'
+		new_blind_position = next_blind_position
+    update_attributes(
+			:current_bet => 0,
+			:blind_position => new_blind_position,
+			:active_player_id => get_first_player_from(new_blind_position),
+			:deck => Poker::Deck.new.shuffle,
+			:flop => nil,
+			:turn => nil,
+			:river => nil,
+
+			:previous_flop => Poker::Hand.new(flop),
+			:previous_turn => Poker::Hand.new(turn),
+			:previous_river => Poker::Hand.new(river)
+		)
+    players.each do |player|
+			player.activate! unless player.active?
+			player.update_attributes(
+				:in_pot => 0,
+				:for_call => 0,
+				:previous_hand => (player.open_hand? ? player.hand : nil)
+			) unless 0 == player.in_pot and 0 == player.for_call and !player.open_hand?
+    end
+		#TODO сделать одним запросом
+		actions.each(&:destroy)
+  end
+
+	def start_distribution!
+		logger.info 'STARTED start_distribution!'
+		before_distribution
+		next_blind_level
+		take_blinds!
+		deal_hands!
+	end
+	
+  def deal_flop!
+		update_attribute :flop, Poker::Hand.new(deck.next(3))
+  end
+
+  def deal_turn!
+		update_attribute :turn, Poker::Hand.new(deck.next(1))
+  end
+
+  def deal_river!
+		update_attribute :river, Poker::Hand.new(deck.next(1))
+  end
+
+  def deal_hands!
+    players.each do |player|
+      player.update_attribute :hand, Poker::Hand.new(deck.next(2))
+    end
+  end
+
+	def deal_remained_cards!
+		if on_preflop?
+			update_attributes(
+				:flop => Poker::Hand.new(deck.next(3)),
+				:turn => Poker::Hand.new(deck.next(1)),
+				:river => Poker::Hand.new(deck.next(1))
+			)
+		elsif on_flop?
+			update_attributes(
+				:turn => Poker::Hand.new(deck.next(1)),
+				:river => Poker::Hand.new(deck.next(1))
+			)
+		elsif on_turn?
+			deal_river!
+		else
+			# ничего не делаем
+		end
+	end
 end
