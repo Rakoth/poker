@@ -79,8 +79,8 @@ class Player < ActiveRecord::Base
 	end
 
 	aasm_event :back_to_game do
-		transitions :from => :absent, :to => :active, :on_transition => :resume_game!
-		transitions :from => :pass_away, :to => :pass, :on_transition => :resume_game!
+		transitions :from => :absent, :to => :active
+		transitions :from => :pass_away, :to => :pass
 	end
 
 	aasm_event :lose do
@@ -254,10 +254,6 @@ class Player < ActiveRecord::Base
 
 	def start_game
 		game.start!
-	end
-
-	def resume_game!
-		game.resume! if game.paused_by_away?
 	end
 
 	def calculate_winning

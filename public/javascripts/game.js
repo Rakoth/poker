@@ -8,6 +8,9 @@ Function.prototype.bind = function(object) {
 $.extend({
 	escape: function(html_to_escape){
 		return html_to_escape.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+	},
+	is_request_ready: function(request){
+		return (!request || 0 == request.readyState || 4 == request.readyState)
 	}
 });
 
@@ -320,6 +323,10 @@ var GameMethods = {
 			return player && player.is_active();
 		}).length;
 	},
+	resume: function(){
+		Game.paused = null;
+		Game.active_player.start_turn();
+	},
 	_init_client_actions_area: function(){
 		$('#stake_slider').slider({
 			value:Game.minimal_bet(),
@@ -362,7 +369,7 @@ var ActionsSynchronizer = {
 		this._last_action_id = id;
 	},
 	start: function(){
-		this._timer = setInterval(this._get_omitted.bind(this), this._period * 1000);
+		this._timer = setInterval(this._get_ommited.bind(this), this._period * 1000);
 	},
 	restart: function(new_period){
 		this._period = new_period;
@@ -372,8 +379,8 @@ var ActionsSynchronizer = {
 	stop: function(){
 		clearTimeout(this._timer);
 	},
-	_get_omitted: function(){
-		if(!this.currentRequest || 4 == this._currentRequest.readyState){
+	_get_ommited: function(){
+		if($.is_request_ready(this._currentRequest)){
 			this._currentRequest = $.getJSON(
 				'/actions/omitted',
 				{
@@ -393,28 +400,27 @@ var ActionsSynchronizer = {
 		});
 		
 		ActionsExecuter.perform(last_action, last_action_time_left);
-		if(!Game.is_paused()){
-			Game.active_player.set_status('active');
-		}
 	},
 	notify_about_action_timeout: function(player_id){
 		// показываем окошко "я вернулся", если это клиент
 		if(Game.players[Game.client_sit].id == player_id){
 			Game.client_away();
 		}
-		$.ajax({
-			url: '/actions/timeout',
-			type: 'POST',
-			data: ({
-				game_id: Game.id,
-				player_id: player_id
-			}),
-			error: function(XMLHttpRequest){
-				if(HurrySyncErrorStatus == XMLHttpRequest.status){
-					setTimeout("ActionsSynchronizer.notify_about_action_timeout(" + player_id + ")", this._notify_period * 1000);
+		if($.is_request_ready(this._notifyRequest)){
+			this._notifyRequest = $.ajax({
+				url: '/actions/timeout',
+				type: 'POST',
+				data: ({
+					game_id: Game.id,
+					player_id: player_id
+				}),
+				error: function(XMLHttpRequest){
+					if(HurrySyncErrorStatus == XMLHttpRequest.status){
+						setTimeout("ActionsSynchronizer.notify_about_action_timeout(" + player_id + ")", this._notify_period * 1000);
+					}
 				}
-			}
-		});
+			});
+		}
 	}
 };
 
@@ -521,11 +527,15 @@ var GameSynchronizer = {
 		ActionsSynchronizer.start();
 	},
 	paused_by_away: function(){
-		$.get('/game_synchronizer/' + Game.id + '/really_pause', function(data){
-			Game.paused = 'by_away';
-			Game._refresh_players_acted_flag();
-			GameSynchronizer.new_distribution();
-			ChatSynchronizer.stop();
+		$.ajax({
+			async: false,
+			url: '/game_synchronizer/' + Game.id + '/really_pause',
+			success: function(){
+				Game.paused = 'by_away';
+				Game._refresh_players_acted_flag();
+				GameSynchronizer.new_distribution();
+				ChatSynchronizer.stop();
+			}
 		});
 	},
 	new_distribution: function(){
@@ -615,14 +625,16 @@ var ChatSynchronizer = {
 		clearTimeout(this._timer);
 	},
 	_check_for_new_messages: function(){
-		$.getJSON(
-			'/log_messages',
-			{
-				'last_message_id': this.last_message_id,
-				'game_id': Game.id
-			},
-			this._add_messages.bind(this)
+		if($.is_request_ready(this._currentRequest)){
+			this._currentRequest = $.getJSON(
+				'/log_messages',
+				{
+					'last_message_id': this.last_message_id,
+					'game_id': Game.id
+				},
+				this._add_messages.bind(this)
 			);
+		}
 	},
 	_add_messages: function(json){
 		$.each(json, function(i, message){
@@ -793,6 +805,9 @@ var PlayerMethods = {
 		this.sit.update_hand();
 	},
 	start_turn: function(time_left){
+		if(!Game.is_paused()){
+			this.set_status('active');
+		}
 		this.timer.start(time_left);
 	},
 	end_turn: function(){

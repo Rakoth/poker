@@ -112,8 +112,13 @@ class Game < ActiveRecord::Base
 		update_attribute :paused, PAUSE_TYPE[:by_away]
 	end
 
-	def resume!
-		update_attribute :paused, nil
+	def resume! first_active_player
+		if paused_by_away?
+			update_attribute :paused, nil
+			if active_player != first_active_player
+				active_player.auto_fold!
+			end
+		end
 	end
 
   def pot
