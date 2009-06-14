@@ -2,12 +2,12 @@ module BlindSystem
   def small_blind_position
     @small_blind_position ||= get_first_player_from blind_position, :out => :sit, :direction => :desc
   end
-	
-	private
 
 	def small_blind_size
-    blind_size / 2
+    @small_blind_size ||= blind_size / 2
   end
+	
+	private
 	
 	def next_blind_position
 		blind_position.nil? ? rand(type.max_players) : get_first_player_from(blind_position, :out => :sit)

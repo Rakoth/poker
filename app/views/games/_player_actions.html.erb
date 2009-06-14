@@ -1,14 +1,43 @@
-<% actions  = [
+<%- actions  = [
 	{:name => 'fold',  :kind => PlayerActions::FoldAction::KIND,  :no_display => '',  :value => false},
 	{:name => 'check', :kind => PlayerActions::CheckAction::KIND, :no_display => 'display:none;', :value => false},
 	{:name => 'call',  :kind => PlayerActions::CallAction::KIND,  :no_display => '', :value => false},
 	{:name => 'bet',   :kind => PlayerActions::BetAction::KIND,   :no_display => '', :value => true},
 	{:name => 'raise', :kind => PlayerActions::RaiseAction::KIND, :no_display => 'display:none;', :value => true}
-] %>
+] -%>
 <div id ="actions">
 	<%= render :partial => 'player_action_button', :collection => actions, :as => :action %>
 </div>
 <div>
 	<div style="float:left;width:70%;margin:5px 5px 0 0;"><div id="stake_slider"></div></div>
 	<div style="margin-top:2px;"><input id="stake_value" adisabled="disabled" value="<%= @game.minimal_bet %>" size="5"/></div>
+	<script type="text/javascript">
+		$('#stake_slider').slider({
+			value: <%= @game.minimal_bet %>,
+			min: <%= @game.minimal_bet %>,
+			max: <%= @game.current_player(current_user).stack %>,
+			step: <%= @game.small_blind_size %>,
+			slide: function(event, ui) {
+				$("#stake_value").attr('value', ui.value);
+			}
+		});
+
+		$("#stake_value").val($("#stake_slider").slider("value"));
+
+		$('#stake_value').change(function(){
+			var slider_value = parseInt($(this).attr('value'));
+			if(RP_Game.minimal_bet() <= slider_value && slider_value <= RP_Client.stack){
+				$('#stake_slider').slider('value', slider_value);
+			}else{
+				var stake_value;
+				if(slider_value < RP_Game.minimal_bet()){
+					stake_value = RP_Game.minimal_bet();
+				}else{
+					stake_value = RP_Game.players[Game.client_sit].stack;
+				}
+				$('#stake_slider').slider('value', stake_value);
+				$(this).attr('value', stake_value);
+			}
+		});
+	</script>
 </div>

@@ -12,11 +12,11 @@ module GamesHelper
 		case game_type_id
 			when 1:
 				positions = [[3, 50], [128, 50], [253, 50], [378, 50], [370, 170], [320, 285], [190, 285], [60, 285], [10, 170]]
-				"left:#{positions[sit][0]}px;top:#{positions[sit][1]}px"
+				"left:#{positions[sit][0]}px;top:#{positions[sit][1]}px;"
 			when 2:
-				"top:#{100}px;left:#{200 * sit}px"
+				"top:#{100}px;left:#{200 * sit}px;"
 			when 3:
-				"top:#{100}px;left:#{200 * sit}px"
+				"top:#{100}px;left:#{200 * sit}px;"
 		end
 	end
 

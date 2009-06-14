@@ -5,7 +5,7 @@ module DistributionSystem
 
   def next_stage!
 		logger.info 'STARTED next_stage!'
-		Player.update_all 'act_in_this_round = 0', {:game_id => id}
+		Player.update_all ['act_in_this_round = ?', false], {:game_id => id}
     if on_preflop?
       show_flop!
     elsif on_flop?
@@ -13,7 +13,8 @@ module DistributionSystem
     elsif on_turn?
       show_river!
     else
-      # ничего не делаем, все карты показаны
+			# не должно быть ситуации, в которой выполняется это условие
+      raise "final_distribution! should be activated before the next_stage!"
     end
   end
 
@@ -134,7 +135,7 @@ module DistributionSystem
 				:previous_hand => (player.open_hand? ? player.hand : nil)
 			) unless 0 == player.in_pot and 0 == player.for_call and !player.open_hand?
     end
-		#TODO сделать одним запросом
+		# TODO сделать одним запросом
 		actions.each(&:destroy)
   end
 

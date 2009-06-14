@@ -1,8 +1,0 @@
-<%= periodically_call_remote(
-	:frequency => 10,
-	:method => :get,
-	:layout => false,
-	:authenticity_token => false,
-	:url => omitted_actions_path(:game_id => 1, :last_action_id => 1, :format => 'json'),
-	:complete => 'show_omitted_actions();'
-) %>

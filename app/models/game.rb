@@ -173,7 +173,8 @@ class Game < ActiveRecord::Base
 		end
 	end
 
-	def current_player user_id
+	def current_player user_or_user_id
+		user_id = user_or_user_id.is_a?(User) ? user_or_user_id.id : user_or_user_id
 		players.find_by_user_id user_id
 	end
 
@@ -271,7 +272,8 @@ class Game < ActiveRecord::Base
 			:current_bet => current_bet,
 			:active_player_id => active_player_id,
 			:action_time_left => action_time_left,
-			:client_hand => current_player(for_user_id).hand.to_s
+			:client_hand => current_player(for_user_id).hand.to_s,
+			:status => status
 		}
 	end
 
