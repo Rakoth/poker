@@ -238,9 +238,11 @@ class Game < ActiveRecord::Base
 			:active_player_id => active_player_id,
 			:last_action_id => (actions.any? ? actions.sort_by(&:created_at).last.id : nil),
 			:action_time_left => action_time_left,
-			:flop_to_load  => (flop.nil? ? flop.to_s : nil),
-			:turn_to_load  => (turn.nil? ? turn.to_s : nil),
-			:river_to_load => (river.nil? ? river.to_s : nil),
+			:cards_to_load => {
+				:flop => (flop.nil? ? flop.to_s : nil),
+				:turn  => (turn.nil? ? turn.to_s : nil),
+				:river => (river.nil? ? river.to_s : nil)
+			},
 			:players_to_load => players.map{|p| p.build_synch_data(:after_start_game, for_user_id)},
 			:paused => paused
 		}

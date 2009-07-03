@@ -1,6 +1,6 @@
 class LogMessagesController < ApplicationController
 	skip_before_filter :set_locate
-  before_filter :check_authorization, :exept => :index
+  before_filter :check_authorization, :except => :index
 
 	def index
 		messages = LogMessage.omitted params[:game_id], params[:last_message_id], current_user.id

@@ -31,24 +31,15 @@ class Player < ActiveRecord::Base
 
 	def ready_for_next_stage?
 		act_in_this_round?
-		#fold? or (has_called? and (act_now? or !on_big_blind_and_not_do_action?))
 	end
 
 	def act_in_this_round?
 		act_in_this_round
 	end
 
-#	def on_big_blind_and_not_do_action?
-#		sit == game.blind_position and game.current_bet == game.blind_size
-#	end
-
 	def absent_and_must_call?
 		absent? and must_call?
 	end
-	
-#	def can_do_stake_and_call?
-#		!fold? and !allin? and has_called?
-#	end
 
 	aasm_event :i_am_allin do
 		transitions :from => :active, :to => :allin
@@ -112,24 +103,35 @@ class Player < ActiveRecord::Base
     @persent ||= 0
   end
 
-  def act! params
-    hash_params = {:player => self, :game => game}
-    hash_params[:value] = params[:value] unless params[:value].nil?
-    action = case params[:kind].to_i
-		when 0:
-				PlayerActions::FoldAction.new hash_params
-		when 1:
-				PlayerActions::CheckAction.new hash_params
-		when 2:
-				PlayerActions::CallAction.new hash_params
-		when 3:
-				PlayerActions::BetAction.new hash_params
-		when 4:
-				PlayerActions::RaiseAction.new hash_params
+	#def act! params
+	#	hash_params = {:player => self, :game => game}
+	#	hash_params[:value] = params[:value] unless params[:value].nil?
+	#	action = case params[:kind].to_i
+	#		when 0:
+	#			PlayerActions::FoldAction.new hash_params
+	#		when 1:
+	#			PlayerActions::CheckAction.new hash_params
+	#		when 2:
+	#			PlayerActions::CallAction.new hash_params
+	#		when 3:
+	#			PlayerActions::BetAction.new hash_params
+	#		when 4:
+	#			PlayerActions::RaiseAction.new hash_params
+	#		else
+	#			raise 'Unexpected action type in Player#act!: "' + params[:kind] + '"'
+	#	end
+	#	action.execute
+	#end
+
+	def act! params
+		kind = params[:kind].to_i
+		if PlayerActions::Action::KINDS[:fold] <= kind and kind <= PlayerActions::Action::KINDS[:raise]
+			action_params = {:player => self, :game => game}
+			action_params[:value] = params[:value] unless params[:value].nil?
+			PlayerActions::Action.execute_action kind, action_params
 		else
-			raise 'Unexpected action type in Player#act!: "' + params[:kind] + '"'
-    end
-    action.execute
+			raise "Unexpected action type in Player#act!: #{params[:kind]}"
+		end
 	end
 
 	def has_acted!
@@ -141,7 +143,7 @@ class Player < ActiveRecord::Base
 	end
 
 	def must_call?
-		for_call > 0
+		0 < for_call
 	end
 
 	def has_empty_stack?
@@ -155,7 +157,6 @@ class Player < ActiveRecord::Base
 	def act_on_away!
 		if must_call?
 			fold_on_away!
-			#do_fold_on_away!
 		else
 			check_on_away!
 		end
@@ -186,19 +187,23 @@ class Player < ActiveRecord::Base
 	end
 
 	def auto_check!
-		PlayerActions::AutoCheckAction.new(:player => self, :game => game).execute
+		PlayerActions::Action.execute_action PlayerActions::Action::KINDS[:auto_check], :player => self, :game => game
+		#PlayerActions::AutoCheckAction.new(:player => self, :game => game).execute
 	end
 
 	def auto_fold!
-		PlayerActions::AutoFoldAction.new(:player => self, :game => game).execute
+		PlayerActions::Action.execute_action PlayerActions::Action::KINDS[:auto_fold], :player => self, :game => game
+		#PlayerActions::AutoFoldAction.new(:player => self, :game => game).execute
 	end
 
 	def fold_on_away!
-		PlayerActions::TimeoutFoldAction.new(:player => self, :game => game).execute
+		PlayerActions::Action.execute_action PlayerActions::Action::KINDS[:timeout_fold], :player => self, :game => game
+		#PlayerActions::TimeoutFoldAction.new(:player => self, :game => game).execute
 	end
 
 	def check_on_away!
-		PlayerActions::TimeoutCheckAction.new(:player => self, :game => game).execute
+		PlayerActions::Action.execute_action PlayerActions::Action::KINDS[:timeout_check], :player => self, :game => game
+		#PlayerActions::TimeoutCheckAction.new(:player => self, :game => game).execute
 	end
 
 	private

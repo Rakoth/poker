@@ -1,5 +1,5 @@
 class PlayerActions::BetAction < PlayerActions::Action
-  KIND = 3
+z
 
 	def after_initialize
 		self.value += player.for_call

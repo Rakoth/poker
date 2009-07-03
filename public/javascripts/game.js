@@ -449,7 +449,7 @@ var ActionsExecuter = {
 		Game.active_player.say_action(action_name);
 	}
 };
-ActionsInfluence = {
+var ActionsInfluence = {
 	fold: function(){
 		Game.active_player.set_status('fold');
 	},
@@ -998,25 +998,29 @@ var defaultCard = {
 //=============================================================================
 //=============================================================================
 
+var RUN_TESTS = false;
+
+// только для RubyMine
+if('undefined' == typeof RP_Game){
+	var RP_Game;
+}
+
 Function.prototype.bind = function(object){
 	var __method = this;
 	return function() {
 		__method.apply(object, arguments);
-	}
-}
+	};
+};
 
-$.extend({
+var RP_Extend = {
 	escape_html: function(html_to_escape){
 		return html_to_escape.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 	},
 	is_request_ready: function(request){
 		return (!request || 0 == request.readyState || 4 == request.readyState)
 	},
-	isArray: function(object) {
-		return object && object.constructor === Array;
-	},
 	debug: function(variable_or_vars_array, condition){
-		if($.browser.mozilla){
+		if($.browser.mozilla && console){
 			condition = (undefined == condition) ? true : condition;
 			if(condition){
 				var vars_for_log = [];
@@ -1032,28 +1036,27 @@ $.extend({
 			}
 		}
 	}
-});
+};
+$.extend(RP_Extend);
 
-RP_IS_TEST = true;
-
-$(function(){
-	RP_Client.sit = RP_Game.client_sit;
-	delete RP_Game.client_sit;
-
-	$.extend(RP_Game, RP_GameMethods);
-
-
-	if(RP_IS_TEST){
-		RP_RunAllTests();
-	}else{
-		RP_EventsQueue.start();
-		RP_Event.initialize('Game', 'on_load');
-		if(RP_Game.is_wait()){
-			RP_Event.initialize('Syncronize', 'game');
-		}else{
-			RP_Event.initialize('Syncronize', 'action');
-		}
+var RP_HttpStatus = {
+	errors: {
+		hurry_sync: 440,
+		late_sync: 441
 	}
+}
+
+$(function(){	
+	RP_Client.initialize();
+
+	if(RUN_TESTS){
+		RP_RunAllTests();
+		return;
+	}
+
+	RP_EventsQueue.start();
+	RP_Event.initialize('Game', 'on_load');
+	RP_Event.initialize('Syncronize', RP_Game.is_wait() ? 'game' : 'action');
 });
 
 //=============================================================================
@@ -1079,7 +1082,7 @@ var RP_EventsQueue = {
 		new_event.add_at = this.live_time;
 		this['_' + new_event.queue_level + '_queue'].push(new_event);
 		
-		$.debug(['ADD', new_event.group, new_event.type, new_event], new_event.queue_level != 'synchronize' && !RP_IS_TEST);
+		$.debug(['ADD', new_event.group, new_event.type, new_event], new_event.queue_level != 'synchronize' && !RUN_TESTS);
 	},
 	process: function(){
 		this.live_time++;
@@ -1122,16 +1125,6 @@ var RP_EventsQueue = {
 			}
 		}
 	},
-	count_all: function(){
-		return this._primary_queue.length + this._main_queue.length + this._synchronize_queue.length;
-	},
-	clear_all: function(){
-		with(this){
-			_primary_queue = [];
-			_main_queue = [];
-			_synchronize_queue = [];
-		}
-	},
 	_is_ready_for_event: function(){
 		return 0 == this._delay_before_next_event;
 	},
@@ -1144,9 +1137,6 @@ var RP_EventsQueue = {
 	_is_main_event_exists: function(){
 		return 0 < this._main_queue.length;
 	},
-	_is_system_event_exists: function(){
-		return 0 < this._system_queue.length;
-	},
 	_set_tact_time: function(new_speed){
 		var time_factor;
 		switch(new_speed){
@@ -1158,7 +1148,7 @@ var RP_EventsQueue = {
 		}
 		this._current_tact_time = this._normal_tact_time * time_factor;
 	},
-	_set_delay_before_next_event: function(event_time){
+	_set_delay_before_next_event: function(event_time) {
 		var time_in_tacts = event_time * 1000 / this._normal_tact_time;
 		this._delay_before_next_event = time_in_tacts;
 	}
@@ -1181,364 +1171,444 @@ var RP_Event = {
 		new_event.helpers = RP_EventHelpers[group];
 		
 		RP_EventsQueue.add_event(new_event);
+	}
+};
+
+RP_Event.Player = {
+	queue_level: 'main',
+	default_view_time_in_sec: 1,
+	// < player_id, kind, value >
+	action: function(){
+		this.execute = function(){
+			var target_player = RP_Players.find(this.player_id);
+			this.helpers.execute_action(target_player, this.kind, this.value);
+		};
 	},
-	Player: {
-		queue_level: 'main',
-		default_view_time_in_sec: 1,
-		action: function(){
-			this.execute = function(){
-				var target_player = RP_Players.find(this.player_id);
-				this.helpers.execute_action(target_player, this.kind, this.value);
-			};
-		},
-		join: function(){
-			this.view_time = 0;
-			this.queue_level = 'primary';
-			this.execute = function(){
-				var new_player = RP_Players.add_player(this.player_params);
-				RP_Visualizers.Player.join(new_player);
-				RP_Event.initialize('Log', 'player_action', {
-					player: new_player,
-					action: 'join'
-				});
-			};
-		},
-		leave: function(){
-			this.view_time = 0;
-			this.queue_level = 'primary';
-			this.execute = function(){
-				var removed_player = RP_Players.remove_player(this.player_id);
-				RP_Visualizers.Player.leave(removed_player);
-				RP_Event.initialize('Log', 'player_action', {
-					player: removed_player,
-					action: 'leave'
-				});
-			};
-		},
-		start_timer: function(){
-			this.view_time = 0;
-			this.execute = function(){
-				RP_Timer.start_for_player(this.player, this.value);
-			};
-		},
-		stop_timer: function(){
-			this.view_time = 0;
-			this.execute = function(){
-				RP_Timer.stop();
-			};
-		}
+	// < player_params >
+	join: function(){
+		this.view_time = 0;
+		this.queue_level = 'primary';
+		this.execute = function(){
+			var new_player = RP_Players.add_player(this.player_params);
+			RP_Visualizers.Player.join(new_player);
+			RP_Event.initialize('Log', 'player_action', {
+				player: new_player,
+				action: 'join'
+			});
+		};
 	},
-	Game: {
-		queue_level: 'primary',
-		default_view_time_in_sec: 2,
-		final_distribution_time_in_sec: 3,
-		on_load: function(){
-			this.view_time = 1;
-
-			this.execute = function(){
-				$.each(RP_Game.players_to_load, function(){
-					RP_Event.initialize('Player', 'join', {
-						player_params: this
-					});
-				});
-				delete RP_Game.players_to_load;
-
-				// this._initialize_table_cards();
-				// TODO ждем CardsSet
-				if(!RP_Game.is_paused() && RP_Game.is_started()){
-					RP_Event.initialize('Player', 'start_timer', {
-						player: RP_Players.find(RP_Game.active_player_id),
-						value: RP_Game.action_time_left
-					});
-					delete RP_Game.active_player_id;
-				}
-
-				RP_Event.initialize('Client', 'check_for_away');
-
-				RP_Event.initialize('Client', 'possible_actions_has_changed');
-				RP_Event.initialize('Game', 'state_has_changed');
-			};
-		},
-		state_has_changed: function(){
-			this.queue_level = 'main';
-			this.view_time = 0;
-
-			this.execute = function(){
-				RP_Visualizers.Game.update_all();
-				RP_Players.each(function(player){
-					RP_Visualizers.Player.update_all(player);
-				});
-			};
-		},
-		check_for_pause: function(){
-			this.view_time = 0;
-
-			this.execute = function(){
-				if(RP_Players.is_all_away()){
-					$.ajax({
-						async: false,
-						url: '/game_synchronizer/' + RP_Game.id + '/really_pause',
-						success: function(){
-							RP_Game.paused = 'by_away';
-							RP_Event.initialize('Game', 'next_distribution');
-						}
-					});
-				}
-			};
-		},
-		start: function(){
-			this.execute = function(){
-				this.helpers.take_blinds();
-				RP_Event.initialize('Game', 'state_has_changed');
-			};
-		},
-		next_distribution: function(){
-			this.view_time = RP_Event.Game.final_distribution_time_in_sec;
-
-			this.execute = function(){
-				RP_Players.refresh_acted_flags();
-			// определяем, какие данные нужно отобразить для завершения раздачи
-			// запрашиваем нужные данные у сервера
-			// показываем финал раздачи
-			// обновляем состояние игры до новой раздачи
-			};
-		},
-		next_stage: function(){
-			this.execute = function(){
-				RP_Players.refresh_acted_flags();
-			// запрашиваем у сервера данные о следующей стадии игры
-			// отображаем переход к новой стадии
-			};
-		}
+	// < player_id >
+	leave: function(){
+		this.view_time = 0;
+		this.queue_level = 'primary';
+		this.execute = function(){
+			var removed_player = RP_Players.remove_player(this.player_id);
+			RP_Visualizers.Player.leave(removed_player);
+			RP_Event.initialize('Log', 'player_action', {
+				player: removed_player,
+				action: 'leave'
+			});
+		};
 	},
-	Client: {
-		queue_level: 'main',
-		default_view_time_in_sec: 0,
-		check_for_away: function(){
-			this.execute = function(){
-				if(RP_Client.is_away()){
-					RP_Visualizers.Client.away();
-				}
-			};
-		},
-		new_hand: function(){
-			this.execute = function(){
-				//RP_Client.set_hand(new RP_CardsSet(this.cards_in_str));
-				RP_Visualizers.Client.update_hand();
-				RP_Event.initialize('Log', 'received_cards', {
-					stage: 'hand',
-					cards: this.cards_in_str
-				});
-			};
-		},
-		possible_actions_has_changed: function(){
-			this.execute = function(){
-				RP_Visualizers.Client.update_actions();
-			};
-		}
+	// < player_id, value >
+	start_timer: function(){
+		this.view_time = 0;
+		this.execute = function(){
+			RP_Timer.start(RP_Players.find(this.player_id), this.value);
+			RP_Visualizers.Client.update_actions();
+		};
 	},
-	Log: {
-		queue_level: 'main',
-		default_view_time_in_sec: 0,
-		player_action: function(){
-			this.execute = function(){
-				var log_message = this.value ? this.action + ' ' + this.value : this.action;
-				RP_Visualizers.Log.system_message_with_title(this.player.login, log_message);
-			};
-		},
-		received_cards: function(){
-			this.execute = function(){
-				RP_Visualizers.Log.system_message_with_title(this.stage, this.cards);
+	stop_timer: function(){
+		this.view_time = 0;
+		this.execute = function(){
+			RP_Timer.stop();
+		};
+	}
+};
+RP_Event.Game = {
+	queue_level: 'primary',
+	default_view_time_in_sec: 2,
+	final_distribution_time_in_sec: 3,
+	on_load: function(){
+		this.view_time = 0;
+
+		this.execute = function(){
+			this.helpers.load_game_state();
+		};
+	},
+	state_has_changed: function(){
+		this.queue_level = 'main';
+		this.view_time = 0;
+
+		this.execute = function(){
+			RP_Visualizers.Game.update_all();
+			RP_Players.each(function(player){
+				RP_Visualizers.Player.update_all(player);
+			});
+		};
+	},
+	check_for_pause: function(){
+		this.view_time = 0;
+
+		this.execute = function(){
+			if(RP_Players.is_all_away()){
+				$.ajax({
+					async: false,
+					url: '/game_synchronizer/' + RP_Game.id + '/really_pause',
+					success: function(){
+						RP_Game.paused = 'by_away';
+						RP_Event.initialize('Game', 'next_distribution');
+					}
+				});
 			}
-		}
+		};
 	},
-	Syncronize: {
-		queue_level: 'synchronize',
-		game: function(){
-			this.period_in_sec = 5;
-			this.execute = function(){
-				$.ajax({
-					url: '/game_synchronizers/wait_for_start/' + RP_Game.id,
-					method: 'get',
-					dataType: 'json',
-					data: {
-						'players[]': RP_Players.ids()
-					},
-					success: function(json){
-						this.helpers.parse_game_json(json);
-					}.bind(this),
-					complete: function(){
-						RP_Event.initialize('Syncronize', RP_Game.is_wait() ? 'game' : 'action');
-					}
-				});
-			};
-		},
-		action: function(){
-			this.period_in_sec = 3;
-			this.execute = function(){
-				$.ajax({
-					url: '/actions/omitted',
-					method: 'get',
-					dataType: 'json',
-					data: {
-						game_id: RP_Game.id,
-						last_action_id: RP_Game.last_action_id
-					},
-					success: function(json){
-						this.helpers.parse_actions_json(json);
-					}.bind(this),
-					complete: function(){
-						RP_Event.initialize('Syncronize', RP_Game.is_paused() ? 'pause' : 'action');
-					}
-				});
-			};
-		},
-		chat: function(){
-			this.period_in_sec = 10;
-			this.execute = function(){
+	start: function(){
+		this.execute = function(){
+			this.helpers.take_blinds();
+			RP_Event.initialize('Player', 'start_timer', {
+				player_id: RP_Game.active_player_id,
+				value: RP_Game.action_time_left
+			});
+			RP_Event.initialize('Game', 'state_has_changed');
+		};
+	},
+	next_distribution: function(){
+		this.view_time = RP_Event.Game.final_distribution_time_in_sec;
 
-			};
-		}
+		this.execute = function(){
+			RP_Players.refresh_acted_flags();
+		// определяем, какие данные нужно отобразить для завершения раздачи
+		// запрашиваем нужные данные у сервера
+		// показываем финал раздачи
+		// обновляем состояние игры до новой раздачи
+		};
+	},
+	next_stage: function(){
+		this.execute = function(){
+			RP_Players.refresh_acted_flags();
+		// запрашиваем у сервера данные о следующей стадии игры
+		// отображаем переход к новой стадии
+		};
+	}
+};
+RP_Event.Client = {
+	queue_level: 'main',
+	default_view_time_in_sec: 0,
+	// < kind, value >
+	action: function(){
+		this.execute = function(){
+			RP_Event.initialize('Player', 'stop_timer');
+			RP_Event.initialize('Player', 'action', {
+				player_id: RP_Client.player().id,
+				kind: this.kind,
+				value: this.value
+			});
+			RP_Event.initialize('Player', 'start_timer', {
+				player_id: RP_Client.player().next().id
+			});
+		};
+	},
+	check_for_away: function(){
+		this.execute = function(){
+			if(RP_Client.is_away()){
+				RP_Visualizers.Client.away();
+			}
+		};
+	},
+	// < cards_in_str >
+	new_hand: function(){
+		this.execute = function(){
+			RP_Client.set_hand(this.cards_in_str);
+			RP_Visualizers.Player.update_hand(RP_Client.player());
+			RP_Event.initialize('Log', 'received_cards', {
+				stage: 'hand',
+				cards: RP_Client.hand()
+			});
+		};
+	},
+	possible_actions_has_changed: function(){
+		this.execute = function(){
+			RP_Visualizers.Client.update_actions_buttons();
+		};
+	},
+	// < player >
+	action_timeout_notification: function(){
+		this.queue_level = 'primary';
+		this.view_time = 0;
+		this._notification_period = 3;
+
+		this.execute = function(){
+			if(RP_Client.is_a(this.player)){
+				RP_Visualizers.Client.away();
+			}
+			$.ajax({
+				url: '/actions/timeout',
+				type: 'POST',
+				data: {
+					game_id: RP_Game.id,
+					player_id: this.player.id
+				},
+				error: function(XMLHttpRequest){
+					if(RP_HttpStatus.errors.hurry_sync == XMLHttpRequest.status){
+						setTimeout(
+							function(){
+								RP_Event.initialize('Client', 'action_timeout_notification', {
+									player: this.player
+								});
+							}.bind(this),
+							this._notification_period * 1000
+						);
+					}
+				}
+			});
+		};
+	}
+};
+RP_Event.Log = {
+	queue_level: 'main',
+	default_view_time_in_sec: 0,
+	// < player, action, value >
+	player_action: function(){
+		this.execute = function(){
+			var log_message = this.value ? this.action + ' ' + this.value : this.action;
+			RP_Visualizers.Log.system_message_with_title(this.player.login, log_message);
+		};
+	},
+	// < stage, cards >
+	received_cards: function(){
+		this.execute = function(){
+			RP_Visualizers.Log.system_message_with_title(this.stage, this.cards.alt());
+		};
+	}
+};
+RP_Event.Syncronize = {
+	queue_level: 'synchronize',
+	game: function(){
+		this.period_in_sec = 5;
+		this.execute = function(){
+			$.ajax({
+				url: '/game_synchronizers/wait_for_start/' + RP_Game.id,
+				method: 'get',
+				dataType: 'json',
+				data: {
+					'players[]': RP_Players.ids()
+				},
+				success: function(json){
+					this.helpers.parse_game_json(json);
+				}.bind(this),
+				complete: function(){
+					RP_Event.initialize('Syncronize', RP_Game.is_wait() ? 'game' : 'action');
+				}
+			});
+		};
+	},
+	action: function(){
+		this.period_in_sec = 3;
+		this.execute = function(){
+			$.ajax({
+				url: '/actions/omitted',
+				method: 'get',
+				dataType: 'json',
+				data: {
+					game_id: RP_Game.id,
+					last_action_id: RP_Game.last_action_id || 0
+				},
+				success: function(json){
+					this.helpers.parse_actions_json(json);
+				}.bind(this),
+				complete: function(){
+					RP_Event.initialize('Syncronize', RP_Game.is_paused() ? 'pause' : 'action');
+				}
+			});
+		};
+	},
+	chat: function(){
+		this.period_in_sec = 10;
+		this.execute = function(){
+
+		};
 	}
 };
 
 //=============================================================================
-var RP_EventHelpers = {
-	Player: {
-		name_by_kind: {
-			'-4': 'check',
-			'-3': 'check',
-			'-2': 'fold',
-			'-1': 'fold',
-			'0': 'fold',
-			'1': 'check',
-			'2': 'call',
-			'3': 'bet',
-			'4': 'raise'
-		},
-		_set_state: function(player, action_kind){
-			if(0 <= action_kind){
-				player.active();
-			}else{
-				player.absent();
-			}
-			RP_Visualizers.Player.update_state(player);
-		},
-		execute_action: function(player, kind, value){
-			this._set_state(player, kind);
-			var action_name = this.name_by_kind[kind];
-			player.action(action_name, value);
-			RP_Visualizers.Player[action_name](player, value);
-			RP_Visualizers.Player.update_all();
-			RP_Visualizers.Game.update_pot();
-			RP_Event.initialize('Game', 'check_for_pause');
-			RP_Event.initialize('Log', 'player_action', {
-				player: player,
-				action: action_name,
-				value: value
+var RP_EventHelpers = {};
+RP_EventHelpers.Player = {
+	name_by_kind: {
+		'-4': 'check',
+		'-3': 'check',
+		'-2': 'fold',
+		'-1': 'fold',
+		'0': 'fold',
+		'1': 'check',
+		'2': 'call',
+		'3': 'bet',
+		'4': 'raise'
+	},
+	_set_state: function(player, action_kind){
+		if(0 <= action_kind){
+			player.active();
+		}else{
+			player.absent();
+		}
+		RP_Visualizers.Player.update_state(player);
+	},
+	execute_action: function(player, kind, value){
+		this._set_state(player, kind);
+		var action_name = this.name_by_kind[kind];
+		player.action(action_name, value);
+		RP_Visualizers.Player[action_name](player, value);
+		RP_Visualizers.Player.update_all(player);
+		RP_Visualizers.Game.update_pot();
+		RP_Event.initialize('Game', 'check_for_pause');
+		RP_Event.initialize('Log', 'player_action', {
+			player: player,
+			action: action_name,
+			value: ('bet' == action_name || 'raise' == action_name) ? value : null
+		});
+		RP_Event.initialize('Client', 'possible_actions_has_changed');
+		RP_EventHelpers.Game.proceed_distribution();
+	}
+};
+RP_EventHelpers.Game = {
+	load_game_state: function(){
+		this._add_players(RP_Game.players_to_load);
+
+		this._initialize_table_cards();
+
+		if(RP_Game.is_started() && !RP_Game.is_paused()){
+			RP_Event.initialize('Player', 'start_timer', {
+				player_id: RP_Game.active_player_id,
+				value: RP_Game.action_time_left
 			});
-			RP_EventHelpers.Game.proceed_distribution();
+			delete RP_Game.active_player_id;
+		}
+
+		RP_Event.initialize('Client', 'check_for_away');
+
+		RP_Event.initialize('Client', 'possible_actions_has_changed');
+		RP_Event.initialize('Game', 'state_has_changed');
+	},
+	proceed_distribution: function(){
+		if(this._is_new_distribution()){
+			RP_Event.initialize('Game', 'next_distribution');
+		}else{
+			if(this._is_next_stage()){
+				RP_Event.initialize('Game', 'next_stage');
+			}
+		// иначе ничего не делаем
 		}
 	},
-	Game: {
-		proceed_distribution: function(){
-			if(this._is_new_distribution()){
-				RP_Event.initialize('Game', 'next_distribution');
-			}else{
-				if(this._is_next_stage()){
-					RP_Event.initialize('Game', 'next_stage');
+	take_blinds: function(){
+		if(0 < RP_Game.ante){
+			RP_Players.each(function(player){
+				player.blind_stake(RP_Game.ante);
+			});
+		}
+		// снимаем большой блайнл с увеличением for_call для остальных
+		this._player_on_blind().stake(RP_Game.blind_size);
+		// просто снимаем малый блайнд
+		this._player_on_small_blind().blind_stake(RP_Game.small_blind_size());
+	},
+	_add_players: function(){
+		RP_EventHelpers.Syncronize.add_players(RP_Game.players_to_load);
+		delete RP_Game.players_to_load;
+	},
+	_initialize_table_cards: function(){
+		if(RP_Game.cards_to_load){
+			for(var stage in RP_Game.cards_to_load){
+				if(RP_Game.cards_to_load[stage]){
+					var stage_cards = new RP_CardsSet(RP_Game.cards_to_load[stage]);
+					RP_Visualizers.Game.table_cards(stage, stage_cards);
+					RP_Event.initialize('Log', 'received_cards', {
+						stage: stage,
+						cards: stage_cards
+					});
 				}
-			// иначе ничего не делаем
 			}
-		},
-		take_blinds: function(){
-			if(0 < RP_Game.ante){
-				RP_Players.each(function(player){
-					player.blind_stake(RP_Game.ante);
-				});
-			}
-			// снимаем большой блайнл с увеличением for_call для остальных
-			this._player_on_blind().stake(RP_Game.blind_size);
-			// просто снимаем малый блайнд
-			this._player_on_small_blind().blind_stake(RP_Game.small_blind_size());
-		},
-		_player_on_small_blind: function(){
-			return RP_Players.at_sit(RP_Game.small_blind_position);
-		},
-		_player_on_blind: function(){
-			return RP_Players.at_sit(RP_Game.blind_position);
-		},
-		_is_new_distribution: function(){
-			return (this._is_one_winner() || (this._is_next_stage() && this.is_on_river()) || this._is_allin_and_call());
-		},
-		_is_next_stage: function(){
-			return RP_Players.is_all_acted();
-		},
-		_is_one_winner: function(){
-			return 1 == RP_Players.still_in_game_count();
-		},
-		_is_allin_and_call: function(){
-			return (0 == RP_Players.must_call_count() && RP_Players.has_chips_and_can_act_count() <= 1)
+		}
+		delete RP_Game.cards_to_load;
+	},
+	_player_on_small_blind: function(){
+		return RP_Players.at_sit(RP_Game.small_blind_position);
+	},
+	_player_on_blind: function(){
+		return RP_Players.at_sit(RP_Game.blind_position);
+	},
+	_is_new_distribution: function(){
+		return (this._is_one_winner() || (this._is_next_stage() && this.is_on_river()) || this._is_allin_and_call());
+	},
+	_is_next_stage: function(){
+		return RP_Players.is_all_acted();
+	},
+	_is_one_winner: function(){
+		return 1 == RP_Players.still_in_game_count();
+	},
+	_is_allin_and_call: function(){
+		return (0 == RP_Players.must_call_count() && RP_Players.has_chips_and_can_act_count() <= 1);
+	}
+};
+//RP_EventHelpers.Client = {
+//};
+//RP_EventHelpers.Log = {
+//};
+RP_EventHelpers.Syncronize = {
+	parse_game_json: function(json){
+		this._remove_players(json.remove);
+		this.add_players(json.add);
+		if(json.game){
+			this._start(json.game);
 		}
 	},
-	Client: {
-	},
-	Log: {
-	},
-	Syncronize: {
-		parse_game_json: function(json){
-			if(json.remove && 0 < json.remove.length){
-				this._remove_players(json.remove);
-			}
-			if(json.add && 0 < json.add.length){
-				this._add_players(json.add);
-			}
-			if(json.game){
-				this._start(json.game);
-			}
-		},
-		_remove_players: function(players_ids){
-			$(players_ids).each(function(){
-				RP_Event.initialize('Player', 'leave', {
-					player_id: parseInt(this)
-				});
-			});
-		},
-		_add_players: function(players_array){
+	add_players: function(players_array){
+		if(players_array && 0 < players_array.length){
 			$(players_array).each(function(){
 				RP_Event.initialize('Player', 'join', {
 					player_params: this
 				});
 			});
-		},
-		_start: function(game_params){
-			$.extend(RP_Game, game_params);
-
-			RP_Event.initialize('Client', 'new_hand', {
-				cards_in_str: game_params.client_hand
+		}
+	},
+	_remove_players: function(players_ids){
+		if(players_ids && 0 < players_ids.length){
+			$(players_ids).each(function(){
+				RP_Event.initialize('Player', 'leave', {
+					player_id: parseInt(this)
+				});
 			});
-			RP_Event.initialize('Client', 'possible_actions_has_changed');
-			RP_Event.initialize('Game', 'start');
-			// TODO
-		},
-		parse_actions_json: function(json){
-			if(json){
-				var time_for_next_player = json.pop();
-				RP_Game.last_action_id = json.pop();
-				var last_acted_player_id = json[json.length - 1][0];
-				RP_Event.initialize('Player', 'stop_timer');
-				$.each(json, function(){
-					RP_Event.initialize('Player', 'action', {
-						player_id: this[0],
-						kind: this[1],
-						value: this[2]
-					});
+		}
+	},
+	_start: function(game_params){
+		$.extend(RP_Game, game_params);
+
+		RP_Event.initialize('Client', 'new_hand', {
+			cards_in_str: game_params.client_hand
+		});
+		RP_Event.initialize('Client', 'possible_actions_has_changed');
+		RP_Event.initialize('Game', 'start');
+
+	// TODO
+	},
+	parse_actions_json: function(json) {
+		// предполагается массив вида
+		// [[player_id, action_kind, value], [player_id, action_kind], last_action_id, time_left]
+		if (json) {
+			var time_for_next_player = json.pop();
+			RP_Game.last_action_id = json.pop();
+			RP_Event.initialize('Player', 'stop_timer');
+			$.each(json, function() {
+				RP_Event.initialize('Player', 'action', {
+					player_id: this[0],
+					kind: this[1],
+					value: this[2]
 				});
-				RP_Event.initialize('Player', 'start_timer', {
-					player: RP_Players.find_next_player(last_acted_player_id),
-					time_left: time_for_next_player
-				});
-			}
+			});
+			var last_acted_player_id = json[json.length - 1][0];
+			var next_player_id = RP_Players.find(last_acted_player_id).next().id;
+			RP_Event.initialize('Player', 'start_timer', {
+				player_id: next_player_id,
+				value: time_for_next_player
+			});
 		}
 	}
 };
@@ -1546,13 +1616,39 @@ var RP_EventHelpers = {
 //=============================================================================
 var RP_Client = {
 	sit: null,
-	_player: function(){
+	initialize: function(){
+		this.sit = RP_Game.client_sit;
+		delete RP_Game.client_sit;
+	},
+	player: function(){
 		return RP_Players.at_sit(this.sit);
 	},
+	hand: function(){
+		return this.player().hand;
+	},
+	set_hand: function(new_cards_in_str){
+		this.player().hand = new RP_CardsSet(new_cards_in_str);
+	},
 	is_away: function(){
-		return this._player().is_away();
+		return this.player().is_away();
+	},
+	is_a: function(player){
+		return this.sit == player.sit;
+	},
+	is_turn: function(){
+		return RP_Timer.is_turn_of(this.player());
+	},
+	is_see_button: function(action_name){
+		switch(action_name){
+			case 'fold': return true;
+			case 'check': return (0 == this.player().for_call);
+			case 'call': return (0 < this.player().for_call);
+			case 'bet': return (RP_Game.current_bet == RP_Game.blind_size && this.player().for_call < this.player().stack);
+			case 'raise': return (RP_Game.blind_size < RP_Game.current_bet && this.player().for_call < this.player().stack);
+			default: alert('Error in RP_Client.is_see_button(). Unexpected param: ' + action_name); return false;
+		}
 	}
-}
+};
 
 //=============================================================================
 var RP_GameMethods = {
@@ -1586,14 +1682,22 @@ var RP_GameMethods = {
 
 //=============================================================================
 var RP_Player = function(params){
-	default_params = {
+	var default_params = {
 		stack: RP_Game.start_stack,
 		in_pot: 0,
-		for_call: 0
+		for_call: 0,
+		hand: new RP_CardsSet()
 	};
+	if(params.hand_to_load){
+		params.hand = new RP_CardsSet(params.hand_to_load);
+		RP_Event.initialize('Log', 'received_cards', {
+			stage: 'hand',
+			cards: new RP_CardsSet(this.hand_to_load)
+		});
+		delete params.hand_to_load;
+	}
+	
 	$.extend(this, default_params, params);
-//	this.sit = new PlayerSit(this);
-//	this.timer = new PlayerTimer(this);
 };
 
 RP_Player.prototype = {
@@ -1604,32 +1708,32 @@ RP_Player.prototype = {
 				player.add_for_call(value);
 			});
 			this.for_call -= value;
-			}
-			this.blind_stake(full_value);
-			},
-			blind_stake: function(value){
-			if(this.stack < value){
+		}
+		this.blind_stake(full_value);
+	},
+	blind_stake: function(value){
+		if(this.stack < value){
 			value = this.stack;
 			this._set_status('allin');
 		}
 		this.stack -= value;
 		this.in_pot += value;
 		if(value < this.for_call){
-		this.for_call -= value;
+			this.for_call -= value;
 		}else{
-		this.for_call = 0;
+			this.for_call = 0;
 		}
-		},
-		add_for_call: function(value){
+	},
+	add_for_call: function(value){
 		this.for_call += value;
-			},
-			active: function(){
-			this._set_status('active');
-		},
-		away: function(){
+	},
+	active: function(){
+		this._set_status('active');
+	},
+	away: function(){
 		this._set_status('away');
-		},
-		absent: function(){
+	},
+	absent: function(){
 		this._set_status('absent');
 	},
 	action: function(action_name, value){
@@ -1688,8 +1792,11 @@ RP_Player.prototype = {
 				break;
 		}
 		this.status = new_status;
+	},
+	next: function(){
+		return RP_Players.find_next_player(this.id);
 	}
-}
+};
 
 //=============================================================================
 var RP_Players = {
@@ -1742,33 +1849,23 @@ var RP_Players = {
 		return player_found;
 	},
 	find_next_player: function(current_player_id){
-		var current_player_sit = this.find(current_player_id).sit;
-		var player_found;
-//		for(var i = 0; i < this.still_in_game_count(); i++){
-//			var next_player = this._still_in_game_players()[i];
+		var current_player_position = $.inArray(this.find(current_player_id), this._still_in_game_players());
+		return this._still_in_game_players()[current_player_position + 1] || this._still_in_game_players()[0];
+
+//		var current_player_sit = this.find(current_player_id).sit;
+//		var player_found;
+//		var players = this._still_in_game_players();
+//		for(var index in players){
+//			var next_player = players[index];
 //			if(current_player_sit < next_player.sit){
 //				player_found = next_player;
 //				break;
 //			}
 //		}
-		var players = this._still_in_game_players();
-		for(var index in players){
-			var next_player = players[index];
-			if(current_player_sit < next_player.sit){
-				player_found = next_player;
-				break;
-			}
-		}
-//		$.each(this._still_in_game_players(), function(i, player){
-//			if(current_player_sit < player.sit){
-//				player_found = player;
-//				return;
-//			}
-//		});
-		if(!player_found){
-			player_found = this._still_in_game_players()[0];
-		}
-		return player_found;
+//		if(!player_found){
+//			player_found = this._still_in_game_players()[0];
+//		}
+//		return player_found;
 	},
 	at_sit: function(sit){
 		return this._players[sit];
@@ -1784,9 +1881,10 @@ var RP_Players = {
 		}
 	},
 	remove_player: function(id){
+		var sit;
 		for(var i in this._players){
 			if(this._players[i].id == id){
-				var sit = i;
+				sit = i;
 				break;
 			}
 		}
@@ -1815,16 +1913,13 @@ var RP_Players = {
 	},
 	ids: function(){
 		return $.map(
-			$.grep(
-				this._players,
-				function(player){
-					return !!player;
-				}
-				),
-			function(player){
+			$.grep(this._players, function(player){ 
+				return !!player;
+			}),
+			function(player){ 
 				return player.id;
 			}
-			);
+		);
 	},
 	_still_in_game_players: function(){
 		return $.grep(this._players, function(player){
@@ -1844,134 +1939,249 @@ var RP_Players = {
 };
 
 //=============================================================================
-var RP_Visualizers = {
-	Player: {
-		_sit: function(player){
-			return $('#sit_' + player.sit);
-		},
-		_login: function(player){
-			return $('#login_' + player.sit);
-		},
-		_stack: function(player){
-			return $('#stack_' + player.sit);
-		},
-		_away_layer: function(player){
-			return $('#away_layer_' + player.sit);
-		},
-		//		_login: function(player){
-		//			return $('#login_' + player.sit);
-		//		},
-		//		_login: function(player){
-		//			return $('#login_' + player.sit);
-		//		},
-		update_stack: function(player){
-			var stack_value = (0 == player.stack) ? 'all-in' : player.stack;
-			this._stack(player).text(stack_value);
-		},
-		update_state: function(player){
-			if(player.is_away()){
-				this.away(player);
-			}else{
-				this.active(player);
-			}
-		},
-		update_all: function(player){
-			this.update_stack(player);
-			this.update_state(player);
-		},
-		join: function(player){
-			this._sit(player).show('slow');
-			this._login(player).attr('title', player.login).text(player.login);
-			// new CardsSet('cards_' + this.id, 'player');
-			// $('#timer_' + this.id);
-			this._stack(player).text(player.stack);
-		},
-		leave: function(player){
-			this._sit(player).hide('slow');
-		},
-		away: function(player){
+var RP_Visualizers = {};
 
-		},
-		active: function(player){
-
-		},
-		fold: function(player){
-
-		},
-		check: function(player){
-
-		},
-		call: function(player){
-
-		},
-		bet: function(player, value){
-
-		},
-		raise: function(player, value){
-
+RP_Visualizers.Player = {
+	_sit: function(player){
+		return $('#sit_' + player.sit);
+	},
+	_login: function(player){
+		return $('#login_' + player.sit);
+	},
+	_stack: function(player){
+		return $('#stack_' + player.sit);
+	},
+	_away_layer: function(player){
+		return $('#away_layer_' + player.sit);
+	},
+	_hand: function(player){
+		return [$('#cards_' + player.sit + '_0'), $('#cards_' + player.sit + '_1')];
+	},
+	update_stack: function(player){
+		$.debug(player);
+		var stack_value = (0 == player.stack) ? 'all-in' : player.stack;
+		this._stack(player).text(stack_value);
+	},
+	update_state: function(player){
+		if(player.is_away()){
+			this.away(player);
+		}else{
+			this.active(player);
 		}
 	},
-	Client: {
-		_hand: function(){
-			return $('#cards_' + RP_Client.sit);
-		},
-		_hand_card: function(index){
-			return $('#cards_' + RP_Client.sit + '_' + index);
-		},
-		away: function(){
-			RP_AwayDialog.dialog('open');
-		},
-		update_actions: function(){
-			return true;
-		},
-		update_hand: function(){
-			$.each(RP_Client.hand, function(index, card){
-				this._hand_card(index).attr('src', card.src).attr('alt', card.alt);
+	update_hand: function(player){
+		$.each(this._hand(player), function(i, card){
+			var player_card = player.hand.card(i);
+			card.attr({
+				alt: player_card.alt,
+				src: player_card.src
 			});
-		}
+		});
 	},
-	Log: {
-		system_message_with_title: function(title, text){
-			this._add_to_log(this._build_message({
-				title: title,
-				text: text,
-				type: 'system'
-			}));
-		},
-		_build_message: function(params){
-			var message_html = '';
-			message_html += '<div class="' + params.type + '_log_record">';
-			if(params.title){
-				message_html += '<span class="log_message_title">' + $.escape_html(params.title) + ': </span>';
+	update_all: function(player){
+		this.update_stack(player);
+		this.update_state(player);
+		this.update_hand(player);
+	},
+	join: function(player){
+		this._sit(player).show('slow');
+		this._login(player).attr('title', player.login).text(player.login);
+		// new CardsSet('cards_' + this.id, 'player');
+		// $('#timer_' + this.id);
+		// this._stack(player).text(player.stack);
+		this.update_all(player);
+	},
+	leave: function(player){
+		this._sit(player).hide('slow');
+	},
+	away: function(player){
+
+	},
+	active: function(player){
+
+	},
+	fold: function(player){
+
+	},
+	check: function(player){
+
+	},
+	call: function(player){
+
+	},
+	bet: function(player, value){
+
+	},
+	raise: function(player, value){
+
+	}
+};
+RP_Visualizers.Client = {
+	away: function(){
+		RP_AwayDialog.dialog('open');
+	},
+	update_actions_buttons: function(){
+		$('#actions a').each(function(){
+			$(this)[RP_Client.is_see_button(this.id) ? 'show' : 'hide']();
+		});
+	},
+	update_actions: function(){
+		if(RP_Client.is_turn()){
+			$('#actions').slideDown('slow');
+		}else{
+			if('none' != $('#actions').attr('display')){
+				$('#actions').slideUp('slow');
 			}
-			message_html += '<span class="log_message_text">' + $.escape_html(params.text) + '</span>';
-			message_html += '</div>';
-			return message_html;
-		},
-		_add_to_log: function(html){
-			$('#log_body').html(html + $('#log_body').html());
 		}
+	}
+};
+RP_Visualizers.Log = {
+	system_message_with_title: function(title, text){
+		this._add_to_log(this._build_message({
+			title: title,
+			text: text,
+			type: 'system'
+		}));
 	},
-	Game: {
-		_pot: function(){
-			return $('#pot');
-		},
-		update_all: function(){
-			this.update_pot();
-		//TODO
-		},
-		update_pot: function(){
-			this._pot().text(RP_Game.pot());
+	_build_message: function(params){
+		var message_html = '';
+		message_html += '<div class="' + params.type + '_log_record">';
+		if(params.title){
+			message_html += '<span class="log_message_title">' + $.escape_html(params.title) + ': </span>';
 		}
+		message_html += '<span class="log_message_text">' + $.escape_html(params.text) + '</span>';
+		message_html += '</div>';
+		return message_html;
+	},
+	_add_to_log: function(html){
+		$('#log_body').html(html + $('#log_body').html());
+	}
+};
+RP_Visualizers.Game = {
+	table_cards: function(stage, cards){
+		cards.each(function(i, card){
+			this._set_stage_card(stage, i, card);
+		}.bind(this));
+	},
+	_set_stage_card: function(stage, index, card){
+		this._stage_card(stage, index).attr({
+			src: card.src,
+			alt: card.alt
+		});
+	},
+	_stage_card: function(stage, index){
+		return $('#' + stage + '_' + index);
+	},
+	_pot: function(){
+		return $('#pot');
+	},
+	_blinds: function(){
+		return $('#blinds');
+	},
+	update_all: function(){
+		this.update_pot();
+		this.update_blinds();
+	//TODO
+	},
+	update_blinds: function(){
+		this._blinds().text(this._blinds_info());
+	},
+	_blinds_info: function(){
+		var result = RP_Game.blind_size + '/' + RP_Game.small_blind_size();
+		if(0 < RP_Game.ante){
+			result += ' (' + RP_Game.ante + ')';
+		}
+		return result;
+	},
+	update_pot: function(){
+		this._pot().text(RP_Game.pot());
+	}
+};
+RP_Visualizers.Timer = {
+	_timer: function(){
+		return $('#timer_' + RP_Timer.player.sit);
+	},
+	_timer_src: function(){
+		return '/images/game/timer/' + RP_Timer.time + '.gif';
+	},
+	update: function(){
+		this._timer().attr('alt', RP_Timer.time).attr('src', this._timer_src());
 	}
 };
 
 //=============================================================================
 var RP_Timer = {
-	start_for_player: function(player, init_value){
-
+	_activated: false,
+	player: null,
+	time: 0,
+	_timer: null,
+	start: function(player, init_value){
+		if(this._activated){
+			this.stop();
+		}
+		this.player = player;
+		this._activated = true;
+		this._set_time(init_value);
+		this._timer = setInterval(this._reduce_time.bind(this), 1000);
 	},
 	stop: function(){
-
+		if(this._activated){
+			this._activated = false;
+			clearTimeout(this._timer);
+			this._set_time(0);
+		}
+	},
+	_set_time: function(time){
+		this.time = (undefined == time ? RP_Game.time_for_action : time);
+		RP_Visualizers.Timer.update();
+	},
+	_reduce_time: function(){
+		if(this.time && 0 < this.time){
+			this._set_time(this.time - 1);
+		}else{
+			RP_Event.initialize('Client', 'action_timeout_notification', {
+				player: this.player
+			});
+			this.stop();
+		}
+	},
+	is_turn_of: function(player_to_check){
+		return (this._activated && this.player.id == player_to_check.id);
 	}
+};
+
+//=============================================================================
+var RP_CardsSet = function(cards_in_str){
+	if(cards_in_str){
+		this._cards = $.map(cards_in_str.split(':'), function(card){
+			return new RP_Card(card);
+		});
+	}else{
+		this._cards = [RP_DefaultCard, RP_DefaultCard];
+	}
+};
+
+RP_CardsSet.prototype = {
+	card: function(index){
+		return this._cards[index] || RP_DefaultCard;
+	},
+	each: function(callback){
+		$.each(this._cards, function(i, card){
+			callback(i, card);
+		});
+	},
+	alt: function(){
+		return $.map(this._cards, function(card){
+			return card.alt;
+		}).join(', ');
+	}
+};
+
+var RP_Card = function(card_string){
+	this.src = '/images/game/cards/' + card_string + '.gif';
+	this.alt = card_string.replace(/T/g, '10');
+};
+var RP_DefaultCard = {
+	src: '/images/game/cards/RP.gif',
+	alt: 'RP'
 };

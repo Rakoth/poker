@@ -1,18 +1,10 @@
-<!--
-To change this template, choose Tools | Templates
-and open the template in the editor.
--->
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 	<head>
 		<title></title>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-		<link rel="stylesheet" type="text/css" href="stylesheets/room.css" />
 		<script type="text/javascript" src="javascripts/jquery.js"></script>
 		<script type="text/javascript">
-			function func(){
-				document.getElementById("div").innerHTML = "test_" + Math.random();
-			}
 			function getStatuses(){
 				for(var i = 100; i < 304; i++){
 					$.ajax({
@@ -64,41 +56,32 @@ and open the template in the editor.
 
 				}
 			}
+
+			function test(){
+				a = function(string){
+					var array = string.split(':');
+					for(var i = 0; i < array.length; i++){
+						this[i] = array[i];
+					}
+					this.alt = string;
+				};
+				a.prototype = Array();
+				a.prototype.say = function(i){
+					//console.log(this[i]);
+				}
+				b = new a('fjdng:dfgdf:sdfs');
+				b.say(1);
+				console.log(b.alt);
+				$.each(b, function(i, v){
+					console.log(i, v);
+				});
+				
+			}
 		</script>
 	</head>
 	<body>
-		<input type="button" onclick="getStatuses();" value="add" />
-		<input type="button" onclick="window.open('http://localhost:3000', 'game_1', '');" value="pass" />
+		<input type="button" onclick="test();" value="OK" />
 		<br />
 		<div id="div"></div>
-
-
-
-<form
-	onsubmit = "
-		
-		$.ajax({
-			data:$.param($(this).serializeArray()) + '&amp;authenticity_token=' + encodeURIComponent('pVMWUrEbd1KiaI+JkzDL7hvC6UVvkLIztS+8cdTyFic='),
-			dataType:'script',
-			success:function(request){move_message_to_log();},
-			type:'post',
-			url:'/log_messages'
-		});
-		
-		return false;"
-	method="post"
-	id="log_message"
-	action="/log_messages"
->
-		<div style="margin: 0pt; padding: 0pt;">
-			<input type="hidden" value="pVMWUrEbd1KiaI+JkzDL7hvC6UVvkLIztS+8cdTyFic=" name="authenticity_token"/>
-		</div>
-		<input type="text" size="30" name="log_message[text]" id="log_message_text"/> 
-		<input type="hidden" value="5" name="log_message[game_id]" id="log_message_game_id"/>
-		<input type="image" src="/images/game/log/send.gif?1242937641" name="commit"/>
-
-</form>
-
-
 	</body>
 </html>

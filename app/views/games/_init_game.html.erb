@@ -1,3 +1,4 @@
 <script type="text/javascript">
 	var RP_Game = eval(<%= @game_in_json %>);
+	$.extend(RP_Game, RP_GameMethods);
 </script>

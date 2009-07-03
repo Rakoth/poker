@@ -21,12 +21,12 @@
 				},
 				success:function(){
 					$('#away_dialog p').text('<%= t('views.games._away_screen.away_message')%>');
-					Game.players[Game.client_sit].set_status('active');
-					Game.resume();
+					RP_Client.player().active();
+					//Game.resume();
 				},
 				error:function(){
 					$('#away_dialog p').text('<%= t('views.games._away_screen.back_failed')%>');
-					away_dialog.dialog("open");
+					RP_AwayDialog.dialog("open");
 				}
 			});
 		}

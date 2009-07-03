@@ -60,6 +60,7 @@ div{
 }
 #actions{
   background:#000;
+	display:none;
 }
 #control .block{
   height:100px;
