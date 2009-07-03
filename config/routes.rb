@@ -35,7 +35,9 @@ ActionController::Routing::Routes.draw do |map|
 	map.resource :user_session
   map.login 'login', :controller => 'user_sessions', :action => 'new'
   map.leave_game ':game_id/leave', :controller => 'players', :action => 'destroy'
-	map.really_pause 'game_synchronizer/:game_id/really_pause', :controller => 'game_synchronizers', :action => 'really_pause'
+	map.really_pause 'game_synchronizers/:game_id/really_pause', :controller => 'game_synchronizers', :action => 'really_pause'
+	map.next_stage 'game_synchronizers/:game_id/stage', :controller => 'game_synchronizers', :action => 'stage'
+	map.next_stage 'game_synchronizers/:game_id/distribution', :controller => 'game_synchronizers', :action => 'distribution'
   map.resources :users
   map.resources :actions, :collection => { :omitted => :get, :timeout => :post }
   map.resources :log_messages

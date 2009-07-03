@@ -275,10 +275,22 @@ RP_TestsGroups.EventHelper = {
 				flop: 'H3:DJ:CA',
 				turn: 'S9',
 				river: 'S3'
-			}
+			},
+			status: 'on_flop'
 		});
 		RP_EventsQueue.clear_all();
 	},
+	test_sync_players_on_distribution_should_add_leaving_events: function(){with(this){
+		players_state = [{sit: 0}, {sit: 1} ];
+		RP_EventHelpers.Game.sync_players_on_distribution(players_state);
+		assertInQueue('leave');
+		assertEquals(1, RP_EventsQueue.count_all());
+	}},
+	test_sync_players_on_distribution_should_add_log_event_about_previous_win: function(){with(this){
+		players_state = [{sit: 0}, {sit: 1}, {sit: 2, previous_win: 100}];
+		RP_EventHelpers.Game.sync_players_on_distribution(players_state);
+		assertInQueue('player_action');
+	}},
 	test_load_game_state_should_add_player_join_events_for_players_from_game_and_delete_players_to_load_array: function(){with(this){
 		RP_EventHelpers.Game.load_game_state();
 		assertEquals('join', RP_EventsQueue._primary_queue[0].type);
@@ -311,7 +323,7 @@ RP_TestsGroups.EventHelper = {
 		assertInQueue('state_has_changed');
 	}},
 	test_initialize_table_cards_should_set_correct_table_cards: function(){with(this){
-		RP_EventHelpers.Game._initialize_table_cards();
+		RP_EventHelpers.Game.initialize_table_cards();
 		assertUndefined(RP_Game.cards_to_load);
 		assertEquals('H3', $('#flop_0').attr('alt'));
 		assertEquals('DJ', $('#flop_1').attr('alt'));
@@ -319,10 +331,10 @@ RP_TestsGroups.EventHelper = {
 		assertEquals('S9', $('#turn_0').attr('alt'));
 		assertEquals('S3', $('#river_0').attr('alt'));
 	}},
-	test_initialize_table_cards_should_add_log_events: function(){with(this){
-		RP_EventHelpers.Game._initialize_table_cards();
+	test_initialize_table_cards_should_add_log_events_if_cards_are_new: function(){with(this){
+		RP_EventHelpers.Game.initialize_table_cards();
 		assertInQueue('received_cards');
-		assertEquals(3, RP_EventsQueue.count_all());
+		assertEquals(1, RP_EventsQueue.count_all());
 	}},
 	test_set_state_should_set_absent_status_for_player_given_if_kind_less_than_zero: function(){with(this){
 		player = players.ordinary;
@@ -383,27 +395,41 @@ RP_TestsGroups.EventHelper = {
 
 RP_TestsGroups.Players = {
 	setup: function(){
-		var player_1 = new RP_Player({sit: 0, id: 1});
-		var player_2 = new RP_Player({sit: 1, id: 233});
-		var player_3 = new RP_Player({sit: 2, id: 32});
-		RP_Players._players = [player_1, player_2, player_3];
+		this.player_1 = new RP_Player({sit: 0, id: 1});
+		this.player_2 = new RP_Player({sit: 1, id: 233});
+		this.player_3 = new RP_Player({sit: 2, id: 32});
+		RP_Players._players = [this.player_1, this.player_2, this.player_3];
 		RP_Players.players_count = 3;
 	},
+	test_losers_should_find_all_players_who_lose: function(){with(this){
+		players = RP_Players.losers([1]);
+		assertArray(players);
+		assertEquals(2, players.length);
+		assertEquals(0, players[0].sit);
+		assertEquals(2, players[1].sit);
+		players = RP_Players.losers([1, 2]);
+		assertArray(players);
+		assertEquals(1, players.length);
+		assertEquals(0, players[0].sit);
+		players = RP_Players.losers([0, 1, 2]);
+		assertArray(players);
+		assertEquals(0, players.length);
+	}},
 	test_find_next_player_should_return_correct_player: function(){with(this){
-		player = RP_Players.find_next_player(1);
+		player = RP_Players.find_next_player(player_1);
 		assertInstanceof(player, RP_Player);
 		assertEquals(233, player.id);
 
-		player = RP_Players.find_next_player(233);
+		player = RP_Players.find_next_player(player_2);
 		assertInstanceof(player, RP_Player);
 		assertEquals(32, player.id);
 
-		player = RP_Players.find_next_player(32);
+		player = RP_Players.find_next_player(player_3);
 		assertInstanceof(player, RP_Player);
 		assertEquals(1, player.id);
 
 		delete RP_Players._players[1];
-		player = RP_Players.find_next_player(1);
+		player = RP_Players.find_next_player(player_1);
 		assertInstanceof(player, RP_Player);
 		assertEquals(32, player.id);
 	}},
@@ -521,6 +547,20 @@ RP_TestsGroups.Game = {
 			acted_1: new RP_Player({in_pot: 100})
 		};
 	},
+	test_is_on_stage_should_return_true_if_current_stage_is_given_in_parameter: function(){with(this){
+		RP_Game.status = 'on_flop';
+		assert(RP_Game.is_on_stage('flop'));
+		assertFalse(RP_Game.is_on_stage('turn'));
+		assertFalse(RP_Game.is_on_stage('river'));
+		RP_Game.status = 'on_turn';
+		assert(RP_Game.is_on_stage('turn'));
+		assertFalse(RP_Game.is_on_stage('flop'));
+		assertFalse(RP_Game.is_on_stage('river'));
+		RP_Game.status = 'on_river';
+		assert(RP_Game.is_on_stage('river'));
+		assertFalse(RP_Game.is_on_stage('flop'));
+		assertFalse(RP_Game.is_on_stage('turn'));
+	}},
 	test_pot_should_return_zero_if_players_not_acted_yet: function(){with(this){
 		RP_Players._players = [players.not_acted, players.not_acted_1];
 		assertEquals(0, RP_Game.pot());

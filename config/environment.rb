@@ -58,7 +58,7 @@ Rails::Initializer.run do |config|
   # config.active_record.default_timezone = :utc
 
   # Log
-  # config.active_record.colorize_logging = true
+	config.active_record.colorize_logging = false
 
   # Locate
   config.i18n.default_locale = :ru

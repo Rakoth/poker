@@ -998,7 +998,7 @@ var defaultCard = {
 //=============================================================================
 //=============================================================================
 
-var RUN_TESTS = false;
+var RUN_TESTS = true;
 
 // только для RubyMine
 if('undefined' == typeof RP_Game){
@@ -1227,18 +1227,15 @@ RP_Event.Player = {
 };
 RP_Event.Game = {
 	queue_level: 'primary',
-	default_view_time_in_sec: 2,
+	default_view_time_in_sec: 0,
 	final_distribution_time_in_sec: 3,
 	on_load: function(){
-		this.view_time = 0;
-
 		this.execute = function(){
 			this.helpers.load_game_state();
 		};
 	},
 	state_has_changed: function(){
 		this.queue_level = 'main';
-		this.view_time = 0;
 
 		this.execute = function(){
 			RP_Visualizers.Game.update_all();
@@ -1248,8 +1245,6 @@ RP_Event.Game = {
 		};
 	},
 	check_for_pause: function(){
-		this.view_time = 0;
-
 		this.execute = function(){
 			if(RP_Players.is_all_away()){
 				$.ajax({
@@ -1264,6 +1259,7 @@ RP_Event.Game = {
 		};
 	},
 	start: function(){
+		this.view_time = 1;
 		this.execute = function(){
 			this.helpers.take_blinds();
 			RP_Event.initialize('Player', 'start_timer', {
@@ -1274,21 +1270,61 @@ RP_Event.Game = {
 		};
 	},
 	next_distribution: function(){
-		this.view_time = RP_Event.Game.final_distribution_time_in_sec;
-
 		this.execute = function(){
 			RP_Players.refresh_acted_flags();
-		// определяем, какие данные нужно отобразить для завершения раздачи
-		// запрашиваем нужные данные у сервера
-		// показываем финал раздачи
-		// обновляем состояние игры до новой раздачи
+			$.getJSON('/game_synchronizers/' + RP_Game.id + '/distribution', this.helpers.sync_on_distribution);
 		};
 	},
 	next_stage: function(){
 		this.execute = function(){
 			RP_Players.refresh_acted_flags();
-		// запрашиваем у сервера данные о следующей стадии игры
-		// отображаем переход к новой стадии
+			$.ajax({
+				async: false,
+				type: "GET",
+				url: '/game_synchronizers/' + RP_Game.id + '/stage',
+				data: {
+					current_status: RP_Game.status
+				},
+				dataType: 'json',
+				success: function(json){
+					$.extend(RP_Game, json);
+					this.helpers.initialize_table_cards();
+					RP_Visualizers.Game.update_all();
+				}.bind(this)
+			});
+		};
+	},
+	// < final_in_json >
+	previous_final: function(){
+		this.view_time = RP_Event.Game.final_distribution_time_in_sec;
+
+		this.execute = function(){
+			RP_Visualizers.Game.show_final(this.final_in_json);
+		};
+	},
+	// < params >
+	new_distribution: function(){
+		this.execute = function(){
+			this.helpers.sync_players_on_distribution(this.params.players_to_load);
+			delete this.params.players_to_load;
+			RP_Event.initialize('Client', 'check_for_lose');
+			RP_Event.initialize('Game', 'sync_game_on_distribution', {game_state: this.params});
+		};
+	},
+	// < game_state >
+	sync_game_on_distribution: function(){
+		this.view_time = 0;
+
+		this.execute = function(){
+			$.extend(RP_Game, this.game_state);
+			// TODO
+//			Game.update_client_hand();
+//			Game.update_blinds();
+//			Game.update_pot();
+//			Game.clear_cards();
+//
+//			Game.active_player.end_turn();
+//			Game.on_start();
 		};
 	}
 };
@@ -1305,7 +1341,7 @@ RP_Event.Client = {
 				value: this.value
 			});
 			RP_Event.initialize('Player', 'start_timer', {
-				player_id: RP_Client.player().next().id
+				player_id: RP_Client.player().next_active().id
 			});
 		};
 	},
@@ -1362,6 +1398,14 @@ RP_Event.Client = {
 					}
 				}
 			});
+		};
+	},
+	check_for_lose: function(){
+		this.queue_level = 'primary';
+		this.execute = function(){
+			if(RP_Client.is_lose()){
+
+			}
 		};
 	}
 };
@@ -1474,7 +1518,7 @@ RP_EventHelpers.Game = {
 	load_game_state: function(){
 		this._add_players(RP_Game.players_to_load);
 
-		this._initialize_table_cards();
+		this.initialize_table_cards();
 
 		if(RP_Game.is_started() && !RP_Game.is_paused()){
 			RP_Event.initialize('Player', 'start_timer', {
@@ -1510,20 +1554,55 @@ RP_EventHelpers.Game = {
 		// просто снимаем малый блайнд
 		this._player_on_small_blind().blind_stake(RP_Game.small_blind_size());
 	},
+	sync_on_distribution: function(json){
+		if(json.previous_final){
+			RP_Event.initialize('Game', 'previous_final', {final_in_json: json.previous_final});
+			delete json.previous_final;
+		}
+		RP_Event.initialize('Game', 'new_distribution', {params: json});
+	},
+	sync_game_on_distribution: function(params){
+		return;
+	},
+	sync_players_on_distribution: function(players_state){
+		// удаляем проигравших игроков
+		var remained_players_sits = $.map(players_state, function(player){
+			return player.sit;
+		});
+		var losers_array = RP_Players.losers(remained_players_sits);
+		$.each(losers_array, function(){
+			RP_Event.initialize('Player', 'leave', {player_id: this.id});
+		});
+
+		// обновляем параметры оставшимся игрокам
+		$.each(players_state, function(){
+			$.extend(RP_Players.at_sit(this.sit), this);
+			if(0 < this.previous_win){
+				RP_Event.initialize('Log', 'player_action', {
+					player: RP_Players.at_sit(this.sit),
+					action: 'win: ',
+					value: RP_Players.at_sit(this.sit).previous_win
+				});
+			}
+			RP_Visualizers.Player.update_all(RP_Players.at_sit(this.sit));
+		});
+	},
 	_add_players: function(){
 		RP_EventHelpers.Syncronize.add_players(RP_Game.players_to_load);
 		delete RP_Game.players_to_load;
 	},
-	_initialize_table_cards: function(){
+	initialize_table_cards: function(){
 		if(RP_Game.cards_to_load){
 			for(var stage in RP_Game.cards_to_load){
 				if(RP_Game.cards_to_load[stage]){
 					var stage_cards = new RP_CardsSet(RP_Game.cards_to_load[stage]);
 					RP_Visualizers.Game.table_cards(stage, stage_cards);
-					RP_Event.initialize('Log', 'received_cards', {
-						stage: stage,
-						cards: stage_cards
-					});
+					if(RP_Game.is_on_stage(stage)){
+						RP_Event.initialize('Log', 'received_cards', {
+							stage: stage,
+							cards: stage_cards
+						});
+					}
 				}
 			}
 		}
@@ -1536,7 +1615,7 @@ RP_EventHelpers.Game = {
 		return RP_Players.at_sit(RP_Game.blind_position);
 	},
 	_is_new_distribution: function(){
-		return (this._is_one_winner() || (this._is_next_stage() && this.is_on_river()) || this._is_allin_and_call());
+		return (this._is_one_winner() || (this._is_next_stage() && RP_Game.is_on_river()) || this._is_allin_and_call());
 	},
 	_is_next_stage: function(){
 		return RP_Players.is_all_acted();
@@ -1602,7 +1681,7 @@ RP_EventHelpers.Syncronize = {
 				});
 			});
 			var last_acted_player_id = json.actions[json.actions.length - 1].player_id;
-			var next_player_id = RP_Players.find(last_acted_player_id).next().id;
+			var next_player_id = RP_Players.find(last_acted_player_id).next_active().id;
 			RP_Event.initialize('Player', 'start_timer', {
 				player_id: next_player_id,
 				value: time_for_next_player
@@ -1645,6 +1724,9 @@ var RP_Client = {
 			case 'raise': return (RP_Game.blind_size < RP_Game.current_bet && this.player().for_call < this.player().stack);
 			default: alert('Error in RP_Client.is_see_button(). Unexpected param: ' + action_name); return false;
 		}
+	},
+	is_lose: function(){
+		return undefined == this.player();
 	}
 };
 
@@ -1652,6 +1734,9 @@ var RP_Client = {
 var RP_GameMethods = {
 	is_wait: function(){
 		return 'waited' == this.status;
+	},
+	is_on_stage: function(stage_name){
+		return 'on_' + stage_name == this.status;
 	},
 	is_on_river: function(){
 		return 'on_river' == this.status;
@@ -1791,8 +1876,8 @@ RP_Player.prototype = {
 		}
 		this.status = new_status;
 	},
-	next: function(){
-		return RP_Players.find_next_player(this.id);
+	next_active: function(){
+		return RP_Players.find_next_player(this);
 	}
 };
 
@@ -1846,8 +1931,8 @@ var RP_Players = {
 		});
 		return player_found;
 	},
-	find_next_player: function(current_player_id){
-		var current_player_position = $.inArray(this.find(current_player_id), this._still_in_game_players());
+	find_next_player: function(current_player){
+		var current_player_position = $.inArray(current_player, this._still_in_game_players());
 		return this._still_in_game_players()[current_player_position + 1] || this._still_in_game_players()[0];
 
 //		var current_player_sit = this.find(current_player_id).sit;
@@ -1919,6 +2004,11 @@ var RP_Players = {
 			}
 		);
 	},
+	losers: function(pemained_players_sits){
+		return $.grep(this._players, function(player){
+			return (!!player && -1 == $.inArray(player.sit, pemained_players_sits));
+		});
+	},
 	_still_in_game_players: function(){
 		return $.grep(this._players, function(player){
 			return (player && !player.is_fold());
@@ -1956,7 +2046,6 @@ RP_Visualizers.Player = {
 		return [$('#cards_' + player.sit + '_0'), $('#cards_' + player.sit + '_1')];
 	},
 	update_stack: function(player){
-		$.debug(player);
 		var stack_value = (0 == player.stack) ? 'all-in' : player.stack;
 		this._stack(player).text(stack_value);
 	},

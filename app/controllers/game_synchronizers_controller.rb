@@ -24,13 +24,14 @@ class GameSynchronizersController < ApplicationController
 
 	def distribution
 		respond_to do |format|
-			format.js {render :json => current_user.games.find(params[:id]).build_synch_data(:on_distribution, current_user.id)}
+			format.js {render :json => current_user.games.find(params[:game_id]).build_synch_data(:on_distribution, current_user.id)}
 		end
 	end
 
 	def stage
     respond_to do |format|
-      format.js {render :json => current_user.games.find(params[:id]).build_synch_data(:on_next_stage, current_user.id)}
+			# params[:current_status]
+      format.js {render :json => current_user.games.find(params[:game_id]).build_synch_data(:on_next_stage, current_user.id)}
     end
 	end
 

@@ -282,9 +282,11 @@ class Game < ActiveRecord::Base
   def data_for_synch_on_next_stage
     {
       :status => status,
-      :flop_to_load => flop.to_s,
-      :turn_to_load => turn.to_s,
-      :river_to_load => river.to_s
+			:cards_to_load => {
+				:flop => flop.to_s,
+				:turn  => turn.to_s,
+				:river => river.to_s
+			}
     }
   end
 
