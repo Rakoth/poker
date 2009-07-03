@@ -125,13 +125,9 @@ class Player < ActiveRecord::Base
 
 	def act! params
 		kind = params[:kind].to_i
-		if PlayerActions::Action::KINDS[:fold] <= kind and kind <= PlayerActions::Action::KINDS[:raise]
-			action_params = {:player => self, :game => game}
-			action_params[:value] = params[:value] unless params[:value].nil?
-			PlayerActions::Action.execute_action kind, action_params
-		else
-			raise "Unexpected action type in Player#act!: #{params[:kind]}"
-		end
+		action_params = {:player => self, :game => game}
+		action_params[:value] = params[:value] unless params[:value].nil?
+		PlayerActions::Action.execute_player_action kind, action_params
 	end
 
 	def has_acted!
@@ -187,23 +183,19 @@ class Player < ActiveRecord::Base
 	end
 
 	def auto_check!
-		PlayerActions::Action.execute_action PlayerActions::Action::KINDS[:auto_check], :player => self, :game => game
-		#PlayerActions::AutoCheckAction.new(:player => self, :game => game).execute
+		PlayerActions::Action.execute_auto_action PlayerActions::Action::AUTO_CHECK, :player => self, :game => game
 	end
 
 	def auto_fold!
-		PlayerActions::Action.execute_action PlayerActions::Action::KINDS[:auto_fold], :player => self, :game => game
-		#PlayerActions::AutoFoldAction.new(:player => self, :game => game).execute
+		PlayerActions::Action.execute_auto_action PlayerActions::Action::AUTO_FOLD, :player => self, :game => game
 	end
 
 	def fold_on_away!
-		PlayerActions::Action.execute_action PlayerActions::Action::KINDS[:timeout_fold], :player => self, :game => game
-		#PlayerActions::TimeoutFoldAction.new(:player => self, :game => game).execute
+		PlayerActions::Action.execute_auto_action PlayerActions::Action::TIMEOUT_FOLD, :player => self, :game => game
 	end
 
 	def check_on_away!
-		PlayerActions::Action.execute_action PlayerActions::Action::KINDS[:timeout_check], :player => self, :game => game
-		#PlayerActions::TimeoutCheckAction.new(:player => self, :game => game).execute
+		PlayerActions::Action.execute_auto_action PlayerActions::Action::TIMEOUT_CHECK, :player => self, :game => game
 	end
 
 	private

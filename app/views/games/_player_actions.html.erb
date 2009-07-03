@@ -1,9 +1,9 @@
 <%- actions = [
-	{:name => 'fold',  :kind => PlayerActions::FoldAction::KIND,  :no_display => '',  :value => false},
-	{:name => 'check', :kind => PlayerActions::CheckAction::KIND, :no_display => 'display:none;', :value => false},
-	{:name => 'call',  :kind => PlayerActions::CallAction::KIND,  :no_display => '', :value => false},
-	{:name => 'bet',   :kind => PlayerActions::BetAction::KIND,   :no_display => '', :value => true},
-	{:name => 'raise', :kind => PlayerActions::RaiseAction::KIND, :no_display => 'display:none;', :value => true}
+	{:name => 'fold',  :kind => PlayerActions::Action::FOLD,  :no_display => '',  :value => false},
+	{:name => 'check', :kind => PlayerActions::Action::CHECK, :no_display => 'display:none;', :value => false},
+	{:name => 'call',  :kind => PlayerActions::Action::CALL,  :no_display => '', :value => false},
+	{:name => 'bet',   :kind => PlayerActions::Action::BET,   :no_display => '', :value => true},
+	{:name => 'raise', :kind => PlayerActions::Action::RAISE, :no_display => 'display:none;', :value => true}
 ] -%>
 <div id="actions">
 	<%= render :partial => 'player_action_button', :collection => actions, :as => :action %>

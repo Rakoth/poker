@@ -1,5 +1,8 @@
 class PlayerActions::FoldAction < PlayerActions::Action
-  KIND = 0
+
+	def kind
+		FOLD
+	end
 
 	protected
 	

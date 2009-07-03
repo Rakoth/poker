@@ -1,5 +1,8 @@
 class PlayerActions::TimeoutCheckAction < PlayerActions::CheckAction
-	KIND = -3
+
+	def kind
+		TIMEOUT_CHECK
+	end
 
 	protected
 

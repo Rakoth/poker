@@ -1,5 +1,8 @@
 class PlayerActions::TimeoutFoldAction < PlayerActions::FoldAction
-	KIND = -1
+
+	def kind
+		TIMEOUT_FOLD
+	end
 
 	protected
 

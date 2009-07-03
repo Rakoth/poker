@@ -4,8 +4,11 @@ class PlayerActions::CallAction < PlayerActions::Action
     super
   end
   
-  KIND = 2
 
+	def kind
+		CALL
+	end
+	
   def can_perform?
     player.must_call?
   end

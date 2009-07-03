@@ -1,39 +1,45 @@
 class PlayerActions::Action < ActiveRecord::Base
 
-	KINDS = {
-		:auto_check => -4,
-		:timeout_check => -3,
-		:auto_fold => -2,
-		:timeout_fold => -1,
-		:fold => 0,
-		:check => 1,
-		:call => 2,
-		:bet => 3,
-		:raise => 4,
-	}
-
-	def self.execute_action kind, params = {}
+	AUTO_CHECK = -4
+	TIMEOUT_CHECK = -3
+	AUTO_FOLD = -2
+	TIMEOUT_FOLD = -1
+	FOLD = 0
+	CHECK = 1
+	CALL = 2
+	BET = 3
+	RAISE = 4
+	
+	def self.execute_player_action kind, params = {}
 		action = case kind
-			when KINDS[:auto_check]
-				PlayerActions::AutoCheckAction.new params
-			when KINDS[:timeout_check]
-				PlayerActions::TimeoutCheckAction.new params
-			when KINDS[:auto_fold]
-				PlayerActions::AutoFoldAction.new params
-			when KINDS[:timeout_fold]
-				PlayerActions::TimeoutFoldAction.new params
-			when KINDS[:fold]
-				PlayerActions::FoldAction.new params
-			when KINDS[:check]
-				PlayerActions::CheckAction.new params
-			when KINDS[:call]
-				PlayerActions::CallAction.new params
-			when KINDS[:bet]
-				PlayerActions::BetAction.new params
-			when KINDS[:raise]
-				PlayerActions::RaiseAction.new params
-			else
-				raise 'Unexpected action type in Action#execute_action: "' + kind + '"'
+		when FOLD
+			PlayerActions::FoldAction.new params
+		when CHECK
+			PlayerActions::CheckAction.new params
+		when CALL
+			PlayerActions::CallAction.new params
+		when BET
+			PlayerActions::BetAction.new params
+		when RAISE
+			PlayerActions::RaiseAction.new params
+		else
+			raise 'Unexpected action type in Action#execute_action: "' + kind + '"'
+		end
+		action.execute
+	end
+
+	def self.execute_auto_action kind, params = {}
+		action = case kind
+		when AUTO_CHECK
+			PlayerActions::AutoCheckAction.new params
+		when TIMEOUT_CHECK
+			PlayerActions::TimeoutCheckAction.new params
+		when AUTO_FOLD
+			PlayerActions::AutoFoldAction.new params
+		when TIMEOUT_FOLD
+			PlayerActions::TimeoutFoldAction.new params
+		else
+			raise 'Unexpected action type in Action#execute_action: "' + kind + '"'
 		end
 		action.execute
 	end
@@ -63,10 +69,7 @@ class PlayerActions::Action < ActiveRecord::Base
 
   attr_accessor :game_params
 
-	KIND = nil
-
   def kind
-    self.class::KIND
   end
 
   def value

@@ -1,5 +1,9 @@
 class PlayerActions::AutoCheckAction < PlayerActions::CheckAction
-	KIND = -4
+
+	def kind
+		AUTO_CHECK
+	end
+	
 	private
 
 	def perform!

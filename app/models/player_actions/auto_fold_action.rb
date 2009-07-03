@@ -1,5 +1,9 @@
 class PlayerActions::AutoFoldAction < PlayerActions::FoldAction
-	KIND = -2
+
+	def kind
+		AUTO_FOLD
+	end
+
 	private
 	
 	def perform!
