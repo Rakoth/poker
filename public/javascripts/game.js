@@ -1590,20 +1590,18 @@ RP_EventHelpers.Syncronize = {
 	// TODO
 	},
 	parse_actions_json: function(json) {
-		// предполагается массив вида
-		// [[player_id, action_kind, value], [player_id, action_kind], last_action_id, time_left]
 		if (json) {
-			var time_for_next_player = json.pop();
-			RP_Game.last_action_id = json.pop();
+			var time_for_next_player = json.time_left;
+			RP_Game.last_action_id = json.last_action_id;
 			RP_Event.initialize('Player', 'stop_timer');
-			$.each(json, function() {
+			$.each(json.actions, function() {
 				RP_Event.initialize('Player', 'action', {
-					player_id: this[0],
-					kind: this[1],
-					value: this[2]
+					player_id: this.player_id,
+					kind: this.kind,
+					value: this.value
 				});
 			});
-			var last_acted_player_id = json[json.length - 1][0];
+			var last_acted_player_id = json.actions[json.actions.length - 1].player_id;
 			var next_player_id = RP_Players.find(last_acted_player_id).next().id;
 			RP_Event.initialize('Player', 'start_timer', {
 				player_id: next_player_id,

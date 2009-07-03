@@ -539,8 +539,16 @@ RP_TestsGroups.SyncEventsHelpers = {
 	setup: function(){
 		this.actions_arrays = {
 			empty: undefined,
-			one_action: [[1, 0], 25, 30],
-			two_actions: [[1, 0], [2, 3, 100], 50, 10]
+			one_action: {
+				actions: [{player_id: 1, kind: 0}],
+				last_action_id: 25,
+				time_left: 30
+			},
+			two_actions: {
+				actions: [{player_id: 1, kind: 0}, {player_id: 2, kind: 3, value: 100}],
+				last_action_id: 50,
+				time_left: 10
+			}
 		};
 		this.game_jsons = {
 			empty: undefined,

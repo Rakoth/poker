@@ -6,17 +6,23 @@ class ActionsController < ApplicationController
 
   def omitted
     respond_to do |format|
-      format.html {render :text => 'Здесь ничего нет..неверный формат!!!' and return}
+      format.html {raise 'Wrong format'}
       format.js do
         @actions = PlayerActions::Action.omitted(params[:game_id], params[:last_action_id], current_user.current_player(params[:game_id]).id)
         unless @actions.empty?
-          j_array = @actions.map do |action|
-            action.has_value? ? [action.player_id, action.kind, action.value] : [action.player_id, action.kind]
+					sync_data = {}
+          sync_data[:actions] = @actions.map do |action|
+						action_hash = {
+							:player_id => action.player_id,
+							:kind => action.kind
+						}
+						action_hash[:value] = action.value if action.has_value?
+						action_hash
           end
           @action = @actions[-1]
-          j_array.push @action.id
-          j_array.push(@action.time_left)
-          render :json => j_array
+          sync_data[:last_action_id] = @action.id
+          sync_data[:time_left] = @action.time_left
+          render :json => sync_data
         else
           render :nothing => true #, :status => :no_content
         end
