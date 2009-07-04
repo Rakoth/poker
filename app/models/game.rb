@@ -236,12 +236,13 @@ class Game < ActiveRecord::Base
 			:current_bet => current_bet,
 			:next_level_time => next_level_time,
 			:active_player_id => active_player_id,
-			:last_action_id => (actions.any? ? actions.sort_by(&:created_at).last.id : nil),
+			:last_action_id => (actions.any? ? actions.first(:order => 'created_at DESC').id : nil),
+			#:last_action_id => (actions.any? ? actions.sort_by(&:created_at).last.id : nil),
 			:action_time_left => action_time_left,
 			:cards_to_load => {
-				:flop => (flop.nil? ? flop.to_s : nil),
-				:turn  => (turn.nil? ? turn.to_s : nil),
-				:river => (river.nil? ? river.to_s : nil)
+				:flop => flop.to_s,
+				:turn  => turn.to_s,
+				:river => river.to_s
 			},
 			:players_to_load => players.map{|p| p.build_synch_data(:after_start_game, for_user_id)},
 			:paused => paused

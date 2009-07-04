@@ -259,10 +259,7 @@ RP_TestsGroups.EventHelper = {
 		this.players = {
 			ordinary: new RP_Player({id: 1})
 		};
-		var player_1 = new RP_Player({sit: 0});
-		var player_2 = new RP_Player({sit: 1});
-		var player_3 = new RP_Player({sit: 2});
-		RP_Players._players = [player_1, player_2, player_3];
+		RP_Players._players = [new RP_Player({sit: 0}), new RP_Player({sit: 1}), new RP_Player({sit: 2})];
 		RP_Players.players_count = 3;
 		$.extend(RP_Game, {
 			blind_position: 0,
@@ -280,6 +277,56 @@ RP_TestsGroups.EventHelper = {
 		});
 		RP_EventsQueue.clear_all();
 	},
+	test_is_one_winner_should_return_true_if_all_players_except_one_are_folds: function(){with(this){
+		RP_Players._players[0]._set_status('fold');
+		RP_Players._players[1]._set_status('fold');
+		RP_Players._players[2]._set_status('active');
+		assert(RP_EventHelpers.Game._is_one_winner());
+		assert(RP_EventHelpers.Game._is_new_distribution());
+		RP_Players._players[1]._set_status('active');
+		assertFalse(RP_EventHelpers.Game._is_one_winner());
+		assertFalse(RP_EventHelpers.Game._is_new_distribution());
+
+		RP_Players._players = [new RP_Player({sit: 0, status:'pass'}), new RP_Player({sit: 1})];
+		assert(RP_EventHelpers.Game._is_one_winner());
+		assert(RP_EventHelpers.Game._is_new_distribution());
+	}},
+	test_is_allin_and_call_should_return_true_if_players_in_all_in_and_call_condition: function(){with(this){
+		RP_Players._players[0]._set_status('fold');
+		RP_Players._players[1]._set_status('allin');
+		RP_Players._players[1].stack = 0;
+		RP_Players._players[1].in_pot = 1000;
+		RP_Players._players[1].for_call = 0;
+		RP_Players._players[2]._set_status('active');
+		RP_Players._players[2].stack = 100;
+		RP_Players._players[2].in_pot = 1000;
+		RP_Players._players[2].for_call = 0;
+		assert(RP_EventHelpers.Game._is_allin_and_call());
+		assert(RP_EventHelpers.Game._is_new_distribution());
+
+		RP_Players._players[0]._set_status('allin');
+		RP_Players._players[0].stack = 0;
+		RP_Players._players[0].in_pot = 1000;
+		RP_Players._players[0].for_call = 0;
+		RP_Players._players[1]._set_status('allin');
+		RP_Players._players[1].stack = 0;
+		RP_Players._players[1].in_pot = 1000;
+		RP_Players._players[1].for_call = 0;
+		RP_Players._players[2]._set_status('active');
+		RP_Players._players[2].stack = 100;
+		RP_Players._players[2].in_pot = 1000;
+		RP_Players._players[2].for_call = 0;
+		assert(RP_EventHelpers.Game._is_allin_and_call());
+		assert(RP_EventHelpers.Game._is_new_distribution());
+	}},
+	test_is_next_stage_should_return_true_if_all_players_acted: function(){with(this){
+		RP_Players._players[0].act_in_this_round = true;
+		RP_Players._players[1].act_in_this_round = true;
+		RP_Players._players[2].act_in_this_round = true;
+		assert(RP_EventHelpers.Game._is_next_stage());
+		RP_Game.status = 'on_river';
+		assert(RP_EventHelpers.Game._is_new_distribution());
+	}},
 	test_sync_players_on_distribution_should_add_leaving_events: function(){with(this){
 		players_state = [{sit: 0}, {sit: 1} ];
 		RP_EventHelpers.Game.sync_players_on_distribution(players_state);

@@ -998,7 +998,7 @@ var defaultCard = {
 //=============================================================================
 //=============================================================================
 
-var RUN_TESTS = true;
+var RUN_TESTS = false;
 
 // только для RubyMine
 if('undefined' == typeof RP_Game){
@@ -1046,7 +1046,7 @@ var RP_HttpStatus = {
 	}
 }
 
-$(function(){	
+$(function(){
 	RP_Client.initialize();
 
 	if(RUN_TESTS){
@@ -1316,15 +1316,7 @@ RP_Event.Game = {
 		this.view_time = 0;
 
 		this.execute = function(){
-			$.extend(RP_Game, this.game_state);
-			// TODO
-//			Game.update_client_hand();
-//			Game.update_blinds();
-//			Game.update_pot();
-//			Game.clear_cards();
-//
-//			Game.active_player.end_turn();
-//			Game.on_start();
+			this.helpers.sync_game_on_distribution(this.game_state);
 		};
 	}
 };
@@ -1526,6 +1518,7 @@ RP_EventHelpers.Game = {
 				value: RP_Game.action_time_left
 			});
 			delete RP_Game.active_player_id;
+			delete RP_Game.action_time_left;
 		}
 
 		RP_Event.initialize('Client', 'check_for_away');
@@ -1561,8 +1554,22 @@ RP_EventHelpers.Game = {
 		}
 		RP_Event.initialize('Game', 'new_distribution', {params: json});
 	},
-	sync_game_on_distribution: function(params){
-		return;
+	sync_game_on_distribution: function(game_state){
+			$.extend(RP_Game, game_state);
+			RP_Visualizers.Game.clear_cards();
+			RP_Visualizers.Game.update_all();
+			RP_Event.initialize('Client', 'new_hand', {cards_in_str: RP_Game.client_hand});
+			delete RP_Game.client_hand;
+			RP_Event.initialize('Client', 'possible_actions_has_changed');
+
+			// TODO
+//			Game.update_client_hand();
+//			Game.update_blinds();
+//			Game.update_pot();
+//			Game.clear_cards();
+//
+//			Game.active_player.end_turn();
+//			Game.on_start();
 	},
 	sync_players_on_distribution: function(players_state){
 		// удаляем проигравших игроков
@@ -1773,10 +1780,10 @@ var RP_Player = function(params){
 	};
 	if(params.hand_to_load){
 		params.hand = new RP_CardsSet(params.hand_to_load);
-		RP_Event.initialize('Log', 'received_cards', {
-			stage: 'hand',
-			cards: new RP_CardsSet(this.hand_to_load)
-		});
+//		RP_Event.initialize('Log', 'received_cards', {
+//			stage: 'hand',
+//			cards: new RP_CardsSet(params.hand_to_load)
+//		});
 		delete params.hand_to_load;
 	}
 	
@@ -2149,6 +2156,7 @@ RP_Visualizers.Game = {
 		cards.each(function(i, card){
 			this._set_stage_card(stage, i, card);
 		}.bind(this));
+		$('#' + stage).show();
 	},
 	_set_stage_card: function(stage, index, card){
 		this._stage_card(stage, index).attr({
@@ -2182,6 +2190,14 @@ RP_Visualizers.Game = {
 	},
 	update_pot: function(){
 		this._pot().text(RP_Game.pot());
+	},
+	clear_cards: function(){
+		$('#flop').hide();
+		$('#turn').hide();
+		$('#river').hide();
+	},
+	show_final: function(final_data){
+		$.debug(final_data);
 	}
 };
 RP_Visualizers.Timer = {
