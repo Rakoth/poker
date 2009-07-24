@@ -21,6 +21,10 @@ class Player < ActiveRecord::Base
 		pass? or pass_away?
 	end
 
+	def self.all_with_non_zero_stack
+		self.all(:conditions => ['stack <> 0'])
+	end
+
 	def away?
 		absent? or pass_away?
 	end
@@ -42,7 +46,7 @@ class Player < ActiveRecord::Base
 	end
 
 	aasm_event :i_am_allin do
-		transitions :from => :active, :to => :allin
+		transitions :from => [:active, :absent], :to => :allin
 	end
 
 	# восстанавливает состояние по умолчанию перед новой раздачей
@@ -75,13 +79,11 @@ class Player < ActiveRecord::Base
 	end
 
 	aasm_event :lose do
-		transitions :from => [:pass, :allin, :pass_away] , :to => :leave, :guard => lambda {|player| player.has_empty_stack?}
+		transitions :from => :allin , :to => :leave #, :guard => lambda {|player| player.has_empty_stack?}
 	end
 
 	serialize :hand, Poker::Hand
 	serialize :previous_hand, Poker::Hand
-  
-  # validates_presence_of :user_id, :game_id, :sit, :stack
 
   belongs_to :user
   belongs_to :game, :counter_cache => true
@@ -92,7 +94,7 @@ class Player < ActiveRecord::Base
   before_create :take_user_money
 	after_create :start_game, :if => lambda {|player| player.game.full_of_players?}
   before_destroy :return_user_money, :if => lambda {|player| player.game.waited?}
-	after_destroy :give_prize, :unless => lambda {|player| player.game.waited?}
+#	after_destroy :give_prize, :unless => lambda {|player| player.game.waited?}
 	after_destroy :destroy_game, :if => lambda {|player| player.game.empty_players_set?}
 	before_save :calculate_winning, :unless => lambda {|player| player.previous_stack.nil? }
 

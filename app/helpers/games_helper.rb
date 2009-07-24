@@ -7,7 +7,7 @@ module GamesHelper
     "#{type.min_level} - #{type.max_level}"
   end
 
-	def player_window_position game_type_id, sit
+	def sit_position game_type_id, sit
 		game_type_id = 1
 		case game_type_id
 			when 1:
@@ -20,7 +20,9 @@ module GamesHelper
 		end
 	end
 
-	def sits_element_id element_name, player_sit
-		"#{element_name}_#{player_sit}"
+	def sits_element_id element_name, player_sit, additional_part = nil
+		element_id = "#{element_name}_#{player_sit}"
+		element_id << "_#{additional_part}" unless additional_part.nil?
+		element_id
 	end
 end

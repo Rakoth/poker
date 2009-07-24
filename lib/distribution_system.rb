@@ -87,7 +87,7 @@ module DistributionSystem
       g[1].map{ |player| player.stack += (chips_sum * player.persent).round; player}
     end
 		# сохранить все изменения
-    calculated_groups.flatten.each{ |player| player.save}
+    calculated_groups.flatten.each(&:save) #{ |player| player.save }
 
 		# переходим к новой раздаче или заканчиваем игру
 		players.each { |player| player.lose! if player.has_empty_stack? }

@@ -1,12 +1,12 @@
 <%- @game.type.max_players.times do |sit| -%>
-<div id="away_layer_<%= sit %>" class="away_layer" style="<%=player_window_position(@game.type_id, sit)%>"></div>
-<div id="sit_<%= sit %>" class="sit" style="<%=player_window_position(@game.type_id, sit)%>display:none;">
+<div id="<%= sits_element_id 'away_layer', sit %>" class="away_layer" style="<%=sit_position(@game.type_id, sit)%>"></div>
+<div id="<%= sits_element_id 'sit', sit %>" class="sit" style="<%=sit_position(@game.type_id, sit) << 'display:none;'%>">
 	<!--div id="<%= sits_element_id 'last_action', sit %>" class="last_action"></div-->
 	<div class="main_part">
 		<div id="<%= sits_element_id 'login', sit %>" class="login"></div>
 		<div id="<%= sits_element_id 'cards', sit %>" class="cards">
-			<%= image_tag "game/cards/RP.gif", :id => sits_element_id('cards', sit) + '_0', :alt => 'RP' %>
-			<%= image_tag "game/cards/RP.gif", :id => sits_element_id('cards', sit) + '_1', :alt => 'RP' %>
+			<%= image_tag "game/cards/RP.gif", :id => sits_element_id('cards', sit, 0), :alt => 'RP' %>
+			<%= image_tag "game/cards/RP.gif", :id => sits_element_id('cards', sit, 1), :alt => 'RP' %>
 		</div>
 	</div>
 	<div class="side_part">

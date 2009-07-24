@@ -122,7 +122,7 @@ class Game < ActiveRecord::Base
 	end
 
   def pot
-    players.inject(0){|sum, player| sum + player.in_pot}
+		waited? ? 0 : players.sum(:in_pot)
   end
 
   def minimal_bet

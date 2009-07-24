@@ -93,7 +93,6 @@ class PlayerActions::Action < ActiveRecord::Base
   def perform!
     player_influence
 		game_influence
-		#game.goto_next_stage
   end
 
   def game_influence

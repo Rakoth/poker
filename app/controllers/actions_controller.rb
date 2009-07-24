@@ -8,20 +8,19 @@ class ActionsController < ApplicationController
     respond_to do |format|
       format.html {raise 'Wrong format'}
       format.js do
-        @actions = PlayerActions::Action.omitted(params[:game_id], params[:last_action_id], current_user.current_player(params[:game_id]).id)
-        unless @actions.empty?
+        actions = PlayerActions::Action.omitted(params[:game_id], params[:last_action_id], current_user.current_player(params[:game_id]).id)
+        unless actions.empty?
 					sync_data = {}
-          sync_data[:actions] = @actions.map do |action|
+          sync_data[:actions] = actions.map do |action|
 						action_hash = {
 							:player_id => action.player_id,
 							:kind => action.kind
 						}
 						action_hash[:value] = action.value if action.has_value?
-						action_hash
+						action_hash[:time_for_next_player] = action.time_left if action == actions[-1]
           end
-          @action = @actions[-1]
-          sync_data[:last_action_id] = @action.id
-          sync_data[:time_left] = @action.time_left
+          action = actions[-1]
+          sync_data[:last_action_id] = action.id
           render :json => sync_data
         else
           render :nothing => true #, :status => :no_content
