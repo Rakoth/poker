@@ -35,9 +35,6 @@ ActionController::Routing::Routes.draw do |map|
 	map.resource :user_session
   map.login 'login', :controller => 'user_sessions', :action => 'new'
   map.leave_game ':game_id/leave', :controller => 'players', :action => 'destroy'
-	map.really_pause 'game_synchronizers/:game_id/really_pause', :controller => 'game_synchronizers', :action => 'really_pause'
-	map.next_stage 'game_synchronizers/:game_id/stage', :controller => 'game_synchronizers', :action => 'stage'
-	map.next_stage 'game_synchronizers/:game_id/distribution', :controller => 'game_synchronizers', :action => 'distribution'
   map.resources :users
   map.resources :actions, :collection => { :omitted => :get, :timeout => :post }
   map.resources :log_messages
@@ -45,6 +42,7 @@ ActionController::Routing::Routes.draw do |map|
   map.resources :players, :member => { :i_am_back => :put }
   map.resources :game_types
   map.resources :notes
+	map.connect 'game_synchronizers/:game_id/:action', :controller => 'game_synchronizers'
   map.connect ':controller/:action/:id'
   map.connect ':controller/:action/:id.:format'
   

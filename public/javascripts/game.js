@@ -501,7 +501,7 @@ var RP_Client = {
 };
 
 var RP_ActionTimeoutNotificator = {
-	_period: 3,
+	_period: 3 * 1000,
 	_request: null,
 	notify: function(away_player){
 		if(RP_Client.is_a(away_player)){
@@ -521,7 +521,7 @@ var RP_ActionTimeoutNotificator = {
 							function(){
 								this.notify(away_player);
 							}.bind(this),
-							this._period * 1000
+							this._period
 						);
 					}
 				}.bind(this)
@@ -791,7 +791,7 @@ RP_Synchronizers.Game = {
 	},
 	_wait_for_start: function(){
 		$.ajax({
-			url: '/game_synchronizers/wait_for_start/' + RP_Game.id,
+			url: '/game_synchronizers/' + RP_Game.id + '/wait_for_start',
 			method: 'get',
 			dataType: 'json',
 			data: {

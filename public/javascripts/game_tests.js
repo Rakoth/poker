@@ -20,7 +20,7 @@ var RP_Tests = {
 		this.assert(assertion, ["assertEquals failed! Actual: %o, expected: %o; ", actual, expected, message || '']);
 	},
 	assertFalse: function(assertion, message){
-		assertion = (false === assertion);
+		var assertion = (false === assertion);
 		this.assert(assertion, ["assertFalse failed! Assertion was true; ", message || '']);
 	},
 	assertString: function(object, message){
@@ -137,7 +137,7 @@ RP_TestsGroups.Game = {
 			small_blind_position: 1,
 			blind_size: 200,
 			ante: 0,
-			active_player_i: 1,
+			active_player_id: 1,
 			players_to_load: [{id: 1}, {id: 2}],
 			cards_to_load: {
 				flop: 'H3:DJ:CA',
