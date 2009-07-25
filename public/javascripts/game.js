@@ -1,4 +1,4 @@
-var RUN_TESTS = true;
+var RUN_TESTS = false;
 
 Function.prototype.bind = function(object){
 	var __method = this;
@@ -7,12 +7,191 @@ Function.prototype.bind = function(object){
 	};
 };
 
+var RP_HttpStatus = {
+	errors: {
+		hurry_sync: 440,
+		late_sync: 441
+	}
+}
+
+//=============================================================================
+var RP_Visualizers = {
+	create: function(group, object){
+		var visualizer = (object != undefined) ? new this[group](object) : this[group];
+		return function(){
+			if('undefined' == typeof DISABLE_VIEW){
+				var effect = arguments[0];
+				var new_arguments = [];
+				var i = 1;
+				while(arguments[i] != undefined){
+					new_arguments.push(arguments[i]);
+					i++;
+				}
+				visualizer[effect].apply(visualizer, new_arguments);
+			}
+		};
+	}
+};
+
+RP_Visualizers.Game = {
+	_pot: function(){
+		return $('#pot');
+	},
+	_blinds: function(){
+		return $('#blinds');
+	},
+	update_all: function(){
+		this.update_pot();
+		this.update_blinds();
+	//TODO
+	},
+	update_blinds: function(){
+		this._blinds().text(this._blinds_info());
+	},
+	_blinds_info: function(){
+		var result = RP_Game.blind_size + '/' + RP_Game.small_blind_size();
+		if(0 < RP_Game.ante){
+			result += ' (' + RP_Game.ante + ')';
+		}
+		return result;
+	},
+	update_pot: function(){
+		this._pot().text(RP_Game.pot());
+	}
+};
+RP_Visualizers.Client = {
+	away: function(){
+		RP_AwayDialog.dialog('open');
+	},
+	update_actions_buttons: function(){
+		$('#actions a').each(function(){
+			$(this)[RP_Client.is_see_button(this.id) ? 'show' : 'hide']();
+		});
+	}
+};
+RP_Visualizers.Player = function(player){
+	this.player = player;
+	this.sit = player.sit;
+};
+RP_Visualizers.Players = {
+	update_all: function(){
+		RP_Players.each(function(player){
+			player.view('update_all');
+		});
+	}
+};
+
+RP_Visualizers.Timer = {
+	_timer: function(){
+		return $('#timer_' + RP_Timer.player.sit);
+	},
+	_timer_src: function(){
+		return '/images/game/timer/' + RP_Timer.time + '.gif';
+	},
+	update: function(){
+		this._timer().attr('alt', RP_Timer.time).attr('src', this._timer_src());
+	}
+};
+RP_Visualizers.Log = {
+
+}
+
+RP_Visualizers.Player.prototype = {
+	_sit: function(){
+		return this._element('sit');
+	},
+	_login: function(){
+		return this._element('login');
+	},
+	_stack: function(){
+		return this._element('stack');
+	},
+	_away_layer: function(){
+		return this._element('away_layer');
+	},
+	_hand: function(){
+		return [$('#cards_' + this.sit + '_0'), $('#cards_' + this.sit + '_1')];
+	},
+	_element: function(id){
+		return $('#' + id + '_' + this.sit);
+	},
+	update_stack: function(){
+		var stack_value = (0 == this.player.stack) ? 'all-in' : this.player.stack;
+		this._stack().text(stack_value);
+	},
+	update_state: function(){
+		if(this.player.is_away()){
+			this.away();
+		}else{
+			this.active();
+		}
+	},
+	update_hand: function(){
+		$.each(this._hand(), function(i, card){
+			var player_card = this.player.hand.card(i);
+			card.attr({
+				alt: player_card.alt,
+				src: player_card.src
+			});
+		}.bind(this));
+	},
+	join: function(){
+		this._sit().show('slow');
+		var login = this.player.login;
+		this._login().attr('title', login).text(login);
+		// new CardsSet('cards_' + this.id, 'player');
+		// $('#timer_' + this.id);
+		// this._stack(player).text(player.stack);
+		this.update_all();
+	},
+	update_all: function(){
+		this.update_stack();
+		this.update_state();
+		this.update_hand();
+	},
+	leave: function(){
+		this._sit().hide('slow');
+	},
+	away: function(){
+
+	},
+	active: function(){
+
+	},
+	fold: function(){
+
+	},
+	check: function(){
+
+	},
+	call: function(){
+
+	},
+	bet: function(value){
+
+	},
+	raise: function(value){
+
+	}
+};
+
+//=============================================================================
+//var RP_CreateView = function(group, object){
+//	var visualizer = (object != undefined) ? new RP_Visualizers[group](object) : RP_Visualizers[group];
+//	return function(){
+//		if('undefined' == typeof DISABLE_VIEW){
+//			var effect = arguments.shift();
+//			visualizer[effect].apply(visualizer, arguments);
+//		}
+//	};
+//};
+
 var RP_Extend = {
 	escape_html: function(html_to_escape){
 		return html_to_escape.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 	},
 	is_request_ready: function(request){
-		return (!request || 0 == request.readyState || 4 == request.readyState)
+		return (!RUN_TESTS && (!request || 0 == request.readyState || 4 == request.readyState))
 	},
 	debug: function(variable_or_vars_array, condition){
 		if($.browser.mozilla && console){
@@ -49,6 +228,8 @@ $(function(){
 });
 
 //=============================================================================
+
+
 var RP_GameMethods = {
 	table_cards: {
 		flop: null,
@@ -60,6 +241,7 @@ var RP_GameMethods = {
 		'on_turn': 'turn',
 		'on_river': 'river'
 	},
+	view: RP_Visualizers.create('Game'),
 	is_wait: function(){
 		return 'waited' == this.status;
 	},
@@ -89,7 +271,29 @@ var RP_GameMethods = {
 			return value + player.in_pot;
 		});
 	},
-
+	start: function(){
+		// снять блайнды
+		this._take_blinds();
+		// запустить таймер активному игроку
+		RP_Timer.start(RP_Players.find(this.active_player_id), this.action_time_left);
+	},
+	_take_blinds: function(){
+		if(0 < RP_Game.ante){
+			RP_Players.each(function(player){
+				player.blind_stake(RP_Game.ante);
+			});
+		}
+		// снимаем большой блайнл с увеличением for_call для остальных
+		this._player_on_blind().stake(RP_Game.blind_size);
+		// просто снимаем малый блайнд
+		this._player_on_small_blind().blind_stake(RP_Game.small_blind_size());
+	},
+	_player_on_small_blind: function(){
+		return RP_Players.at_sit(this.small_blind_position);
+	},
+	_player_on_blind: function(){
+		return RP_Players.at_sit(this.blind_position);
+	},
 	on_load: function(){
 		// добавить игроков
 		this._load_players();
@@ -104,11 +308,11 @@ var RP_GameMethods = {
 
 		// нужно ли показать клиенту away_dialog
 		if(RP_Client.is_away()){
-			RP_Visualizers.Client.away();
+			RP_Client.view('away');
 		}
 
 		// отрисовка состояния игры
-		RP_Visualizers.Game.update_all();
+		this.view('update_all');
 	},
 	initialize_table_cards: function(){
 		for(var stage in RP_Game.cards_to_load){
@@ -149,14 +353,11 @@ var RP_Player = function(params){
 	};
 	if(params.hand_to_load){
 		params.hand = new RP_CardsSet(params.hand_to_load);
-//		RP_Event.initialize('Log', 'received_cards', {
-//			stage: 'hand',
-//			cards: new RP_CardsSet(params.hand_to_load)
-//		});
 		delete params.hand_to_load;
 	}
 
 	$.extend(this, default_params, params);
+	this.view = RP_Visualizers.create('Player', this);
 };
 
 RP_Player.prototype = {
@@ -261,6 +462,7 @@ RP_Player.prototype = {
 //=============================================================================
 var RP_Client = {
 	sit: null,
+	view: RP_Visualizers.create('Client'),
 	initialize: function(){
 		this.sit = RP_Game.client_sit;
 		delete RP_Game.client_sit;
@@ -271,8 +473,8 @@ var RP_Client = {
 	hand: function(){
 		return this._player().hand;
 	},
-	set_hand: function(new_cards_in_str){
-		this._player().hand = new RP_CardsSet(new_cards_in_str);
+	set_hand: function(new_hand){
+		this._player().hand = new_hand;
 	},
 	is_away: function(){
 		return this._player().is_away();
@@ -298,10 +500,41 @@ var RP_Client = {
 	}
 };
 
+var RP_ActionTimeoutNotificator = {
+	_period: 3,
+	_request: null,
+	notify: function(away_player){
+		if(RP_Client.is_a(away_player)){
+			RP_Client.view('away');
+		}
+		if($.is_request_ready(this._request)){
+			this._request = $.ajax({
+				url: '/actions/timeout',
+				type: 'POST',
+				data: {
+					game_id: RP_Game.id,
+					player_id: away_player.id
+				},
+				error: function(){
+					if(RP_HttpStatus.errors.hurry_sync == this._request.status){
+						setTimeout(
+							function(){
+								this.notify(away_player);
+							}.bind(this),
+							this._period * 1000
+						);
+					}
+				}.bind(this)
+			});
+		}
+	}
+}
+
 //=============================================================================
 var RP_Players = {
 	_players: [],
 	players_count: 0,
+	view: RP_Visualizers.create('Players'),
 	is_all_acted: function(){
 		var answer = true;
 		$.each(this._still_in_game_players(), function(i, player){
@@ -358,6 +591,10 @@ var RP_Players = {
 	add_player: function(new_player){
 		this._players[new_player.sit] = new_player;
 		this.players_count++;
+
+		new_player.view('join');
+		RP_Log.new_player(new_player);
+		
 		return new_player;
 	},
 	remove_player: function(id){
@@ -425,7 +662,42 @@ var RP_Players = {
 
 //=============================================================================
 var RP_Timer = {
-
+	_activated: false,
+	player: null,
+	time: 0,
+	_timer: null,
+	view: RP_Visualizers.create('Timer'),
+	start: function(player, init_value){
+		if(this._activated){
+			this.stop();
+		}
+		this.player = player;
+		this._activated = true;
+		this._set_time(init_value);
+		this._timer = setInterval(this._reduce_time.bind(this), 1000);
+	},
+	stop: function(){
+		if(this._activated){
+			this._activated = false;
+			clearTimeout(this._timer);
+			this._set_time(0);
+		}
+	},
+	_set_time: function(time){
+		this.time = (undefined == time ? RP_Game.time_for_action : time);
+		this.view('update');
+	},
+	_reduce_time: function(){
+		if(this.time && 0 < this.time){
+			this._set_time(this.time - 1);
+		}else{
+			RP_ActionTimeoutNotificator.notify(this.player);
+			this.stop();
+		}
+	},
+	is_turn_of: function(player_to_check){
+		return (this._activated && this.player.id == player_to_check.id);
+	}
 };
 
 //=============================================================================
@@ -493,44 +765,86 @@ var RP_DefaultCard = {
 
 //=============================================================================
 var RP_Log = {
+	view: RP_Visualizers.create('Log'),
 	game_stage: function(){
 		this._system_message(RP_Game.stage, RP_Game.current_stage_cards().to_s());
 	},
+	new_player: function(player){
+		this._system_message(player.login, 'join');
+	},
 	_system_message: function(title, body){
-		console.log(title, body);
+		$.debug(title, body);
 	}
 };
 
 //=============================================================================
-var RP_Synchronizers = {
-	Game: {
-
+var RP_Synchronizers = {};
+RP_Synchronizers.Game = {
+	_period: 10 * 1000,
+	_timer: null,
+	_request: null,
+	start: function(){
+		this._timer = setInterval(this._wait_for_start.bind(this), this._period);
 	},
-	Action: {
-
+	stop: function(){
+		clearTimeout(this._timer);
 	},
-	Chat: {
-
-	}
-};
-
-//=============================================================================
-var RP_Visualizers = {
-	Game: {
-
+	_wait_for_start: function(){
+		$.ajax({
+			url: '/game_synchronizers/wait_for_start/' + RP_Game.id,
+			method: 'get',
+			dataType: 'json',
+			data: {
+				'players[]': RP_Players.ids()
+			},
+			success: function(json){
+				this._parse_game_json(json);
+			}.bind(this)
+		});
 	},
-	Client: {
-		away: function(){
-			RP_AwayDialog.dialog('open');
+	_parse_game_json: function(game_state){
+		for(var index in game_state.players_ids_to_remove){
+			RP_Players.remove_player(game_state.players_ids_to_remove[index]);
 		}
-	},
-	Player: {
 
-	},
-	Timer: {
+		for(index in game_state.players_to_add){
+			RP_Players.add_player(new RP_Player(game_state.players_to_add[index]));
+		}
 
-	},
-	Log: {
+		if(game_state.data_for_start){
+			new_hand = new RP_CardsSet(game_state.data_for_start.client_hand);
+			RP_Client.set_hand(new_hand);
+			delete game_state.data_for_start.client_hand;
+
+			$.extend(RP_Game, game_state.data_for_start);
+
+			RP_Visualizers.Client.update_actions_buttons();
+
+			RP_Game.start();
+			RP_Visualizers.Game.update_all();
+			RP_Visualizers.Players.update_all();
+
+			// остановить Game синхронизатор
+			this.stop();
+			// запустить Action синхронизатор
+			RP_Synchronizers.Action.start();
+		}
+	}
+};
+RP_Synchronizers.Action = {
+	_period: 3 * 1000,
+	_timer: null,
+	_request: null,
+	start: function(){
 
 	}
 };
+RP_Synchronizers.Chat = {
+	_period: 5 * 1000,
+	_timer: null,
+	_request: null,
+	start: function(){
+
+	}
+};
+

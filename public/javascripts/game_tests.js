@@ -130,11 +130,27 @@ RP_TestsGroups.Game = {
 			acted: new RP_Player({in_pot: 100}),
 			acted_1: new RP_Player({in_pot: 100})
 		};
-		RP_Game.table_cards = {
-			flop: new RP_CardsSet('H6:DT:CJ'),
-			turn: new RP_CardsSet('H2'),
-			river: new RP_CardsSet('H7')
-		};
+		RP_Players._players = [new RP_Player({sit: 0}), new RP_Player({sit: 1}), new RP_Player({sit: 2})];
+		RP_Players.players_count = 3;
+		$.extend(RP_Game, {
+			blind_position: 0,
+			small_blind_position: 1,
+			blind_size: 200,
+			ante: 0,
+			active_player_i: 1,
+			players_to_load: [{id: 1}, {id: 2}],
+			cards_to_load: {
+				flop: 'H3:DJ:CA',
+				turn: 'S9',
+				river: 'S3'
+			},
+			table_cards: {
+				flop: new RP_CardsSet('H6:DT:CJ'),
+				turn: new RP_CardsSet('H2'),
+				river: new RP_CardsSet('H7')
+			},
+			status: 'on_flop'
+		});
 	},
 	test_is_on_stage_should_return_true_if_current_stage_is_given_in_parameter: function(){with(this){
 		RP_Game.status = 'on_flop';
@@ -175,6 +191,45 @@ RP_TestsGroups.Game = {
 		cards = RP_Game.current_stage_cards();
 		assertInstanceof(cards, RP_CardsSet);
 		assertEquals('H7', cards.alt());
+	}},
+	test_player_on_small_blind_should_return_player: function(){with(this){
+		player = RP_Game._player_on_small_blind();
+		assertInstanceof(player, RP_Player);
+	}},
+	test_player_on_small_blind_should_find_correct_player: function(){with(this){
+		player = RP_Game._player_on_small_blind();
+		assertEquals(1, player.sit);
+	}},
+	test_player_on_blind_should_return_player: function(){with(this){
+		player = RP_Game._player_on_blind();
+		assertInstanceof(player, RP_Player);
+	}},
+	test_player_on_blind_should_find_correct_player: function(){with(this){
+		player = RP_Game._player_on_blind();
+		assertEquals(0, player.sit);
+	}},
+	test_take_blinds_should_take_correct_quantity_of_chips_if_ante_is_zero: function(){with(this){
+		RP_Game._take_blinds();
+		in_pot = RP_Game.blind_size + RP_Game.small_blind_size() + RP_Players.players_count * RP_Game.ante;
+		assertEquals(in_pot, RP_Game.pot());
+	}},
+	test_take_blinds_should_take_correct_quantity_of_chips_if_ante_more_than_zero: function(){with(this){
+		RP_Game.ante = 10;
+		RP_Game._take_blinds();
+		in_pot = RP_Game.blind_size + RP_Game.small_blind_size() + RP_Players.players_count * RP_Game.ante;
+		assertEquals(in_pot, RP_Game.pot());
+	}},
+	test_take_blinds_should_increase_for_call_for_all_non_blind_players: function(){with(this){
+		RP_Game._take_blinds();
+		assertEquals(0, RP_Players.at_sit(0).for_call);
+		assertEquals(RP_Game.small_blind_size(), RP_Players.at_sit(1).for_call);
+		assertEquals(RP_Game.blind_size, RP_Players.at_sit(2).for_call);
+	}},
+	test_take_blinds_should_increase_in_pot_for_blind_players: function(){with(this){
+		RP_Game._take_blinds();
+		assertEquals(RP_Game.blind_size, RP_Players.at_sit(0).in_pot);
+		assertEquals(RP_Game.small_blind_size(), RP_Players.at_sit(1).in_pot);
+		assertEquals(0, RP_Players.at_sit(2).in_pot);
 	}}
 };
 
@@ -344,3 +399,262 @@ RP_TestsGroups.Player = {
 		assertEquals(0, player.for_call);
 	}}
 };
+
+RP_TestsGroups.Cards = {
+	setup: function(){
+		this.cards_in_str = {
+			one: 'HA',
+			two: 'D3:ST',
+			three: 'CK:S8:HJ'
+		};
+	},
+	test_alt_should_return_alternative_string: function(){with(this){
+		set = new RP_CardsSet(cards_in_str.one);
+		assertEquals('HA', set.alt());
+		set = new RP_CardsSet(cards_in_str.two);
+		assertEquals('D3, S10', set.alt());
+		set = new RP_CardsSet(cards_in_str.three);
+		assertEquals('CK, S8, HJ', set.alt());
+	}},
+	test_cards_set_initialize_should_create_set_of_given_cards_or_default_cards: function(){with(this){
+		set = new RP_CardsSet(cards_in_str.one);
+		assertEquals(1, set._cards.length);
+		set = new RP_CardsSet(cards_in_str.two);
+		assertEquals(2, set._cards.length);
+		set = new RP_CardsSet(cards_in_str.three);
+		assertEquals(3, set._cards.length);
+		set = new RP_CardsSet();
+		assertEquals(2, set._cards.length);
+		assertEquals('RP', set.card(0).alt);
+		assertEquals('RP', set.card(1).alt);
+	}},
+	test_card_initialize_should_create_card_with_src_and_alt: function(){with(this){
+		card = new RP_Card(cards_in_str.one);
+		assertEquals('HA', card.alt);
+		assertEquals('/images/game/cards/HA.gif', card.src);
+	}}
+};
+
+RP_TestsGroups.Players = {
+	setup: function(){
+		DISABLE_VIEW = true;
+		this.player_1 = new RP_Player({sit: 0, id: 1});
+		this.player_2 = new RP_Player({sit: 1, id: 233});
+		this.player_3 = new RP_Player({sit: 2, id: 32});
+		RP_Players._players = [this.player_1, this.player_2, this.player_3];
+		RP_Players.players_count = 3;
+	},
+	test_each_should_apply_callback_for_all_players: function(){with(this){
+		RP_Players.each(function(player){
+			player.stack = 0;
+		});
+		assertEquals(0, RP_Players._players[0].stack);
+		assertEquals(0, RP_Players._players[1].stack);
+		assertEquals(0, RP_Players._players[2].stack);
+
+		delete RP_Players._players[1];
+		RP_Players.each(function(player){
+			player.stack = 0;
+		});
+		assertEquals(0, RP_Players._players[0].stack);
+		assertEquals(0, RP_Players._players[2].stack);
+	}},
+	test_losers_should_find_all_players_who_lose: function(){with(this){
+		players = RP_Players.losers([1]);
+		assertArray(players);
+		assertEquals(2, players.length);
+		assertEquals(0, players[0].sit);
+		assertEquals(2, players[1].sit);
+		players = RP_Players.losers([1, 2]);
+		assertArray(players);
+		assertEquals(1, players.length);
+		assertEquals(0, players[0].sit);
+		players = RP_Players.losers([0, 1, 2]);
+		assertArray(players);
+		assertEquals(0, players.length);
+	}},
+	test_find_next_player_should_return_correct_player: function(){with(this){
+		player = RP_Players.find_next_player(player_1);
+		assertInstanceof(player, RP_Player);
+		assertEquals(233, player.id);
+
+		player = RP_Players.find_next_player(player_2);
+		assertInstanceof(player, RP_Player);
+		assertEquals(32, player.id);
+
+		player = RP_Players.find_next_player(player_3);
+		assertInstanceof(player, RP_Player);
+		assertEquals(1, player.id);
+
+		delete RP_Players._players[1];
+		player = RP_Players.find_next_player(player_1);
+		assertInstanceof(player, RP_Player);
+		assertEquals(32, player.id);
+	}},
+	test_ids_should_return_array_of_players_ids_if_all_players_in_game: function(){with(this){
+		ids_array = RP_Players.ids();
+		assertArray(ids_array);
+		assertEquals(3, ids_array.length);
+		assertEquals(1, ids_array[0]);
+		assertEquals(233, ids_array[1]);
+		assertEquals(32, ids_array[2]);
+	}},
+	test_ids_should_return_array_of_players_ids_if_some_players_leave_game: function(){with(this){
+		delete RP_Players._players[1];
+		ids_array = RP_Players.ids();
+		assertArray(ids_array);
+		assertEquals(2, ids_array.length);
+		assertEquals(1, ids_array[0]);
+		assertEquals(32, ids_array[1]);
+
+		delete RP_Players._players[2];
+		ids_array = RP_Players.ids();
+		assertArray(ids_array);
+		assertEquals(1, ids_array.length);
+		assertEquals(1, ids_array[0]);
+	}},
+	test_refresh_acted_flags_should_set_all_players_to_not_acted_state: function(){with(this){
+		RP_Players.at_sit(0).act_in_this_round = true;
+		RP_Players.at_sit(1).act_in_this_round = true;
+		RP_Players.at_sit(2).act_in_this_round = true;
+		RP_Players.refresh_acted_flags();
+		assertFalse(RP_Players.at_sit(0).act_in_this_round);
+		assertFalse(RP_Players.at_sit(1).act_in_this_round);
+		assertFalse(RP_Players.at_sit(2).act_in_this_round);
+	}},
+	test_refresh_acted_flags_should_set_all_players_to_not_acted_state_except_player_with_given_id: function(){with(this){
+		RP_Players.at_sit(0).act_in_this_round = true;
+		RP_Players.at_sit(1).act_in_this_round = true;
+		RP_Players.at_sit(2).act_in_this_round = true;
+		RP_Players.refresh_acted_flags(1);
+		assert(RP_Players.at_sit(0).act_in_this_round);
+		assertFalse(RP_Players.at_sit(1).act_in_this_round);
+		assertFalse(RP_Players.at_sit(2).act_in_this_round);
+	}},
+	test_add_player_should_increase_players_count_if_sit_param_is_correct: function(){with(this){
+		RP_Players._players = [];
+		RP_Players.players_count = 0;
+		RP_Players.add_player(new RP_Player({sit:0, id: 2}));
+		assertEquals(1, RP_Players.players_count, 'cache');
+		assertEquals(1, RP_Players._players.length, 'real');
+		RP_Players.add_player(new RP_Player({sit:1, id: 3}));
+		assertEquals(2, RP_Players.players_count, 'cache');
+		assertEquals(2, RP_Players._players.length, 'real');
+	}},
+	test_remove_player_should_decrease_players_count_if_id_is_correct: function(){with(this){
+		RP_Players.remove_player(1);
+		assertEquals(2, RP_Players.players_count);
+	}},
+	test_remove_player_should_delete_player_from_players_array_if_id_is_correct: function(){with(this){
+		RP_Players.remove_player(1);
+		assertUndefined(RP_Players.find(1));
+	}},
+	test_remove_player_should_return_undefined_if_id_param_is_incorrect: function(){with(this){
+		assertUndefined(RP_Players.remove_player(0));
+	}},
+	test_find_should_return_correct_player: function(){with(this){
+		player = RP_Players.find(1);
+		assertInstanceof(player, RP_Player);
+		assertEquals(1, player.id);
+		assertEquals(0, player.sit);
+	}},
+	test_find_should_return_undefined_if_id_is_incorrect: function(){with(this){
+		player = RP_Players.find(0);
+		assertUndefined(player);
+	}},
+	test_still_in_game_players_should_return_array_of_players: function(){with(this){
+		players = RP_Players._still_in_game_players();
+		assertArray(players);
+		assertEquals(3, players.length);
+	}},
+	test_is_all_acted_should_return_true_if_all_players_already_act_in_this_round: function(){with(this){
+		RP_Players.each(function(player){
+			player.act_in_this_round = true;
+		});
+		assert(RP_Players.is_all_acted());
+	}},
+	test_is_all_acted_should_return_false_if_someone_not_act_yet: function(){with(this){
+		RP_Players.each(function(player){
+			player.act_in_this_round = true;
+		});
+		RP_Players._players[0].act_in_this_round = false;
+		assertFalse(RP_Players.is_all_acted());
+	}},
+	test_is_all_away_should_return_true_if_all_players_away: function(){with(this){
+		RP_Players.each(function(player){
+			player.status = 'absent';
+		});
+		assert(RP_Players.is_all_away());
+	}},
+	test_is_all_away_should_return_false_if_someone_not_away: function(){with(this){
+		RP_Players.each(function(player){
+			player.status = 'absent';
+		});
+		RP_Players._players[0].status = 'active';
+		assertFalse(RP_Players.is_all_away());
+	}}
+};
+
+RP_TestsGroups.Visualizers = {
+	setup: function(){
+		DISABLE_VEIW = undefined;
+	},
+	test_create_should_return_function: function(){with(this){
+		assertInstanceof(RP_Visualizers.create('Game'), Function);
+		assertInstanceof(new RP_Player({sit: 1}).view, Function);
+	}}
+};
+
+RP_TestsGroups.Timer = {
+	setup: function(){
+		DISABLE_VIEW = true;
+		this.player = new RP_Player({sit: 0, id: 1});
+		RP_Timer._activated = false;
+	},
+	test_is_turn_of_should_return_true_if_arg_is_the_player_with_started_timer: function(){with(this){
+		RP_Timer._activated = true;
+		RP_Timer.player = player;
+		player_for_check = new RP_Player({id: 1});
+		assert(RP_Timer.is_turn_of(player_for_check));
+	}},
+	test_is_turn_of_should_return_false_if_arg_isnt_player_with_started_timer: function(){with(this){
+		RP_Timer._activated = true;
+		RP_Timer.player = player;
+		player_for_check = new RP_Player({id: 2});
+		assertFalse(RP_Timer.is_turn_of(player_for_check));
+	}},
+	test_is_turn_of_should_return_false_if_timer_is_stoped: function(){with(this){
+		RP_Timer._activated = false;
+		player_for_check_1 = new RP_Player({id: 1});
+		assertFalse(RP_Timer.is_turn_of(player_for_check_1));
+	}},
+	test_start_should_start_timer_and_set_timers_params: function(){with(this){
+		RP_Timer.start(player, 21);
+		assert(RP_Timer._activated);
+		assertDefined(RP_Timer._timer);
+		assertEquals(0, RP_Timer.player.sit);
+		assertEquals(21, RP_Timer.time);
+		RP_Timer.stop();
+	}},
+	test_stop_should_clear_timer_params: function(){with(this){
+		RP_Timer.start(player, 21);
+		RP_Timer.stop();
+		assertFalse(RP_Timer._activated);
+	}},
+	test_reduce_time_should_reduce_time_by_one_if_time_more_than_zero: function(){with(this){
+		RP_Timer.time = 30;
+		counter = 30;
+		while(0 < counter){
+			counter--;
+			RP_Timer._reduce_time();
+			assertEquals(counter, RP_Timer.time);
+		}
+	}},
+	test_reduce_time_should_stoped_if_time_is_over: function(){with(this){
+		RP_Timer.time = 0;
+		RP_Timer._activated = true;
+		RP_Timer._reduce_time();
+		assertFalse(RP_Timer._activated);
+	}}
+};
+

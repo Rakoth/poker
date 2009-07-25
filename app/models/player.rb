@@ -21,10 +21,6 @@ class Player < ActiveRecord::Base
 		pass? or pass_away?
 	end
 
-	def self.all_with_non_zero_stack
-		self.all(:conditions => ['stack <> 0'])
-	end
-
 	def away?
 		absent? or pass_away?
 	end
