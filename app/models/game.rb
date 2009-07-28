@@ -121,6 +121,14 @@ class Game < ActiveRecord::Base
 		end
 	end
 
+	def last_log_message_id
+		log_messages.any? ? log_messages.last(:order => 'created_at').id : 0
+	end
+
+	def last_player_action_id
+		actions.any? ? actions.first(:order => 'created_at DESC').id : nil
+	end
+
   def pot
 		waited? ? 0 : players.sum(:in_pot)
   end
@@ -158,20 +166,20 @@ class Game < ActiveRecord::Base
 		end
 	end
 
-	def build_synch_data type = :init, for_user_id = nil
-		case type
-		when :init
-			data_for_init_client for_user_id
-		when :on_start
-			data_for_synch_on_start for_user_id
-		when :on_distribution
-			data_for_synch_on_distribution for_user_id
-    when :on_next_stage
-      data_for_synch_on_next_stage
-		else
-			raise ArgumentError, 'Unexpected type for building game data: ' + type.to_s
-		end
-	end
+#	def build_synch_data type = :init, for_user_id = nil
+#		case type
+#		when :init
+#			data_for_init_client for_user_id
+#		when :on_start
+#			data_for_synch_on_start for_user_id
+#		when :on_distribution
+#			data_for_synch_on_distribution for_user_id
+#    when :on_next_stage
+#      data_for_synch_on_next_stage
+#		else
+#			raise ArgumentError, 'Unexpected type for building game data: ' + type.to_s
+#		end
+#	end
 
 	def current_player user_or_user_id
 		user_id = user_or_user_id.is_a?(User) ? user_or_user_id.id : user_or_user_id
@@ -208,99 +216,98 @@ class Game < ActiveRecord::Base
     end
   end
 
-	def data_for_init_client for_user_id
-		game_copy = init_data_common for_user_id
-		game_copy.merge! init_data_after_start(for_user_id) unless waited?
-		game_copy
-	end
-
-	def init_data_common for_user_id
-		{
-			:id => id,
-			:status => status,
-			:blind_size => blind_size,
-			:ante => ante,
-			:client_sit => current_player(for_user_id).sit,
-			:time_for_action => type.time_for_action,
-			:max_players => type.max_players,
-			:start_stack => type.start_stack,
-			:players_to_load => players.map(&:build_synch_data),
-			:last_message_id => log_messages.any? ? log_messages.first(:order => 'id DESC').id : 0
-		}
-	end
-
-	def init_data_after_start for_user_id
-		{
-			:blind_position => blind_position,
-			:small_blind_position => small_blind_position,
-			:current_bet => current_bet,
-			:next_level_time => next_level_time,
-			:active_player_id => active_player_id,
-			:last_action_id => (actions.any? ? actions.first(:order => 'created_at DESC').id : nil),
-			#:last_action_id => (actions.any? ? actions.sort_by(&:created_at).last.id : nil),
-			:action_time_left => action_time_left,
-			:cards_to_load => {
-				:flop => flop.to_s,
-				:turn  => turn.to_s,
-				:river => river.to_s
-			},
-			:players_to_load => players.map{|p| p.build_synch_data(:after_start_game, for_user_id)},
-			:paused => paused
-		}
-	end
-
-	def data_for_synch_on_distribution for_user_id
-		{
-			:status => status,
-			:active_player_id => active_player_id,
-			:blind_position => blind_position,
-			:small_blind_position => small_blind_position,
-			:blind_size => blind_size,
-			:ante => ante,
-			:current_bet => current_bet,
-			:next_level_time => next_level_time,
-			:client_hand => (current_player(for_user_id) ? current_player(for_user_id).hand.to_s : nil),
-			:action_time_left => action_time_left,
-			:players_to_load => players.map{|p| p.build_synch_data(:on_distribution)},
-			:previous_final => build_previous_final,
-			:paused => paused
-		}
-	end
-
-	def data_for_synch_on_start for_user_id
-		{
-			:blind_position => blind_position,
-			:small_blind_position => small_blind_position,
-			:next_level_time => next_level_time,
-			:current_bet => current_bet,
-			:active_player_id => active_player_id,
-			:action_time_left => action_time_left,
-			:client_hand => current_player(for_user_id).hand.to_s,
-			:status => status
-		}
-	end
-
-  def data_for_synch_on_next_stage
-    {
-      :status => status,
-			:cards_to_load => {
-				:flop => flop.to_s,
-				:turn  => turn.to_s,
-				:river => river.to_s
-			}
-    }
-  end
+#	def data_for_init_client for_user_id
+#		game_copy = init_data_common for_user_id
+#		game_copy.merge! init_data_after_start(for_user_id) unless waited?
+#		game_copy
+#	end
+#
+#	def init_data_common for_user_id
+#		{
+#			:id => id,
+#			:status => status,
+#			:blind_size => blind_size,
+#			:ante => ante,
+#			:client_sit => current_player(for_user_id).sit,
+#			:time_for_action => type.time_for_action,
+#			:max_players => type.max_players,
+#			:start_stack => type.start_stack,
+#			:players_to_load => players.map(&:build_synch_data),
+#			:last_message_id => log_messages.any? ? log_messages.first(:order => 'id DESC').id : 0
+#		}
+#	end
+#
+#	def init_data_after_start for_user_id
+#		{
+#			:blind_position => blind_position,
+#			:small_blind_position => small_blind_position,
+#			:current_bet => current_bet,
+#			:next_level_time => next_level_time,
+#			:active_player_id => active_player_id,
+#			:last_action_id => last_player_action_id,
+#			:action_time_left => action_time_left,
+#			:cards_to_load => {
+#				:flop => flop.to_s,
+#				:turn  => turn.to_s,
+#				:river => river.to_s
+#			},
+#			:players_to_load => players.map{|p| p.build_synch_data(:after_start_game, for_user_id)},
+#			:paused => paused
+#		}
+#	end
+#
+#	def data_for_synch_on_distribution for_user_id
+#		{
+#			:status => status,
+#			:active_player_id => active_player_id,
+#			:blind_position => blind_position,
+#			:small_blind_position => small_blind_position,
+#			:blind_size => blind_size,
+#			:ante => ante,
+#			:current_bet => current_bet,
+#			:next_level_time => next_level_time,
+#			:client_hand => (current_player(for_user_id) ? current_player(for_user_id).hand.to_s : nil),
+#			:action_time_left => action_time_left,
+#			:players_to_load => players.map{|p| p.build_synch_data(:on_distribution)},
+#			:previous_final => build_previous_final,
+#			:paused => paused
+#		}
+#	end
+#
+#	def data_for_synch_on_start for_user_id
+#		{
+#			:blind_position => blind_position,
+#			:small_blind_position => small_blind_position,
+#			:next_level_time => next_level_time,
+#			:current_bet => current_bet,
+#			:active_player_id => active_player_id,
+#			:action_time_left => action_time_left,
+#			:client_hand => current_player(for_user_id).hand.to_s,
+#			:status => status
+#		}
+#	end
+#
+#  def data_for_synch_on_next_stage
+#    {
+#      :status => status,
+#			:cards_to_load => {
+#				:flop => flop.to_s,
+#				:turn  => turn.to_s,
+#				:river => river.to_s
+#			}
+#    }
+#  end
 
 	def give_prize_to_winners
 		#TODO
 	end
 
-	def build_previous_final
-		{
-			:players => players.map{|p| p.build_synch_data :previous_final},
-			:flop => previous_flop.to_s,
-			:turn => previous_turn.to_s,
-			:river => previous_river.to_s
-		}
-	end
+#	def build_previous_final
+#		{
+#			:players => players.map{|p| p.build_synch_data :previous_final},
+#			:flop => previous_flop.to_s,
+#			:turn => previous_turn.to_s,
+#			:river => previous_river.to_s
+#		}
+#	end
 end

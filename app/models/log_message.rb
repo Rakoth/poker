@@ -12,11 +12,11 @@ class LogMessage < ActiveRecord::Base
 		}
 	}
 
-	def build_synch_data
-		{
-			:id => id,
-			:login => user.login,
-			:text => text
-		}
-	end
+#	def build_synch_data
+#		{
+#			:id => id,
+#			:login => user.login,
+#			:text => text
+#		}
+#	end
 end

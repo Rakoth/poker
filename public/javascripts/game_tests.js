@@ -2,7 +2,7 @@ var RP_Tests = {
 	run_all: function(){
 		for(var group in RP_TestsGroups){
 			RP_TestsGroups[group].group_title = group + ' Tests';
-			$.extend(RP_TestsGroups[group], RP_Tests);
+			$.extend(RP_TestsGroups[group], this);
 			RP_TestsGroups[group].run();
 		}
 	},
@@ -15,33 +15,37 @@ var RP_Tests = {
 			this._total_failed++;
 		}
 	},
-	assertEquals: function(expected, actual, message){
-		var assertion = (expected === actual);
-		this.assert(assertion, ["assertEquals failed! Actual: %o, expected: %o; ", actual, expected, message || '']);
+	assert_equals: function(expected, actual, message){
+		if($.isArray(expected) && $.isArray(actual)){
+			this._assert_equals_arrays(expected, actual, message);
+		}else{
+			var assertion = (expected === actual);
+			this.assert(assertion, ["assert_equals failed! Actual: %o, expected: %o; ", actual, expected, message || '']);
+		}
 	},
-	assertFalse: function(assertion, message){
-		var assertion = (false === assertion);
-		this.assert(assertion, ["assertFalse failed! Assertion was true; ", message || '']);
+	assert_false: function(false_assertion, message){
+		var assertion = (false === false_assertion);
+		this.assert(assertion, ["assert_false failed! Assertion was true; ", message || '']);
 	},
-	assertString: function(object, message){
+	assert_string: function(object, message){
 		var assertion = ("string" == typeof object);
-		this.assert(assertion, ["assertString failed! %o was not a string; ", object, message || '']);
+		this.assert(assertion, ["assert_string failed! %o was not a string; ", object, message || '']);
 	},
-	assertArray: function(object, message){
+	assert_array: function(object, message){
 		var assertion = $.isArray(object);
-		this.assert(assertion, ["assertArray failed! %o was not an Array; ", object, message || '']);
+		this.assert(assertion, ["assert_array failed! %o was not an Array; ", object, message || '']);
 	},
-	assertInstanceof: function(object, expected_class, message){
+	assert_instanceof: function(object, expected_class, message){
 		var assertion = (object instanceof expected_class);
-		this.assert(assertion, ["assertInstanceof failed! %o was not an instance of the expected type; ", object, message || '']);
+		this.assert(assertion, ["assert_instanceof failed! %o was not an instance of the expected type; ", object, message || '']);
 	},
-	assertUndefined: function(object, message){
+	assert_undefined: function(object, message){
 		var assertion = (undefined === object);
-		this.assert(assertion, ["assertUndefined failed! %o was defined; ", object, message || '']);
+		this.assert(assertion, ["assert_undefined failed! %o was defined; ", object, message || '']);
 	},
-	assertDefined: function(object, message){
+	assert_defined: function(object, message){
 		var assertion = (undefined !== object);
-		this.assert(assertion, ["assertDefined failed! variable was undefined; ", message || '']);
+		this.assert(assertion, ["assert_defined failed! variable was undefined; ", message || '']);
 	},
 	run: function(){
 		this._start_tests_group();
@@ -61,6 +65,19 @@ var RP_Tests = {
 			}
 		}
 		this._final_tests_group();
+	},
+	_assert_equals_arrays: function(expected, actual, message){
+		var assertion = false;
+		if(expected.length == actual.length){
+			assertion = true;
+			for(var i = 0; i < expected.length; i++){
+				if(expected[i] !== actual[i]){
+					assertion = false;
+					break;
+				}
+			}
+		}
+		this.assert(assertion, ["assert_equals_arrays failed! Actual: %o, expected: %o; ", actual, expected, message || ''])
 	},
 	_show_message: function(message){
 		if(!$.isArray(message)){
@@ -155,81 +172,81 @@ RP_TestsGroups.Game = {
 	test_is_on_stage_should_return_true_if_current_stage_is_given_in_parameter: function(){with(this){
 		RP_Game.status = 'on_flop';
 		assert(RP_Game.is_on_stage('flop'));
-		assertFalse(RP_Game.is_on_stage('turn'));
-		assertFalse(RP_Game.is_on_stage('river'));
+		assert_false(RP_Game.is_on_stage('turn'));
+		assert_false(RP_Game.is_on_stage('river'));
 		RP_Game.status = 'on_turn';
 		assert(RP_Game.is_on_stage('turn'));
-		assertFalse(RP_Game.is_on_stage('flop'));
-		assertFalse(RP_Game.is_on_stage('river'));
+		assert_false(RP_Game.is_on_stage('flop'));
+		assert_false(RP_Game.is_on_stage('river'));
 		RP_Game.status = 'on_river';
 		assert(RP_Game.is_on_stage('river'));
-		assertFalse(RP_Game.is_on_stage('flop'));
-		assertFalse(RP_Game.is_on_stage('turn'));
+		assert_false(RP_Game.is_on_stage('flop'));
+		assert_false(RP_Game.is_on_stage('turn'));
 	}},
 	test_pot_should_return_zero_if_players_not_acted_yet: function(){with(this){
 		RP_Players._players = [players.not_acted, players.not_acted_1];
-		assertEquals(0, RP_Game.pot());
+		assert_equals(0, RP_Game.pot());
 	}},
 	test_pot_should_return_value_if_all_players_already_act: function(){with(this){
 		RP_Players._players = [players.acted, players.acted_1];
-		assertEquals(200, RP_Game.pot());
+		assert_equals(200, RP_Game.pot());
 	}},
 	test_pot_should_return_value_if_some_players_already_act: function(){with(this){
 		RP_Players._players = [players.not_acted, players.acted];
-		assertEquals(100, RP_Game.pot());
+		assert_equals(100, RP_Game.pot());
 	}},
 	test_current_stage_cards_should_return_cards_set: function(){with(this){
 		RP_Game.stage = 'on_flop';
 		cards = RP_Game.current_stage_cards();
-		assertInstanceof(cards, RP_CardsSet);
-		assertEquals('H6, D10, CJ', cards.alt());
+		assert_instanceof(cards, RP_CardsSet);
+		assert_equals('H6, D10, CJ', cards.alt());
 		RP_Game.stage = 'on_turn';
 		cards = RP_Game.current_stage_cards();
-		assertInstanceof(cards, RP_CardsSet);
-		assertEquals('H2', cards.alt());
+		assert_instanceof(cards, RP_CardsSet);
+		assert_equals('H2', cards.alt());
 		RP_Game.stage = 'on_river';
 		cards = RP_Game.current_stage_cards();
-		assertInstanceof(cards, RP_CardsSet);
-		assertEquals('H7', cards.alt());
+		assert_instanceof(cards, RP_CardsSet);
+		assert_equals('H7', cards.alt());
 	}},
 	test_player_on_small_blind_should_return_player: function(){with(this){
 		player = RP_Game._player_on_small_blind();
-		assertInstanceof(player, RP_Player);
+		assert_instanceof(player, RP_Player);
 	}},
 	test_player_on_small_blind_should_find_correct_player: function(){with(this){
 		player = RP_Game._player_on_small_blind();
-		assertEquals(1, player.sit);
+		assert_equals(1, player.sit);
 	}},
 	test_player_on_blind_should_return_player: function(){with(this){
 		player = RP_Game._player_on_blind();
-		assertInstanceof(player, RP_Player);
+		assert_instanceof(player, RP_Player);
 	}},
 	test_player_on_blind_should_find_correct_player: function(){with(this){
 		player = RP_Game._player_on_blind();
-		assertEquals(0, player.sit);
+		assert_equals(0, player.sit);
 	}},
 	test_take_blinds_should_take_correct_quantity_of_chips_if_ante_is_zero: function(){with(this){
 		RP_Game._take_blinds();
 		in_pot = RP_Game.blind_size + RP_Game.small_blind_size() + RP_Players.players_count * RP_Game.ante;
-		assertEquals(in_pot, RP_Game.pot());
+		assert_equals(in_pot, RP_Game.pot());
 	}},
 	test_take_blinds_should_take_correct_quantity_of_chips_if_ante_more_than_zero: function(){with(this){
 		RP_Game.ante = 10;
 		RP_Game._take_blinds();
 		in_pot = RP_Game.blind_size + RP_Game.small_blind_size() + RP_Players.players_count * RP_Game.ante;
-		assertEquals(in_pot, RP_Game.pot());
+		assert_equals(in_pot, RP_Game.pot());
 	}},
 	test_take_blinds_should_increase_for_call_for_all_non_blind_players: function(){with(this){
 		RP_Game._take_blinds();
-		assertEquals(0, RP_Players.at_sit(0).for_call);
-		assertEquals(RP_Game.small_blind_size(), RP_Players.at_sit(1).for_call);
-		assertEquals(RP_Game.blind_size, RP_Players.at_sit(2).for_call);
+		assert_equals(0, RP_Players.at_sit(0).for_call);
+		assert_equals(RP_Game.small_blind_size(), RP_Players.at_sit(1).for_call);
+		assert_equals(RP_Game.blind_size, RP_Players.at_sit(2).for_call);
 	}},
 	test_take_blinds_should_increase_in_pot_for_blind_players: function(){with(this){
 		RP_Game._take_blinds();
-		assertEquals(RP_Game.blind_size, RP_Players.at_sit(0).in_pot);
-		assertEquals(RP_Game.small_blind_size(), RP_Players.at_sit(1).in_pot);
-		assertEquals(0, RP_Players.at_sit(2).in_pot);
+		assert_equals(RP_Game.blind_size, RP_Players.at_sit(0).in_pot);
+		assert_equals(RP_Game.small_blind_size(), RP_Players.at_sit(1).in_pot);
+		assert_equals(0, RP_Players.at_sit(2).in_pot);
 	}}
 };
 
@@ -250,22 +267,22 @@ RP_TestsGroups.Client = {
 	test_is_see_button_should_return_true_for_check_and_false_for_call_if_client_for_call_equal_zero: function(){with(this){
 		RP_Players._players[0].for_call = 0;
 		assert(RP_Client.is_see_button('check'));
-		assertFalse(RP_Client.is_see_button('call'));
+		assert_false(RP_Client.is_see_button('call'));
 	}},
 	test_is_see_button_should_return_false_for_check_and_true_for_call_if_client_for_call_more_than_zero: function(){with(this){
 		RP_Players._players[0].for_call = 100;
-		assertFalse(RP_Client.is_see_button('check'));
+		assert_false(RP_Client.is_see_button('check'));
 		assert(RP_Client.is_see_button('call'));
 	}},
 	test_is_see_button_should_return_true_for_bet_and_false_for_raise_if_client_can_do_bet: function(){with(this){
 		RP_Game.current_bet = 100;
 		assert(RP_Client.is_see_button('bet'));
-		assertFalse(RP_Client.is_see_button('raise'));
+		assert_false(RP_Client.is_see_button('raise'));
 	}},
 	test_is_see_button_should_return_true_for_raise_and_false_for_bet_if_client_can_do_raise: function(){with(this){
 		RP_Game.current_bet = 200;
 		assert(RP_Client.is_see_button('raise'));
-		assertFalse(RP_Client.is_see_button('bet'));
+		assert_false(RP_Client.is_see_button('bet'));
 	}}
 };
 
@@ -300,14 +317,14 @@ RP_TestsGroups.Player = {
 		old_status = player.status;
 		old_stack = player.stack;
 		player.check();
-		assertEquals(old_status, player.status);
-		assertEquals(old_stack, player.stack);
+		assert_equals(old_status, player.status);
+		assert_equals(old_stack, player.stack);
 	}},
 	test_call_should_take_chips_from_player: function(){with(this){
 		player = players.small_for_call;
 		player.call();
-		assertEquals(900, player.stack);
-		assertEquals(0, player.for_call);
+		assert_equals(900, player.stack);
+		assert_equals(0, player.for_call);
 	}},
 	test_call_should_set_allin_status_if_player_hasnt_enough_chips: function(){with(this){
 		player = players.big_for_call;
@@ -317,12 +334,12 @@ RP_TestsGroups.Player = {
 	test_bet_should_take_chips_from_player: function(){with(this){
 		player = players.ordinary;
 		player.bet(100);
-		assertEquals(900, player.stack);
+		assert_equals(900, player.stack);
 	}},
 	test_bet_should_take_for_call_and_value_of_chips_from_player: function(){with(this){
 		player = players.small_for_call;
 		player.bet(100);
-		assertEquals(800, player.stack);
+		assert_equals(800, player.stack);
 	}},
 	test_set_status_should_set_correct_status: function(){with(this){
 		player = players.active;
@@ -340,63 +357,63 @@ RP_TestsGroups.Player = {
 	test_stake_should_inscrease_game_current_bet_if_value_more_than_zero: function(){with(this){
 		player = players.ordinary;
 		player.stake(100);
-		assertEquals(100, RP_Game.current_bet);
+		assert_equals(100, RP_Game.current_bet);
 	}},
 	test_stake_should_take_chips_from_player: function(){with(this){
 		player = players.ordinary;
 		player.stake(100);
-		assertEquals(900, player.stack);
+		assert_equals(900, player.stack);
 	}},
 	test_stake_should_increase_in_pot_for_player: function(){with(this){
 		player = players.ordinary;
 		player.stake(100);
-		assertEquals(100, player.in_pot);
+		assert_equals(100, player.in_pot);
 	}},
 	test_stake_should_include_players_for_call: function(){with(this){
 		player = players.small_for_call;
 		player.stake(100);
-		assertEquals(200, player.in_pot);
-		assertEquals(800, player.stack);
-		assertEquals(0, player.for_call);
+		assert_equals(200, player.in_pot);
+		assert_equals(800, player.stack);
+		assert_equals(0, player.for_call);
 	}},
 	test_stake_should_decrease_for_call_if_for_call_more_than_stack: function(){with(this){
 		player = players.big_for_call;
 		player.stake(0);
-		assertEquals(100, player.for_call);
+		assert_equals(100, player.for_call);
 	}},
 	test_stake_should_take_less_than_or_equal_players_stack: function(){with(this){
 		player = players.small_stack;
 		player.stake(200);
-		assertEquals(0, player.stack);
-		assertEquals(100, player.in_pot);
+		assert_equals(0, player.stack);
+		assert_equals(100, player.in_pot);
 	}},
 	test_stake_should_call_if_value_is_zero: function(){with(this){
         player = players.small_for_call;
         player.stake(0);
-        assertEquals(0, player.for_call);
-        assertEquals(900, player.stack);
+        assert_equals(0, player.for_call);
+        assert_equals(900, player.stack);
 	}},
 	test_stake_should_add_for_call_for_other_players_if_value_more_than_zero: function(){with(this){
 		player_1 = players.ordinary;
 		player_2 = players.ordinary_copy;
 		RP_Players._players = [player_1, player_2];
 		player_1.stake(100);
-		assertEquals(100, player_2.for_call);
+		assert_equals(100, player_2.for_call);
 	}},
 	test_blind_stake_should_take_chips_from_player: function(){with(this){
 		player = players.ordinary;
 		player.blind_stake(100);
-		assertEquals(900, player.stack);
+		assert_equals(900, player.stack);
 	}},
 	test_blind_stake_should_decrease_for_call_if_for_call_more_than_stake_value: function(){with(this){
 		player = players.small_for_call;
 		player.blind_stake(50);
-		assertEquals(50, player.for_call);
+		assert_equals(50, player.for_call);
 	}},
 	test_blind_stake_should_set_for_call_in_zero_if_for_call_less_than_or_equal_stake_value: function(){with(this){
 		player = players.small_for_call;
 		player.blind_stake(200);
-		assertEquals(0, player.for_call);
+		assert_equals(0, player.for_call);
 	}}
 };
 
@@ -410,28 +427,28 @@ RP_TestsGroups.Cards = {
 	},
 	test_alt_should_return_alternative_string: function(){with(this){
 		set = new RP_CardsSet(cards_in_str.one);
-		assertEquals('HA', set.alt());
+		assert_equals('HA', set.alt());
 		set = new RP_CardsSet(cards_in_str.two);
-		assertEquals('D3, S10', set.alt());
+		assert_equals('D3, S10', set.alt());
 		set = new RP_CardsSet(cards_in_str.three);
-		assertEquals('CK, S8, HJ', set.alt());
+		assert_equals('CK, S8, HJ', set.alt());
 	}},
 	test_cards_set_initialize_should_create_set_of_given_cards_or_default_cards: function(){with(this){
 		set = new RP_CardsSet(cards_in_str.one);
-		assertEquals(1, set._cards.length);
+		assert_equals(1, set._cards.length);
 		set = new RP_CardsSet(cards_in_str.two);
-		assertEquals(2, set._cards.length);
+		assert_equals(2, set._cards.length);
 		set = new RP_CardsSet(cards_in_str.three);
-		assertEquals(3, set._cards.length);
+		assert_equals(3, set._cards.length);
 		set = new RP_CardsSet();
-		assertEquals(2, set._cards.length);
-		assertEquals('RP', set.card(0).alt);
-		assertEquals('RP', set.card(1).alt);
+		assert_equals(2, set._cards.length);
+		assert_equals('RP', set.card(0).alt);
+		assert_equals('RP', set.card(1).alt);
 	}},
 	test_card_initialize_should_create_card_with_src_and_alt: function(){with(this){
 		card = new RP_Card(cards_in_str.one);
-		assertEquals('HA', card.alt);
-		assertEquals('/images/game/cards/HA.gif', card.src);
+		assert_equals('HA', card.alt);
+		assert_equals('/images/game/cards/HA.gif', card.src);
 	}}
 };
 
@@ -448,79 +465,79 @@ RP_TestsGroups.Players = {
 		RP_Players.each(function(player){
 			player.stack = 0;
 		});
-		assertEquals(0, RP_Players._players[0].stack);
-		assertEquals(0, RP_Players._players[1].stack);
-		assertEquals(0, RP_Players._players[2].stack);
+		assert_equals(0, RP_Players._players[0].stack);
+		assert_equals(0, RP_Players._players[1].stack);
+		assert_equals(0, RP_Players._players[2].stack);
 
 		delete RP_Players._players[1];
 		RP_Players.each(function(player){
 			player.stack = 0;
 		});
-		assertEquals(0, RP_Players._players[0].stack);
-		assertEquals(0, RP_Players._players[2].stack);
+		assert_equals(0, RP_Players._players[0].stack);
+		assert_equals(0, RP_Players._players[2].stack);
 	}},
 	test_losers_should_find_all_players_who_lose: function(){with(this){
 		players = RP_Players.losers([1]);
-		assertArray(players);
-		assertEquals(2, players.length);
-		assertEquals(0, players[0].sit);
-		assertEquals(2, players[1].sit);
+		assert_array(players);
+		assert_equals(2, players.length);
+		assert_equals(0, players[0].sit);
+		assert_equals(2, players[1].sit);
 		players = RP_Players.losers([1, 2]);
-		assertArray(players);
-		assertEquals(1, players.length);
-		assertEquals(0, players[0].sit);
+		assert_array(players);
+		assert_equals(1, players.length);
+		assert_equals(0, players[0].sit);
 		players = RP_Players.losers([0, 1, 2]);
-		assertArray(players);
-		assertEquals(0, players.length);
+		assert_array(players);
+		assert_equals(0, players.length);
 	}},
 	test_find_next_player_should_return_correct_player: function(){with(this){
 		player = RP_Players.find_next_player(player_1);
-		assertInstanceof(player, RP_Player);
-		assertEquals(233, player.id);
+		assert_instanceof(player, RP_Player);
+		assert_equals(233, player.id);
 
 		player = RP_Players.find_next_player(player_2);
-		assertInstanceof(player, RP_Player);
-		assertEquals(32, player.id);
+		assert_instanceof(player, RP_Player);
+		assert_equals(32, player.id);
 
 		player = RP_Players.find_next_player(player_3);
-		assertInstanceof(player, RP_Player);
-		assertEquals(1, player.id);
+		assert_instanceof(player, RP_Player);
+		assert_equals(1, player.id);
 
 		delete RP_Players._players[1];
 		player = RP_Players.find_next_player(player_1);
-		assertInstanceof(player, RP_Player);
-		assertEquals(32, player.id);
+		assert_instanceof(player, RP_Player);
+		assert_equals(32, player.id);
 	}},
 	test_ids_should_return_array_of_players_ids_if_all_players_in_game: function(){with(this){
 		ids_array = RP_Players.ids();
-		assertArray(ids_array);
-		assertEquals(3, ids_array.length);
-		assertEquals(1, ids_array[0]);
-		assertEquals(233, ids_array[1]);
-		assertEquals(32, ids_array[2]);
+		assert_array(ids_array);
+		assert_equals(3, ids_array.length);
+		assert_equals(1, ids_array[0]);
+		assert_equals(233, ids_array[1]);
+		assert_equals(32, ids_array[2]);
 	}},
 	test_ids_should_return_array_of_players_ids_if_some_players_leave_game: function(){with(this){
 		delete RP_Players._players[1];
 		ids_array = RP_Players.ids();
-		assertArray(ids_array);
-		assertEquals(2, ids_array.length);
-		assertEquals(1, ids_array[0]);
-		assertEquals(32, ids_array[1]);
+		assert_array(ids_array);
+		assert_equals(2, ids_array.length);
+		assert_equals(1, ids_array[0]);
+		assert_equals(32, ids_array[1]);
 
 		delete RP_Players._players[2];
 		ids_array = RP_Players.ids();
-		assertArray(ids_array);
-		assertEquals(1, ids_array.length);
-		assertEquals(1, ids_array[0]);
+		assert_array(ids_array);
+		assert_equals(1, ids_array.length);
+		assert_equals(1, ids_array[0]);
 	}},
 	test_refresh_acted_flags_should_set_all_players_to_not_acted_state: function(){with(this){
 		RP_Players.at_sit(0).act_in_this_round = true;
 		RP_Players.at_sit(1).act_in_this_round = true;
 		RP_Players.at_sit(2).act_in_this_round = true;
 		RP_Players.refresh_acted_flags();
-		assertFalse(RP_Players.at_sit(0).act_in_this_round);
-		assertFalse(RP_Players.at_sit(1).act_in_this_round);
-		assertFalse(RP_Players.at_sit(2).act_in_this_round);
+		assert_false(RP_Players.at_sit(0).act_in_this_round);
+		assert_false(RP_Players.at_sit(1).act_in_this_round);
+		assert_false(RP_Players.at_sit(2).act_in_this_round);
 	}},
 	test_refresh_acted_flags_should_set_all_players_to_not_acted_state_except_player_with_given_id: function(){with(this){
 		RP_Players.at_sit(0).act_in_this_round = true;
@@ -528,44 +545,44 @@ RP_TestsGroups.Players = {
 		RP_Players.at_sit(2).act_in_this_round = true;
 		RP_Players.refresh_acted_flags(1);
 		assert(RP_Players.at_sit(0).act_in_this_round);
-		assertFalse(RP_Players.at_sit(1).act_in_this_round);
-		assertFalse(RP_Players.at_sit(2).act_in_this_round);
+		assert_false(RP_Players.at_sit(1).act_in_this_round);
+		assert_false(RP_Players.at_sit(2).act_in_this_round);
 	}},
 	test_add_player_should_increase_players_count_if_sit_param_is_correct: function(){with(this){
 		RP_Players._players = [];
 		RP_Players.players_count = 0;
 		RP_Players.add_player(new RP_Player({sit:0, id: 2}));
-		assertEquals(1, RP_Players.players_count, 'cache');
-		assertEquals(1, RP_Players._players.length, 'real');
+		assert_equals(1, RP_Players.players_count, 'cache');
+		assert_equals(1, RP_Players._players.length, 'real');
 		RP_Players.add_player(new RP_Player({sit:1, id: 3}));
-		assertEquals(2, RP_Players.players_count, 'cache');
-		assertEquals(2, RP_Players._players.length, 'real');
+		assert_equals(2, RP_Players.players_count, 'cache');
+		assert_equals(2, RP_Players._players.length, 'real');
 	}},
 	test_remove_player_should_decrease_players_count_if_id_is_correct: function(){with(this){
 		RP_Players.remove_player(1);
-		assertEquals(2, RP_Players.players_count);
+		assert_equals(2, RP_Players.players_count);
 	}},
 	test_remove_player_should_delete_player_from_players_array_if_id_is_correct: function(){with(this){
 		RP_Players.remove_player(1);
-		assertUndefined(RP_Players.find(1));
+		assert_undefined(RP_Players.find(1));
 	}},
 	test_remove_player_should_return_undefined_if_id_param_is_incorrect: function(){with(this){
-		assertUndefined(RP_Players.remove_player(0));
+		assert_undefined(RP_Players.remove_player(0));
 	}},
 	test_find_should_return_correct_player: function(){with(this){
 		player = RP_Players.find(1);
-		assertInstanceof(player, RP_Player);
-		assertEquals(1, player.id);
-		assertEquals(0, player.sit);
+		assert_instanceof(player, RP_Player);
+		assert_equals(1, player.id);
+		assert_equals(0, player.sit);
 	}},
 	test_find_should_return_undefined_if_id_is_incorrect: function(){with(this){
 		player = RP_Players.find(0);
-		assertUndefined(player);
+		assert_undefined(player);
 	}},
 	test_still_in_game_players_should_return_array_of_players: function(){with(this){
 		players = RP_Players._still_in_game_players();
-		assertArray(players);
-		assertEquals(3, players.length);
+		assert_array(players);
+		assert_equals(3, players.length);
 	}},
 	test_is_all_acted_should_return_true_if_all_players_already_act_in_this_round: function(){with(this){
 		RP_Players.each(function(player){
@@ -578,7 +595,7 @@ RP_TestsGroups.Players = {
 			player.act_in_this_round = true;
 		});
 		RP_Players._players[0].act_in_this_round = false;
-		assertFalse(RP_Players.is_all_acted());
+		assert_false(RP_Players.is_all_acted());
 	}},
 	test_is_all_away_should_return_true_if_all_players_away: function(){with(this){
 		RP_Players.each(function(player){
@@ -591,7 +608,7 @@ RP_TestsGroups.Players = {
 			player.status = 'absent';
 		});
 		RP_Players._players[0].status = 'active';
-		assertFalse(RP_Players.is_all_away());
+		assert_false(RP_Players.is_all_away());
 	}}
 };
 
@@ -600,8 +617,8 @@ RP_TestsGroups.Visualizers = {
 		DISABLE_VEIW = undefined;
 	},
 	test_create_should_return_function: function(){with(this){
-		assertInstanceof(RP_Visualizers.create('Game'), Function);
-		assertInstanceof(new RP_Player({sit: 1}).view, Function);
+		assert_instanceof(RP_Visualizers.create('Game'), Function);
+		assert_instanceof(new RP_Player({sit: 1}).view, Function);
 	}}
 };
 
@@ -621,25 +638,25 @@ RP_TestsGroups.Timer = {
 		RP_Timer._activated = true;
 		RP_Timer.player = player;
 		player_for_check = new RP_Player({id: 2});
-		assertFalse(RP_Timer.is_turn_of(player_for_check));
+		assert_false(RP_Timer.is_turn_of(player_for_check));
 	}},
 	test_is_turn_of_should_return_false_if_timer_is_stoped: function(){with(this){
 		RP_Timer._activated = false;
 		player_for_check_1 = new RP_Player({id: 1});
-		assertFalse(RP_Timer.is_turn_of(player_for_check_1));
+		assert_false(RP_Timer.is_turn_of(player_for_check_1));
 	}},
 	test_start_should_start_timer_and_set_timers_params: function(){with(this){
 		RP_Timer.start(player, 21);
 		assert(RP_Timer._activated);
-		assertDefined(RP_Timer._timer);
-		assertEquals(0, RP_Timer.player.sit);
-		assertEquals(21, RP_Timer.time);
+		assert_defined(RP_Timer._timer);
+		assert_equals(0, RP_Timer.player.sit);
+		assert_equals(21, RP_Timer.time);
 		RP_Timer.stop();
 	}},
 	test_stop_should_clear_timer_params: function(){with(this){
 		RP_Timer.start(player, 21);
 		RP_Timer.stop();
-		assertFalse(RP_Timer._activated);
+		assert_false(RP_Timer._activated);
 	}},
 	test_reduce_time_should_reduce_time_by_one_if_time_more_than_zero: function(){with(this){
 		RP_Timer.time = 30;
@@ -647,14 +664,14 @@ RP_TestsGroups.Timer = {
 		while(0 < counter){
 			counter--;
 			RP_Timer._reduce_time();
-			assertEquals(counter, RP_Timer.time);
+			assert_equals(counter, RP_Timer.time);
 		}
 	}},
 	test_reduce_time_should_stoped_if_time_is_over: function(){with(this){
 		RP_Timer.time = 0;
 		RP_Timer._activated = true;
 		RP_Timer._reduce_time();
-		assertFalse(RP_Timer._activated);
+		assert_false(RP_Timer._activated);
 	}}
 };
 

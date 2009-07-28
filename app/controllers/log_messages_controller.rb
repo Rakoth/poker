@@ -4,7 +4,7 @@ class LogMessagesController < ApplicationController
 
 	def index
 		messages = LogMessage.omitted params[:game_id], params[:last_message_id], current_user.id
-		render :json => messages.map(&:build_synch_data)
+		render :json => SyncBuilder::LogMessages::Omitted.new(messages)
 	end
 
 	def create

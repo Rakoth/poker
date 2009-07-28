@@ -791,7 +791,7 @@ RP_Synchronizers.Game = {
 	},
 	_wait_for_start: function(){
 		$.ajax({
-			url: '/game_synchronizers/' + RP_Game.id + '/wait_for_start',
+			url: '/game_synchronizers/wait_for_start/' + RP_Game.id,
 			method: 'get',
 			dataType: 'json',
 			data: {
@@ -835,8 +835,48 @@ RP_Synchronizers.Action = {
 	_period: 3 * 1000,
 	_timer: null,
 	_request: null,
+	last_action_id: 0,
 	start: function(){
-
+		this._timer = setInterval(this._get_omitted_actions.bind(this), this._period);
+	},
+	stop: function(){
+		clearInterval(this._timer);
+	},
+	_get_omitted_actions: function(){
+		if($.is_request_ready(this._request)){
+			this._request = $.ajax({
+				url: '/actions/omitted',
+				method: 'get',
+				dataType: 'json',
+				data: {
+					game_id: RP_Game.id,
+					last_action_id: this.last_action_id
+				},
+				success: function(json){
+					this._parse_actions_json(json);
+				}.bind(this)
+			});
+		}
+	},
+	_parse_actions_json: function(omitted_actions){
+		if (omitted_actions) {
+			var time_for_next_player = omitted_actions.time_left;
+			RP_Game.last_action_id = omitted_actions.last_action_id;
+			RP_Event.initialize('Player', 'stop_timer');
+			$.each(omitted_actions.actions, function() {
+				RP_Event.initialize('Player', 'action', {
+					player_id: this.player_id,
+					kind: this.kind,
+					value: this.value
+				});
+			});
+			var last_acted_player_id = omitted_actions.actions[omitted_actions.actions.length - 1].player_id;
+			var next_player_id = RP_Players.find(last_acted_player_id).next_active().id;
+			RP_Event.initialize('Player', 'start_timer', {
+				player_id: next_player_id,
+				value: time_for_next_player
+			});
+		}
 	}
 };
 RP_Synchronizers.Chat = {

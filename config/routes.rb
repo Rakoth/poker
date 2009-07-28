@@ -42,7 +42,6 @@ ActionController::Routing::Routes.draw do |map|
   map.resources :players, :member => { :i_am_back => :put }
   map.resources :game_types
   map.resources :notes
-	map.connect 'game_synchronizers/:game_id/:action', :controller => 'game_synchronizers'
   map.connect ':controller/:action/:id'
   map.connect ':controller/:action/:id.:format'
   

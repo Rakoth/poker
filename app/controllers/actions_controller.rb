@@ -10,18 +10,7 @@ class ActionsController < ApplicationController
       format.js do
         actions = PlayerActions::Action.omitted(params[:game_id], params[:last_action_id], current_user.current_player(params[:game_id]).id)
         unless actions.empty?
-					sync_data = {}
-          sync_data[:actions] = actions.map do |action|
-						action_hash = {
-							:player_id => action.player_id,
-							:kind => action.kind
-						}
-						action_hash[:value] = action.value if action.has_value?
-						action_hash[:time_for_next_player] = action.time_left if action == actions[-1]
-          end
-          action = actions[-1]
-          sync_data[:last_action_id] = action.id
-          render :json => sync_data
+          render :json => SyncBuilder::Actions::Omitted.new(actions)
         else
           render :nothing => true #, :status => :no_content
         end

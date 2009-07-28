@@ -90,7 +90,6 @@ class Player < ActiveRecord::Base
   before_create :take_user_money
 	after_create :start_game, :if => lambda {|player| player.game.full_of_players?}
   before_destroy :return_user_money, :if => lambda {|player| player.game.waited?}
-#	after_destroy :give_prize, :unless => lambda {|player| player.game.waited?}
 	after_destroy :destroy_game, :if => lambda {|player| player.game.empty_players_set?}
 	before_save :calculate_winning, :unless => lambda {|player| player.previous_stack.nil? }
 
@@ -100,26 +99,6 @@ class Player < ActiveRecord::Base
   def persent
     @persent ||= 0
   end
-
-	#def act! params
-	#	hash_params = {:player => self, :game => game}
-	#	hash_params[:value] = params[:value] unless params[:value].nil?
-	#	action = case params[:kind].to_i
-	#		when 0:
-	#			PlayerActions::FoldAction.new hash_params
-	#		when 1:
-	#			PlayerActions::CheckAction.new hash_params
-	#		when 2:
-	#			PlayerActions::CallAction.new hash_params
-	#		when 3:
-	#			PlayerActions::BetAction.new hash_params
-	#		when 4:
-	#			PlayerActions::RaiseAction.new hash_params
-	#		else
-	#			raise 'Unexpected action type in Player#act!: "' + params[:kind] + '"'
-	#	end
-	#	action.execute
-	#end
 
 	def act! params
 		kind = params[:kind].to_i
@@ -164,21 +143,20 @@ class Player < ActiveRecord::Base
 		open_hand
 	end
 
-
-	def build_synch_data type = :init, for_user_id = nil
-		case type
-		when :init
-			init_data
-		when :after_start_game
-			init_data_after_start_game for_user_id
-		when :on_distribution
-			init_data_on_distribution
-		when :previous_final
-			data_to_show_final
-		else
-			raise ArgumentError, 'Unexpected type for building player data: ' + type.to_s
-		end
-	end
+#	def build_synch_data type = :init, for_user_id = nil
+#		case type
+#		when :init
+#			init_data
+#		when :after_start_game
+#			init_data_after_start_game for_user_id
+#		when :on_distribution
+#			init_data_on_distribution
+#		when :previous_final
+#			data_to_show_final
+#		else
+#			raise ArgumentError, 'Unexpected type for building player data: ' + type.to_s
+#		end
+#	end
 
 	def auto_check!
 		PlayerActions::Action.execute_auto_action PlayerActions::Action::AUTO_CHECK, :player => self, :game => game
@@ -198,43 +176,39 @@ class Player < ActiveRecord::Base
 
 	private
 	
-	def init_data
-		{
-			:id => id,
-			:login => login,
-			:sit => sit
-		}
-	end
-
-	def init_data_after_start_game for_user_id
-		data = init_data
-		data.merge!(init_data_on_distribution).merge!(:hand_to_load => (show_hand_to?(for_user_id) ? hand.to_s : nil))
-		return data
-	end
-
-	def init_data_on_distribution
-		{
-			:sit => sit,
-			:status => status,
-			:stack => stack,
-			:for_call => for_call,
-			:in_pot => in_pot,
-			:previous_win => previous_win,
-			:act_in_this_round => act_in_this_round
-		}
-	end
-
-	def data_to_show_final
-		{
-			:sit => sit,
-			:hand => previous_hand.to_s
-		}
-	end
+#	def init_data
+#		{
+#			:id => id,
+#			:login => login,
+#			:sit => sit
+#		}
+#	end
+#
+#	def init_data_after_start_game for_user_id
+#		data = init_data
+#		data.merge!(init_data_on_distribution).merge!(:hand_to_load => (show_hand_to?(for_user_id) ? hand.to_s : nil))
+#		return data
+#	end
+#
+#	def init_data_on_distribution
+#		{
+#			:sit => sit,
+#			:status => status,
+#			:stack => stack,
+#			:for_call => for_call,
+#			:in_pot => in_pot,
+#			:previous_win => previous_win,
+#			:act_in_this_round => act_in_this_round
+#		}
+#	end
+#
+#	def data_to_show_final
+#		{
+#			:sit => sit,
+#			:hand => previous_hand.to_s
+#		}
+#	end
 	
-	def give_prize
-		#TODO отдать выйгранные деньги юзеру
-	end
-  
 	def return_user_money
 		user.update_attribute(:cash, user.cash + game.type.pay_for_play)
 	end
