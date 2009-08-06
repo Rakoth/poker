@@ -1,7 +1,7 @@
 class SyncBuilder::Player::Distribution < SyncBuilder::Base
 	def data
 		{
-			:sit => sit,
+			:id => @object.id,
 			:status => status,
 			:stack => stack,
 			:for_call => for_call,

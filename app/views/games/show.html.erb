@@ -11,6 +11,7 @@
 		<%= render :partial => 'init_game' %>
   </head>
   <body>
+		<div id="veil" style="display:none;"></div>
     <div id="room">
       <div id="main">
         <div id="info">
@@ -30,10 +31,12 @@
 					<%= render :partial => 'log' %>
 				</div>
         <div id="help" class="block"></div>
-        <div class="block">
+        <div id="player_actions" class="block">
 					<%= render :partial => 'player_actions' %>
 				</div>
-        <div id="notes" class="block"></div>
+        <div id="notes" class="block">
+					<button onclick="RP_Tests.run_all();">TESTS</button>
+				</div>
       </div>
     </div>
 		<%= render :partial => 'away_screen' %>

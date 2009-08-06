@@ -14,6 +14,7 @@ class CreateGames < ActiveRecord::Migration
       t.text :flop
       t.text :turn
       t.text :river
+			t.boolean :show_previous_final, :default => false
 			t.text :previous_flop
       t.text :previous_turn
       t.text :previous_river

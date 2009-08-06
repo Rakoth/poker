@@ -58,34 +58,16 @@
 			}
 
 			function test(){
-				a = function(string){
-					var array = string.split(':');
-					for(var i = 0; i < array.length; i++){
-						this[i] = array[i];
-					}
-					this.alt = string;
-				};
-				a.prototype = Array();
-				a.prototype.say = function(i){
-					//console.log(this[i]);
-				}
-				b = new a('fjdng:dfgdf:sdfs');
-				b.say(1);
-				console.log(b.alt);
-				$.each(b, function(i, v){
-					console.log(i, v);
-				});
-				
-			}
-
-			function hide(){
-				$('#div').toggle(2000);
+				clone = $('#div').clone().css('position', 'absolute').prependTo('body').animate({opacity: 1}, 3000, null, function(){$(this).remove();$('#previous_final_layer').hide();});
+				$('#previous_final_layer').show();
 			}
 		</script>
 	</head>
 	<body>
-		<input type="button" onclick="hide();" value="OK" />
+		<div id="previous_final_layer" style="position:absolute;height:300px;width:300px;display:none;background-color:#ccc;" onclick="$(this).hide(); if(clone){clone.remove();}"></div>
+		<input type="button" onclick="test();" value="OK" />
 		<br />
 		<div id="div">test</div>
+		<a href="file://~/CIMG1506(1).jpg">ссылка</a>
 	</body>
 </html>

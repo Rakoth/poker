@@ -1,5 +1,6 @@
 var RP_Tests = {
 	run_all: function(){
+		RUN_TESTS = true;
 		for(var group in RP_TestsGroups){
 			RP_TestsGroups[group].group_title = group + ' Tests';
 			$.extend(RP_TestsGroups[group], this);
@@ -46,6 +47,10 @@ var RP_Tests = {
 	assert_defined: function(object, message){
 		var assertion = (undefined !== object);
 		this.assert(assertion, ["assert_defined failed! variable was undefined; ", message || '']);
+	},
+	assert_diplay: function(element_id, message){
+		var assertion = ($('#' + element_id).attr('display') != 'none');
+		this.assert(assertion, ["assert_diplay failed! element was hidden; ", message || '']);
 	},
 	run: function(){
 		this._start_tests_group();
@@ -141,6 +146,7 @@ var RP_TestsGroups = {};
 
 RP_TestsGroups.Game = {
 	setup: function(){
+		DISABLE_VIEW = true;
 		this.players = {
 			not_acted: new RP_Player({}),
 			not_acted_1: new RP_Player({}),
@@ -148,7 +154,7 @@ RP_TestsGroups.Game = {
 			acted_1: new RP_Player({in_pot: 100})
 		};
 		RP_Players._players = [new RP_Player({sit: 0}), new RP_Player({sit: 1}), new RP_Player({sit: 2})];
-		RP_Players.players_count = 3;
+		RP_Players.count = 3;
 		$.extend(RP_Game, {
 			blind_position: 0,
 			small_blind_position: 1,
@@ -169,6 +175,96 @@ RP_TestsGroups.Game = {
 			status: 'on_flop'
 		});
 	},
+	test_load_players_should_add_players_from_players_to_load_array: function(){with(this){
+		RP_Players._players = [];
+		RP_Players.count = 0;
+		RP_Game.players_to_load = [{id: 1, sit: 0}, {id: 2, sit: 1}];
+		RP_Game._load_players();
+		assert_undefined(RP_Game.players_to_load);
+		assert_equals(2, RP_Players.count, 'count');
+		assert_equals(1, RP_Players._players[0].id);
+		assert_equals(2, RP_Players._players[1].id);
+	}},
+	test_set_stage_cards_should_update_table_cards: function(){with(this){
+		RP_Game.set_stage_cards('flop', new RP_CardsSet('H7:DT:CJ'));
+		assert_equals('H7, D10, CJ', RP_Game.table_cards.flop.alt());
+		RP_Game.set_stage_cards('turn', new RP_CardsSet('D7'));
+		assert_equals('D7', RP_Game.table_cards.turn.alt());
+		RP_Game.set_stage_cards('river', new RP_CardsSet('D7'));
+		assert_equals('D7', RP_Game.table_cards.river.alt());
+	}},
+	test_set_stage_cards_should_update_cards_view: function(){with(this){
+		DISABLE_VIEW = undefined;
+		$('#flop').hide();
+		$('#turn').hide();
+		$('#river').hide();
+		
+		RP_Game.status = 'on_flop';
+		RP_Game.set_stage_cards('flop', new RP_CardsSet('H7:H7:H7'));
+		assert_equals('/images/game/cards/H7.gif', $('#flop_0').attr('src'));
+		assert_diplay('flop');
+
+		RP_Game.status = 'on_turn';
+		RP_Game.set_stage_cards('turn', new RP_CardsSet('H7'));
+		assert_equals('/images/game/cards/H7.gif', $('#turn_0').attr('src'));
+		assert_diplay('turn');
+
+		RP_Game.status = 'on_river';
+		RP_Game.set_stage_cards('river', new RP_CardsSet('H7'));
+		assert_equals('/images/game/cards/H7.gif', $('#river_0').attr('src'));
+		assert_diplay('river');
+	}},
+	test_is_one_winner_should_return_true_if_all_players_except_one_are_folds: function(){with(this){
+		RP_Players._players[0].set_status('fold');
+		RP_Players._players[1].set_status('fold');
+		RP_Players._players[2].set_status('active');
+		assert(RP_Game._is_one_winner());
+		assert(RP_Game.is_new_distribution());
+
+		RP_Players._players[1].set_status('active');
+		assert_false(RP_Game._is_one_winner());
+		assert_false(RP_Game.is_new_distribution());
+
+		RP_Players._players = [new RP_Player({sit: 0, status:'pass'}), new RP_Player({sit: 1})];
+		assert(RP_Game._is_one_winner());
+		assert(RP_Game.is_new_distribution());
+	}},
+	test_is_allin_and_call_should_return_true_if_players_in_all_in_and_call_condition: function(){with(this){
+		RP_Players._players[0].set_status('fold');
+		RP_Players._players[1].set_status('allin');
+		RP_Players._players[1].stack = 0;
+		RP_Players._players[1].in_pot = 1000;
+		RP_Players._players[1].for_call = 0;
+		RP_Players._players[2].set_status('active');
+		RP_Players._players[2].stack = 100;
+		RP_Players._players[2].in_pot = 1000;
+		RP_Players._players[2].for_call = 0;
+		assert(RP_Game._is_allin_and_call());
+		assert(RP_Game.is_new_distribution());
+
+		RP_Players._players[0].set_status('allin');
+		RP_Players._players[0].stack = 0;
+		RP_Players._players[0].in_pot = 1000;
+		RP_Players._players[0].for_call = 0;
+		RP_Players._players[1].set_status('allin');
+		RP_Players._players[1].stack = 0;
+		RP_Players._players[1].in_pot = 1000;
+		RP_Players._players[1].for_call = 0;
+		RP_Players._players[2].set_status('active');
+		RP_Players._players[2].stack = 100;
+		RP_Players._players[2].in_pot = 1000;
+		RP_Players._players[2].for_call = 0;
+		assert(RP_Game._is_allin_and_call());
+		assert(RP_Game.is_new_distribution());
+	}},
+	testis_next_stage_should_return_true_if_all_players_acted: function(){with(this){
+		RP_Players._players[0].act_in_this_round = true;
+		RP_Players._players[1].act_in_this_round = true;
+		RP_Players._players[2].act_in_this_round = true;
+		assert(RP_Game.is_next_stage());
+		RP_Game.status = 'on_river';
+		assert(RP_Game.is_new_distribution());
+	}},
 	test_is_on_stage_should_return_true_if_current_stage_is_given_in_parameter: function(){with(this){
 		RP_Game.status = 'on_flop';
 		assert(RP_Game.is_on_stage('flop'));
@@ -196,15 +292,15 @@ RP_TestsGroups.Game = {
 		assert_equals(100, RP_Game.pot());
 	}},
 	test_current_stage_cards_should_return_cards_set: function(){with(this){
-		RP_Game.stage = 'on_flop';
+		RP_Game.status = 'on_flop';
 		cards = RP_Game.current_stage_cards();
 		assert_instanceof(cards, RP_CardsSet);
 		assert_equals('H6, D10, CJ', cards.alt());
-		RP_Game.stage = 'on_turn';
+		RP_Game.status = 'on_turn';
 		cards = RP_Game.current_stage_cards();
 		assert_instanceof(cards, RP_CardsSet);
 		assert_equals('H2', cards.alt());
-		RP_Game.stage = 'on_river';
+		RP_Game.status = 'on_river';
 		cards = RP_Game.current_stage_cards();
 		assert_instanceof(cards, RP_CardsSet);
 		assert_equals('H7', cards.alt());
@@ -227,13 +323,13 @@ RP_TestsGroups.Game = {
 	}},
 	test_take_blinds_should_take_correct_quantity_of_chips_if_ante_is_zero: function(){with(this){
 		RP_Game._take_blinds();
-		in_pot = RP_Game.blind_size + RP_Game.small_blind_size() + RP_Players.players_count * RP_Game.ante;
+		in_pot = RP_Game.blind_size + RP_Game.small_blind_size() + RP_Players.count * RP_Game.ante;
 		assert_equals(in_pot, RP_Game.pot());
 	}},
 	test_take_blinds_should_take_correct_quantity_of_chips_if_ante_more_than_zero: function(){with(this){
 		RP_Game.ante = 10;
 		RP_Game._take_blinds();
-		in_pot = RP_Game.blind_size + RP_Game.small_blind_size() + RP_Players.players_count * RP_Game.ante;
+		in_pot = RP_Game.blind_size + RP_Game.small_blind_size() + RP_Players.count * RP_Game.ante;
 		assert_equals(in_pot, RP_Game.pot());
 	}},
 	test_take_blinds_should_increase_for_call_for_all_non_blind_players: function(){with(this){
@@ -256,6 +352,8 @@ RP_TestsGroups.Client = {
 		RP_Game.current_bet = 0;
 		RP_Players._players[0] = new RP_Player({sit: 0});
 		RP_Client.sit = 0;
+		RP_Timer.player = RP_Client._player();
+		RP_Timer._activated = true;
 	},
 	test_is_see_button_should_return_true_for_fold_button: function(){with(this){
 		assert(RP_Client.is_see_button('fold'));
@@ -299,59 +397,32 @@ RP_TestsGroups.Player = {
 		};
 		RP_Game.current_bet = 0;
 	},
-	test_action_should_set_acted_flag_for_player: function(){with(this){
+	test_update_should_update_given_params: function(){with(this){
 		player = players.ordinary;
-		for(index in actions){
-			player.act_in_this_round = false;
-			player.action(actions[index]);
-			assert(player.act_in_this_round);
-		}
-	}},
-	test_fold_should_set_player_in_fold_status: function(){with(this){
-		player = players.ordinary;
-		player.fold();
-		assert(player.is_fold());
-	}},
-	test_check_should_not_change_status_and_stack: function(){with(this){
-		player = players.ordinary;
-		old_status = player.status;
-		old_stack = player.stack;
-		player.check();
-		assert_equals(old_status, player.status);
-		assert_equals(old_stack, player.stack);
-	}},
-	test_call_should_take_chips_from_player: function(){with(this){
-		player = players.small_for_call;
-		player.call();
-		assert_equals(900, player.stack);
-		assert_equals(0, player.for_call);
-	}},
-	test_call_should_set_allin_status_if_player_hasnt_enough_chips: function(){with(this){
-		player = players.big_for_call;
-		player.call();
-		assert(player.is_allin());
-	}},
-	test_bet_should_take_chips_from_player: function(){with(this){
-		player = players.ordinary;
-		player.bet(100);
-		assert_equals(900, player.stack);
-	}},
-	test_bet_should_take_for_call_and_value_of_chips_from_player: function(){with(this){
-		player = players.small_for_call;
-		player.bet(100);
-		assert_equals(800, player.stack);
+		player.update({
+			status: 'absent',
+			stack: 1500,
+			act_in_this_round: true,
+			for_call: 300,
+			in_pot: 100
+		});
+		assert(player.is_away());
+		assert_equals(1500, player.stack);
+		assert(player.act_in_this_round);
+		assert_equals(300, player.for_call);
+		assert_equals(100, player.in_pot);
 	}},
 	test_set_status_should_set_correct_status: function(){with(this){
 		player = players.active;
-		player._set_status('fold');
+		player.set_status('fold');
 		assert(player.is_fold(), 'on setting "fold" status');
-		player._set_status('away');
+		player.set_status('away');
 		assert(player.is_away(), 'on setting "away" status');
-		player._set_status('active');
+		player.set_status('active');
 		assert(player.is_active(), 'on setting "active" status');
-		player._set_status('away');
+		player.set_status('away');
 		assert(player.is_away(), 'on setting "away" status');
-		player._set_status('allin');
+		player.set_status('allin');
 		assert(player.is_allin(), 'on setting "allin" status');
 	}},
 	test_stake_should_inscrease_game_current_bet_if_value_more_than_zero: function(){with(this){
@@ -385,6 +456,7 @@ RP_TestsGroups.Player = {
 		player = players.small_stack;
 		player.stake(200);
 		assert_equals(0, player.stack);
+		assert(player.is_allin());
 		assert_equals(100, player.in_pot);
 	}},
 	test_stake_should_call_if_value_is_zero: function(){with(this){
@@ -400,19 +472,26 @@ RP_TestsGroups.Player = {
 		player_1.stake(100);
 		assert_equals(100, player_2.for_call);
 	}},
-	test_blind_stake_should_take_chips_from_player: function(){with(this){
+	test_take_chips_should_take_chips_from_player: function(){with(this){
 		player = players.ordinary;
-		player.blind_stake(100);
+		player.take_chips(100);
 		assert_equals(900, player.stack);
 	}},
-	test_blind_stake_should_decrease_for_call_if_for_call_more_than_stake_value: function(){with(this){
+	test_take_chips_should_decrease_for_call_if_for_call_more_than_stake_value: function(){with(this){
 		player = players.small_for_call;
-		player.blind_stake(50);
+		player.take_chips(50);
 		assert_equals(50, player.for_call);
 	}},
-	test_blind_stake_should_set_for_call_in_zero_if_for_call_less_than_or_equal_stake_value: function(){with(this){
+	test_take_chips_should_set_allin_status_for_player_if_stake_equal_or_more_than_stack: function(){with(this){
+		player = players.small_stack;
+		player.take_chips(100);
+		assert_equals(0, player.stack);
+		assert(player.is_allin());
+		assert_equals(100, player.in_pot);
+	}},
+	test_take_chips_should_set_for_call_in_zero_if_for_call_less_than_or_equal_stake_value: function(){with(this){
 		player = players.small_for_call;
-		player.blind_stake(200);
+		player.take_chips(200);
 		assert_equals(0, player.for_call);
 	}}
 };
@@ -459,7 +538,7 @@ RP_TestsGroups.Players = {
 		this.player_2 = new RP_Player({sit: 1, id: 233});
 		this.player_3 = new RP_Player({sit: 2, id: 32});
 		RP_Players._players = [this.player_1, this.player_2, this.player_3];
-		RP_Players.players_count = 3;
+		RP_Players.count = 3;
 	},
 	test_each_should_apply_callback_for_all_players: function(){with(this){
 		RP_Players.each(function(player){
@@ -550,17 +629,17 @@ RP_TestsGroups.Players = {
 	}},
 	test_add_player_should_increase_players_count_if_sit_param_is_correct: function(){with(this){
 		RP_Players._players = [];
-		RP_Players.players_count = 0;
+		RP_Players.count = 0;
 		RP_Players.add_player(new RP_Player({sit:0, id: 2}));
-		assert_equals(1, RP_Players.players_count, 'cache');
+		assert_equals(1, RP_Players.count, 'cache');
 		assert_equals(1, RP_Players._players.length, 'real');
 		RP_Players.add_player(new RP_Player({sit:1, id: 3}));
-		assert_equals(2, RP_Players.players_count, 'cache');
+		assert_equals(2, RP_Players.count, 'cache');
 		assert_equals(2, RP_Players._players.length, 'real');
 	}},
 	test_remove_player_should_decrease_players_count_if_id_is_correct: function(){with(this){
 		RP_Players.remove_player(1);
-		assert_equals(2, RP_Players.players_count);
+		assert_equals(2, RP_Players.count);
 	}},
 	test_remove_player_should_delete_player_from_players_array_if_id_is_correct: function(){with(this){
 		RP_Players.remove_player(1);
@@ -674,4 +753,89 @@ RP_TestsGroups.Timer = {
 		assert_false(RP_Timer._activated);
 	}}
 };
+
+RP_TestsGroups.Action = {
+	setup: function(){
+		DISABLE_VIEW = true;
+		RP_Players._players = [new RP_Player({sit: 0, id: 1, stack: 1000}), new RP_Player({sit: 1, id: 2}), new RP_Player({sit: 2, id: 3})];
+		RP_Players.count = 3;
+	},
+	test_influence_should_set_act_in_this_round_flag_to_player: function(){with(this){
+		for(var kind = -4; kind < 5; kind++){
+			RP_Players._players[0].act_in_this_round = false;
+			action = new RP_Action({player_id: 1, kind: kind});
+			action.execute();
+			assert(RP_Players._players[0].act_in_this_round);
+		}
+	}},
+	test_influence_should_set_correct_status_for_fold_action: function(){with(this){
+		new RP_Action({player_id: 1, kind: 0}).execute();
+		assert(RP_Players._players[0].is_fold());
+	}},
+	test_influence_should_set_correct_status_for_auto_actions: function(){with(this){
+		for(var kind = -4; kind < 0; kind++){
+			RP_Players._players[0].status = 'active';
+			new RP_Action({player_id: 1, kind: kind}).execute();
+			assert(RP_Players._players[0].is_away());
+		}
+	}},
+	test_influence_should_set_correct_status_for_player_actions: function(){with(this){
+		for(var kind = 0; kind < 5; kind++){
+			RP_Players._players[0].status = 'absent';
+			new RP_Action({player_id: 1, kind: kind}).execute();
+			assert_false(RP_Players._players[0].is_away());
+		}
+	}},
+	test_influence_should_set_allin_status_for_call_action: function(){with(this){
+		RP_Players._players[0].for_call = 1000;
+		new RP_Action({player_id: 1, kind: 2}).execute();
+		assert(RP_Players._players[0].is_allin());
+		assert_equals(0, RP_Players._players[0].stack);
+		assert_equals(1000, RP_Players._players[0].in_pot);
+	}},
+	test_influence_should_set_allin_status_for_bet_action: function(){with(this){
+		new RP_Action({player_id: 1, kind: 3, value: 1000}).execute();
+		assert(RP_Players._players[0].is_allin());
+		assert_equals(0, RP_Players._players[0].stack);
+		assert_equals(1000, RP_Players._players[0].in_pot);
+	}},
+	test_influence_should_set_allin_status_for_raise_action: function(){with(this){
+		new RP_Action({player_id: 1, kind: 4, value: 1000}).execute();
+		assert(RP_Players._players[0].is_allin());
+	}},
+	test_influence_should_not_change_status_and_stack_for_check_action: function(){with(this){
+		old_status = RP_Players._players[0].status;
+		old_stack = RP_Players._players[0].stack;
+		new RP_Action({player_id: 1, kind: 1}).execute();
+		assert_equals(old_status, RP_Players._players[0].status);
+		assert_equals(old_stack, RP_Players._players[0].stack);
+	}},
+	test_influence_should_take_for_call_and_value_of_chips_from_player_for_bet_action: function(){with(this){
+		RP_Players._players[0].for_call = 100;
+		new RP_Action({player_id: 1, kind: 3, value: 100}).execute();
+		assert_equals(800, RP_Players._players[0].stack);
+	}}
+}
+
+RP_TestsGroups.Synchronizers = {
+	setup: function(){
+		DISABLE_VIEW = true;
+		this.players_array = [{"for_call": 50, "stack": 1050, "id": 5}, {"status": "active", "act_in_this_round": false, "id": 6}];
+		RP_Players._players = [new RP_Player({id: 5}), new RP_Player({id: 6}), new RP_Player({id: 7})];
+		RP_Players.count = 3;
+	},
+	test_sync_players_on_distribution_should_remove_losers_from_rp_players_object: function(){with(this){
+		RP_Synchronizers.Game._sync_players_on_distribution(players_array);
+		assert_defined(RP_Players._players[0]);
+		assert_defined(RP_Players._players[1]);
+		assert_undefined(RP_Players._players[2]);
+	}},
+	test_sync_players_on_distribution_should_update_players_state: function(){with(this){
+		RP_Synchronizers.Game._sync_players_on_distribution(players_array);
+		assert_equals(50, RP_Players._players[0].for_call);
+		assert_equals(1050, RP_Players._players[0].stack);
+		assert_equals('active', RP_Players._players[1].status);
+		assert_false(RP_Players._players[1].act_in_this_round);
+	}}
+}
 

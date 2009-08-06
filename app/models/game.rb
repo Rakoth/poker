@@ -33,7 +33,12 @@ class Game < ActiveRecord::Base
 		transitions :from => [:on_preflop, :on_flop, :on_turn, :on_river], :to => :finished
 	end
 
-	STATUS = {:waited => 'waited'}
+	STATUS = {
+		:waited => 'waited',
+		:on_preflop => 'on_preflop',
+		:on_flop => 'on_flop',
+		:on_turn => 'on_turn'
+	}
 	PAUSE_TYPE = {
 		:by_away => 'by_away',
 		:by_request => 'by_request'
@@ -68,6 +73,10 @@ class Game < ActiveRecord::Base
 	def active_player= player
 		@active_player = player
 		update_attribute :active_player_id, player.id
+	end
+
+	def show_previous_final?
+		show_previous_final
 	end
 
 	def started?
@@ -126,7 +135,7 @@ class Game < ActiveRecord::Base
 	end
 
 	def last_player_action_id
-		actions.any? ? actions.first(:order => 'created_at DESC').id : nil
+		actions.any? ? actions.last(:order => 'created_at').id : 0
 	end
 
   def pot
@@ -191,7 +200,7 @@ class Game < ActiveRecord::Base
   end
 
 	def allin_and_call?
-		players.select{|p| p.must_call? and !p.fold? }.length == 0 and players.select{|p| !p.fold? and !p.allin? }.length <= 1
+		0 == players.select{|p| p.must_call? and !p.fold? and !p.allin?}.length and players.select{|p| !p.fold? and !p.allin? }.length <= 1
 	end
 
   private

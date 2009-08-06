@@ -12,7 +12,6 @@ class ApplicationController < ActionController::Base
   protect_from_forgery :only => [:update, :delete, :create] #, :secret => '8bef2a684c066408714d2a1e3a769645'
   
   before_filter :set_locate
-	#  before_filter :find_user, :set_locate
 
   protected
 
@@ -23,10 +22,6 @@ class ApplicationController < ActionController::Base
 	def current_user
 		@current_user ||= current_user_session && current_user_session.user
 	end
-
-	#  def find_user
-	#    @current_user = User.find_by_id session[:user_id] if session[:user_id]
-	#  end
 
   def set_locate
     I18n.locale = (current_user.locate if current_user) or params[:locale] or I18n.default_locale
@@ -50,9 +45,9 @@ class ApplicationController < ActionController::Base
 		session[:return_to] = nil
 	end
 
-#	def turn_off_logging
-#		logger.close
-#	end
-
-
+	def find_current_game
+		unless @game ||= current_user.games.find_by_id(params[:game_id])
+			render :nothing => true, :status => :forbidden and return false
+		end
+	end
 end

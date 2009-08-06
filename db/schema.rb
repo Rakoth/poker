@@ -47,17 +47,18 @@ ActiveRecord::Schema.define(:version => 20090521151119) do
   create_table "games", :force => true do |t|
     t.string   "status"
     t.string   "paused"
-    t.integer  "active_player_id", :default => 0
+    t.integer  "active_player_id",    :default => 0
     t.integer  "blind_position"
     t.integer  "blind_size"
-    t.integer  "blind_level",      :default => 0
-    t.integer  "ante",             :default => 0
+    t.integer  "blind_level",         :default => 0
+    t.integer  "ante",                :default => 0
     t.integer  "current_bet"
     t.datetime "next_level_time"
-    t.integer  "players_count",    :default => 0
+    t.integer  "players_count",       :default => 0
     t.text     "flop"
     t.text     "turn"
     t.text     "river"
+    t.boolean  "show_previous_final", :default => false
     t.text     "previous_flop"
     t.text     "previous_turn"
     t.text     "previous_river"

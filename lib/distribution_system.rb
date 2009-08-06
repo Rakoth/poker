@@ -5,7 +5,7 @@ module DistributionSystem
 
   def next_stage!
 		logger.info 'STARTED next_stage!'
-		Player.update_all ['act_in_this_round = ?', false], {:game_id => id}
+		Player.update_all({:act_in_this_round => false}, {:game_id => id})
     if on_preflop?
       show_flop!
     elsif on_flop?
@@ -26,23 +26,55 @@ module DistributionSystem
 	# которые определяются самим методом исходя из карт игроков
   def final_distribution!
 		logger.info 'STARTED final_distribution!'
+
+		update_attribute :show_previous_final, !one_winner?
 		# если торги продолжать невозможно, но показаны еще не все карты на столе
 		deal_remained_cards! if allin_and_call?
 		# сохраним текущее значение стэка для каждого игрока
 		players.each_index{|i| players[i].previous_stack = players[i].stack}
-		# выделить не сделавших пасс игроков
-		winners = players.select {|player| !player.fold?}
+		
+		generate_groups!
+		prepare_groups!
+		# сохранить все изменения
+    calculate_groups.flatten.each(&:save)
+
+		exclude_losed_players!
+		# переходим к новой раздаче или заканчиваем игру
+	  new_distribution!
+  end
+
+	def continue_distribution!
+		logger.info "STARTED continue_distribution!"
+		next_stage! if next_stage?
+		next_player_temp = next_player
+		self.active_player = next_player_temp
+		unless next_player_temp.active?
+			if next_player_temp.absent_and_must_call?
+				next_player_temp.auto_fold!
+			else # allin или absent
+				next_player_temp.auto_check!
+			end
+		end
+	end
+
+	private
+
+	def generate_groups!
+		# разделить игроков на сделавших пас и не сделавших
+		folds = players.select(&:fold?)
+		winners = players - folds
 
 		# разделить игроков на группы по значению карт
 		# отсортировать группы в порядке убывания по силе комбинаций карт игроков в группе
-		groups = winners.group_by(&:full_hand).sort_by{ |g| g[0] }.reverse
+		@groups = winners.group_by(&:full_hand).sort_by{ |g| g[0] }.reverse
 
 		# выделить сделавших пасс игроков в последнюю группу, не указывать в комбинации карт группы их карты
-		folds = players.select {|player| player.fold?}
-		groups.push [nil, folds] unless folds.empty?
+		@groups.push [nil, folds] unless folds.empty?
+	end
 
+	def prepare_groups!
 		# делаем необходимые для определения выйгрыша каждой группы подготовительные операции
-    groups.map! do |g|
+    @groups.map! do |g|
 			# если это не последняя группа(сделавших пасс)
 			unless g[0].nil?
 				group, max = g[1], 0
@@ -63,12 +95,15 @@ module DistributionSystem
 				[0, g[1]]
       end
     end
+	end
+
+	def calculate_groups
 		# для каждой группы определить ее выйгрыш
 		# проходя по массиву групп по очереди (от более сильных рук к более слабым)
-    calculated_groups = groups.map do |g|
+    @groups.map do |g|
       max, chips_sum = g[0], 0
 			# для каждого игрока в каждой группе
-      groups.map! do |group|
+      @groups.map! do |group|
         group[1].map! do |player|
 					# снимаем с него минимум из поставленных им фишек и максимума ставки для текущей группы
 					# и прибавляем это значения к выйгрышу группы
@@ -86,30 +121,13 @@ module DistributionSystem
 			# разделить выйгрыш группы на членов группы согласно их процентам
       g[1].map{ |player| player.stack += (chips_sum * player.persent).round; player}
     end
-		# сохранить все изменения
-    calculated_groups.flatten.each(&:save) #{ |player| player.save }
-
-		# переходим к новой раздаче или заканчиваем игру
-		players.each { |player| player.lose! if player.has_empty_stack? }
-		players.reload
-	  new_distribution!
-  end
-
-	def continue_distribution!
-		logger.info "STARTED continue_distribution!"
-		next_stage! if next_stage?
-		next_player_temp = next_player
-		self.active_player = next_player_temp
-		unless next_player_temp.active?
-			if next_player_temp.absent_and_must_call?
-				next_player_temp.auto_fold!
-			else # allin или absent
-				next_player_temp.auto_check!
-			end
-		end
 	end
 
-	private
+	def exclude_losed_players!
+		players.reload
+		players.each { |player| player.lose! if player.has_empty_stack? }
+		players.reload
+	end
 
   def before_distribution
 		logger.info 'STARTED before_distribution'
@@ -123,6 +141,7 @@ module DistributionSystem
 			:turn => nil,
 			:river => nil,
 
+			#TODO сохранять предыдущие значения карт, только если установлен флаг show_previous_final
 			:previous_flop => Poker::Hand.new(flop),
 			:previous_turn => Poker::Hand.new(turn),
 			:previous_river => Poker::Hand.new(river)

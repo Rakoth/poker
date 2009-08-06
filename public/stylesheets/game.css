@@ -55,12 +55,8 @@ div{
 #notes{
   background:url("/images/game/back/2.gif");
 }
-#help{
+#help, #player_actions{
   background:#000;
-}
-#actions{
-  background:#000;
-	display:none;
 }
 #control .block{
   height:100px;
@@ -68,6 +64,13 @@ div{
 #info .block{
   height:20px;
   width:500px;
+}
+#veil{
+	position:absolute;
+  width:700px;
+  height:400px;
+	z-index:10;
+	background-color:#ccc;
 }
 #cards{
 	position:absolute;

@@ -12,13 +12,21 @@ class SyncBuilder::Game::Distribution < SyncBuilder::Base
 			:client_hand => (current_player(@for_user.id) ? current_player(@for_user.id).hand.to_s : nil),
 			:action_time_left => action_time_left,
 			:players_to_load => players.map{|player| SyncBuilder::Player::Distribution.new player},
-			:previous_final => {
+			:previous_final => build_previous_final,
+			:paused => paused
+		}
+	end
+
+	private
+	
+	def build_previous_final
+		if show_previous_final?
+			{
 				:players => players.map{|player| SyncBuilder::Player::PreviousFinal.new player},
 				:flop => previous_flop.to_s,
 				:turn => previous_turn.to_s,
 				:river => previous_river.to_s
-			},
-			:paused => paused
-		}
+			}
+		end
 	end
 end

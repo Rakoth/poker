@@ -2,9 +2,8 @@
 	image_tag("game/actions/#{action[:name]}.gif", :mouseover => image_path("game/actions/#{action[:name]}_over.gif")),
 	:url => actions_path(:game_id => @game.id, :kind => action[:kind]),
 	:method => :post,
-	:html => {:id => action[:name], :class => "action_button", :style => action[:no_display]},
-	:condition => 'RP_Game.is_started() && RP_Client.is_turn()',
-	:with => (action[:value] ? "'value=' + $('#stake_value').val()" : ""),
-	:success => "RP_Event.initialize('Client', 'action', {kind: #{action[:kind]}, value: RP_StakeSlider.slider('value')})",
+	:html => {:id => action[:name], :class => "action_button", :style => 'display:none'},
+	:with => (action[:value] ? "'value=' + RP_StakeSlider.slider('value')" : ""),
+	:success => "RP_Client.action(#{action[:kind]}, RP_StakeSlider.slider('value'))",
 	:failure => "alert('#{t 'views.games.show.action_failed'}');"
 )%>

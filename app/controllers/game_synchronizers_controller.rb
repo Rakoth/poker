@@ -1,6 +1,6 @@
 class GameSynchronizersController < ApplicationController
 
-	before_filter :find_game
+	before_filter :find_current_game
 	
 	def wait_for_start
 		if @game.started?
@@ -20,17 +20,11 @@ class GameSynchronizersController < ApplicationController
 	end
 
 	def stage
-		render :json => SyncBuilder::Game::Stage.new(@game)
+		render :json => SyncBuilder::Game::Stage.new(@game, :stage => params[:stage])
 	end
 
 	def really_pause
 		status = @game.paused_by_away? ? :ok : :bad_request
 		render :nothing => true, :status => status
-	end
-
-	protected
-
-	def find_game
-		@game = current_user.games.find_by_id(params[:id]) or return false
 	end
 end
