@@ -8,7 +8,7 @@ class CreateGames < ActiveRecord::Migration
       t.integer :blind_size
       t.integer :blind_level, :default => 0
       t.integer :ante, :default => 0
-      t.integer :current_bet
+      t.integer :current_bet, :default => 0
       t.datetime :next_level_time
       t.integer :players_count, :default => 0
       t.text :flop

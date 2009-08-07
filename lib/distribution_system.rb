@@ -28,6 +28,8 @@ module DistributionSystem
 		logger.info 'STARTED final_distribution!'
 
 		update_attribute :show_previous_final, !one_winner?
+		players.each_index{|i| players[i].open_hand = !players[i].fold? and show_previous_final?}
+
 		# если торги продолжать невозможно, но показаны еще не все карты на столе
 		deal_remained_cards! if allin_and_call?
 		# сохраним текущее значение стэка для каждого игрока

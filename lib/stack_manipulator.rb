@@ -7,7 +7,7 @@ class StackManipulator
       stake_size = player.stack
     end
 		raise = stake_size - player.for_call
-    Player.update_all ["for_call = for_call + ?, act_in_this_round = ?", raise, false], ["game_id = ? AND id != ?", player.game_id, player.id] if raise > 0
+    Player.update_all ["for_call = for_call + ?, act_in_this_round = ?", raise, false], ["game_id = ? AND id != ?", player.game_id, player.id] if 0 < raise
     player.stack = player.stack - stake_size
     player.in_pot = player.in_pot + stake_size
     player.for_call = 0

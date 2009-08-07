@@ -3,7 +3,6 @@ class SyncBuilder::Game::InitAfterStart < SyncBuilder::Game::Init
 		super.merge(
 			:blind_position => blind_position,
 			:small_blind_position => small_blind_position,
-			:current_bet => current_bet,
 			:next_level_time => next_level_time,
 			:active_player_id => active_player_id,
 			:last_action_id => last_player_action_id,

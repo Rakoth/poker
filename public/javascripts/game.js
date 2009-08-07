@@ -106,20 +106,32 @@ RP_Visualizers.Game = {
 		this.update_blinds();
 	//TODO
 	},
+	_hide_stage_cards: function(){
+		$('#' + this._stage).hide();
+		this._set_stage_cards();
+	},
+	_show_stage_cards: function(){
+		this._set_stage_cards();
+		$('#' + this._stage).show();
+	},
 	update_stage_cards: function(stage){
-		RP_Game.table_cards[stage].each(function(i, card){
-			this._set_stage_card(stage, i, card);
+		this._stage = stage;
+		if(RP_DefaultCards[stage] == RP_Game.table_cards[stage]){
+			this._hide_stage_cards();
+		}else{
+			this._show_stage_cards();
+		}
+	},
+	_set_stage_cards: function(){
+		RP_Game.table_cards[this._stage].each(function(i, card){
+			this._stage_card(i).attr({
+				src: card.src,
+				alt: card.alt
+			});
 		}.bind(this));
-		$('#' + stage).show();
 	},
-	_set_stage_card: function(stage, index, card){
-		this._stage_card(stage, index).attr({
-			src: card.src,
-			alt: card.alt
-		});
-	},
-	_stage_card: function(stage, index){
-		return $('#' + stage + '_' + index);
+	_stage_card: function(index){
+		return $('#' + this._stage + '_' + index);
 	},
 	update_blinds: function(){
 		this._blinds().text(this._blinds_info());
@@ -291,6 +303,11 @@ var RP_GameMethods = {
 	stage: function(){
 		return this._stage_name[this.status];
 	},
+	clear_table_cards: function(){
+		for(var stage in this.table_cards){
+			this.set_stage_cards(stage, RP_DefaultCards[stage], true);
+		}
+	},
 	set_stage_cards: function(stage, cards, is_skip_logging){
 		this.table_cards[stage] = cards;
 		if(!is_skip_logging && this.is_on_stage(stage)){
@@ -425,7 +442,7 @@ var RP_Player = function(params){
 		stack: RP_Game.start_stack,
 		in_pot: 0,
 		for_call: 0,
-		hand: new RP_CardsSet(),
+		hand: RP_DefaultCards.hand,
 		status: 'active'
 	};
 	if(params.hand_to_load){
@@ -885,17 +902,13 @@ RP_Action.prototype = {
 
 //=============================================================================
 var RP_CardsSet = function(cards_in_str){
-	if(cards_in_str){
-		this._cards = $.map(cards_in_str.split(':'), function(card){
-			return new RP_Card(card);
-		});
-	}else{
-		this._cards = [RP_DefaultCard, RP_DefaultCard];
-	}
+	this._cards = $.map(cards_in_str.split(':'), function(card){
+		return new RP_Card(card);
+	});
 };
 RP_CardsSet.prototype = {
 	card: function(index){
-		return this._cards[index] || RP_DefaultCard;
+		return this._cards[index] || RP_DefaultCards.card;
 	},
 	each: function(callback){
 		$.each(this._cards, function(i, card){
@@ -913,9 +926,13 @@ var RP_Card = function(card_in_str){
 	this.src = '/images/game/cards/' + card_in_str + '.gif';
 	this.alt = card_in_str.replace(/T/g, '10');
 };
-var RP_DefaultCard = {
-	src: '/images/game/cards/RP.gif',
-	alt: 'RP'
+
+var RP_DefaultCards = {
+	card: new RP_Card('RP'),
+	hand: new RP_CardsSet('RP:RP'),
+	flop: new RP_CardsSet('RP:RP:RP'),
+	turn: new RP_CardsSet('RP'),
+	river: new RP_CardsSet('RP')
 };
 
 //=============================================================================
@@ -972,7 +989,7 @@ RP_Synchronizers.Game = {
 			RP_Client.set_hand(new_hand);
 			delete game_state.data_for_start.client_hand;
 
-			$.extend(RP_Game, game_state.data_for_start);
+			RP_Game.update(game_state.data_for_start)
 
 			RP_Game.start();
 
@@ -1016,6 +1033,7 @@ RP_Synchronizers.Game = {
 			alert(1);
 			return;
 		}
+		RP_Game.clear_table_cards();
 		RP_Game.update(json);
 	},
 	_sync_players_on_distribution: function(players_array){
@@ -1028,11 +1046,19 @@ RP_Synchronizers.Game = {
 				RP_Players.remove_player(this);
 			}else{
 				RP_Players.find(this).update(players_array[index]);
+				RP_Players.find(this).set_hand(RP_DefaultCards.hand);
 			}
 		});
 	},
 	stage: function(){
-		$.getJSON('/game_synchronizers/stage/' + RP_Game.id, {stage: RP_Game.status}, this._sync_on_stage.bind(this));
+		$.ajax({
+			async: false,
+			url: '/game_synchronizers/stage/' + RP_Game.id,
+			method: 'get',
+			dataType: 'json',
+			data: {stage: RP_Game.status},
+			success: this._sync_on_stage.bind(this)
+		});
 	},
 	_sync_on_stage: function(json){
 		RP_Game.status = json.status;

@@ -4,10 +4,10 @@ class PlayerActions::BetAction < PlayerActions::Action
 		BET
 	end
 
-	def after_initialize
-		self.value += player.for_call
-		super
-	end
+#	def after_initialize
+#		self.value += player.for_call
+#		super
+#	end
 
 	def has_value?
 		true

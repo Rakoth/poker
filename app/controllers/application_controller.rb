@@ -46,7 +46,7 @@ class ApplicationController < ActionController::Base
 	end
 
 	def find_current_game
-		unless @game ||= current_user.games.find_by_id(params[:game_id])
+		unless @game = current_user.games.find_by_id(params[:game_id])
 			render :nothing => true, :status => :forbidden and return false
 		end
 	end

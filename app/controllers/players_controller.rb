@@ -24,8 +24,8 @@ class PlayersController < ApplicationController
   end
 
 	def i_am_back
-		player = Player.find params[:id]
-		if(player.user == current_user)
+		player = current_user.players.find params[:id]
+		if(player)
 			if !player.away?
 				status = :ok
 			elsif player.back_to_game!
