@@ -272,6 +272,10 @@ ru:
         away_message: "Нажмите на кнопку для продолжения игры"
         i_am_back: "Я вернулся"
         back_failed: "Не удалось вернуться в игру, попробуйте ещё раз"
+      _game_over_screen:
+        win_message: "Вы победили!"
+        lose_message: "Вы проиграли!"
+        watch: "Смотреть дальше"
     sessions:
       new:
         title: "Введите свой логин и пароль"

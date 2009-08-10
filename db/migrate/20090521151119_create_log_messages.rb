@@ -1,7 +1,7 @@
 class CreateLogMessages < ActiveRecord::Migration
   def self.up
     create_table :log_messages do |t|
-      t.references :user
+      t.references :player
       t.references :game
       t.string :text
 			

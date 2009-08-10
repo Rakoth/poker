@@ -1,3 +1,5 @@
+<div id="actions_veil" class="block"></div>
+<div id="client_actions" class="block">
 <%- actions = [
 	{:name => 'fold',  :kind => PlayerActions::Action::FOLD,  :value => false},
 	{:name => 'check', :kind => PlayerActions::Action::CHECK, :value => false},
@@ -13,19 +15,20 @@
 	<div style="margin-top:2px;"><input id="stake_value" disabled="disabled" value="<%= @game.minimal_bet %>" size="5"/></div>
 	<script type="text/javascript">
 		RP_StakeSlider = $('#stake_slider').slider({
+			animate: true,
 			value: <%= @game.minimal_bet %>,
 			min: <%= @game.minimal_bet %>,
 			max: <%= @game.current_player(current_user).stack %>,
 			step: <%= @game.small_blind_size %>,
 			slide: function(event, ui) {
-				$("#stake_value").attr('value', ui.value);
+				$("#stake_value").val(ui.value);
 			}
 		});
 
 		$("#stake_value").val(RP_StakeSlider.slider("value"));
 
 		$('#stake_value').change(function(){
-			var slider_value = parseInt($(this).attr('value'));
+			var slider_value = parseInt($(this).val());
 			if(RP_Game.minimal_bet() <= slider_value && slider_value <= RP_Client.stack){
 				RP_StakeSlider.slider('value', slider_value);
 			}else{
@@ -36,8 +39,24 @@
 					stake_value = RP_Game.players[Game.client_sit].stack;
 				}
 				RP_StakeSlider.slider('value', stake_value);
-				$(this).attr('value', stake_value);
+				$(this).val(stake_value);
 			}
 		});
 	</script>
+</div>
+</div>
+<div id="auto_actions" class="block">
+	<div>
+		<input type="checkbox" id="auto_fold" name="auto_action" value="fold" />
+		<label for="auto_fold">fold</label>
+	</div>
+	<div>
+		<input type="checkbox" id="auto_call" name="auto_action" value="call" />
+		<label for="auto_call">call</label>
+		<span id="auto_call_value"></span>
+	</div>
+	<div>
+		<input type="checkbox" id="auto_raise" name="auto_action" value="raise" />
+		<label for="auto_raise">raise</label>
+	</div>
 </div>

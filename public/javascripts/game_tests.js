@@ -256,6 +256,18 @@ RP_TestsGroups.Game = {
 		RP_Players._players[2].for_call = 0;
 		assert(RP_Game._is_allin_and_call());
 		assert(RP_Game.is_new_distribution());
+
+		delete RP_Players._players[2];
+		RP_Players._players[0].set_status('allin');
+		RP_Players._players[0].stack = 0;
+		RP_Players._players[0].in_pot = 1000;
+		RP_Players._players[0].for_call = 0;
+		RP_Players._players[1].set_status('allin');
+		RP_Players._players[1].stack = 0;
+		RP_Players._players[1].in_pot = 1000;
+		RP_Players._players[1].for_call = 0;
+		assert(RP_Game._is_allin_and_call());
+		assert(RP_Game.is_new_distribution());
 	}},
 	testis_next_stage_should_return_true_if_all_players_acted: function(){with(this){
 		RP_Players._players[0].act_in_this_round = true;
@@ -519,10 +531,6 @@ RP_TestsGroups.Cards = {
 		assert_equals(2, set._cards.length);
 		set = new RP_CardsSet(cards_in_str.three);
 		assert_equals(3, set._cards.length);
-		set = new RP_CardsSet();
-		assert_equals(2, set._cards.length);
-		assert_equals('RP', set.card(0).alt);
-		assert_equals('RP', set.card(1).alt);
 	}},
 	test_card_initialize_should_create_card_with_src_and_alt: function(){with(this){
 		card = new RP_Card(cards_in_str.one);
@@ -615,15 +623,6 @@ RP_TestsGroups.Players = {
 		RP_Players.at_sit(2).act_in_this_round = true;
 		RP_Players.refresh_acted_flags();
 		assert_false(RP_Players.at_sit(0).act_in_this_round);
-		assert_false(RP_Players.at_sit(1).act_in_this_round);
-		assert_false(RP_Players.at_sit(2).act_in_this_round);
-	}},
-	test_refresh_acted_flags_should_set_all_players_to_not_acted_state_except_player_with_given_id: function(){with(this){
-		RP_Players.at_sit(0).act_in_this_round = true;
-		RP_Players.at_sit(1).act_in_this_round = true;
-		RP_Players.at_sit(2).act_in_this_round = true;
-		RP_Players.refresh_acted_flags(1);
-		assert(RP_Players.at_sit(0).act_in_this_round);
 		assert_false(RP_Players.at_sit(1).act_in_this_round);
 		assert_false(RP_Players.at_sit(2).act_in_this_round);
 	}},

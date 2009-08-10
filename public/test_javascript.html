@@ -4,6 +4,10 @@
 		<title></title>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 		<script type="text/javascript" src="javascripts/jquery.js"></script>
+		<script type="text/javascript" src="javascripts/jquery-ui.js"></script>
+		<script type="text/javascript" src="javascripts/jrails.js"></script>
+
+
 		<script type="text/javascript">
 			function getStatuses(){
 				for(var i = 100; i < 304; i++){
@@ -57,17 +61,37 @@
 				}
 			}
 
-			function test(){
-				clone = $('#div').clone().css('position', 'absolute').prependTo('body').animate({opacity: 1}, 3000, null, function(){$(this).remove();$('#previous_final_layer').hide();});
-				$('#previous_final_layer').show();
+			function run(){
+				$('#buttons').hide('slide', {direction: 'down'}, 1000);
+				$('#auto').show('slide', {direction: 'up'}, 1000);
+			}
+			function run1(){
+				$('#auto').hide('slide', {direction: 'up'}, 1000);
+				$('#buttons').show('slide', {direction: 'down'}, 1000);
+			}
+			function run2(){
+				$('#veil').toggle().css('opacity', 0.4);
+
 			}
 		</script>
 	</head>
 	<body>
-		<div id="previous_final_layer" style="position:absolute;height:300px;width:300px;display:none;background-color:#ccc;" onclick="$(this).hide(); if(clone){clone.remove();}"></div>
-		<input type="button" onclick="test();" value="OK" />
-		<br />
-		<div id="div">test</div>
-		<a href="file://~/CIMG1506(1).jpg">ссылка</a>
+		<div id="actions" style="width:200px;height:100px;">
+			<div id="buttons" style="background:gray;width:200px;height:100px;position:absolute;">
+				<div>top</div>
+				<div>center</div>
+				<div>bottom</div>
+			</div>
+			<div id="auto" style="background:black;width:200px;height:100px;display:none;color:white;position:absolute;">
+				<div>top</div>
+				<div>center</div>
+				<div>bottom</div>
+			</div>
+			<div id="veil" style="position:absolute;width:200px;height:100px;display:none;background-color:green;"></div>
+		</div>
+
+		<button onclick="run();">click</button>
+		<button onclick="run1();">click</button>
+		<button onclick="run2();">click</button>
 	</body>
 </html>

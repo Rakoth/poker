@@ -61,6 +61,7 @@ class Game < ActiveRecord::Base
   
   belongs_to :type, :class_name => 'GameType'
   has_many :players, :conditions => ['status <> ?', Player::STATUS[:leave]]
+	has_many :all_players, :class_name => 'Player'
   has_many :users, :through => :players
   has_many :actions, :class_name => 'PlayerActions::Action'
   has_many :current_distribution_actions, :class_name => 'PlayerActions::Action', :conditions => ['deleted = ?', false]
@@ -76,7 +77,7 @@ class Game < ActiveRecord::Base
 	end
 
 	def show_previous_final?
-		show_previous_final
+		!previous_flop.nil?
 	end
 
 	def started?

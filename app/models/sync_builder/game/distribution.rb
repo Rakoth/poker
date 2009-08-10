@@ -22,7 +22,7 @@ class SyncBuilder::Game::Distribution < SyncBuilder::Base
 	def build_previous_final
 		if show_previous_final?
 			{
-				:players => players.map{|player| SyncBuilder::Player::PreviousFinal.new player},
+				:players => all_players.map{|player| SyncBuilder::Player::PreviousFinal.new player},
 				:flop => previous_flop.to_s,
 				:turn => previous_turn.to_s,
 				:river => previous_river.to_s

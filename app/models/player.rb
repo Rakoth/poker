@@ -136,11 +136,7 @@ class Player < ActiveRecord::Base
 	end
 
 	def show_hand_to? watched_user_id
-		user_id == watched_user_id or open_hand?
-	end
-
-	def open_hand?
-		open_hand
+		user_id == watched_user_id
 	end
 
 #	def build_synch_data type = :init, for_user_id = nil

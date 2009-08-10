@@ -24,20 +24,6 @@ module Poker
       @cards[@card_index...(@card_index += quantity)]
     end
 
-#		def self._load from_string
-#			new_deck = Poker::Deck.new(false)
-#			dump_deck = from_string.split(' ')
-#			new_deck.card_index = dump_deck[0]
-#			new_deck.cards = dump_deck[1].split(';').map do |card|
-#				suite_and_value = card.split(':')
-#				Card.new suite_and_value[0], suite_and_value[1]
-#			end
-#			new_deck
-#		end
-#
-#		def _dump
-#			@card_index.to_s + ' ' + @cards.map{|card| card.suite.to_s + ':' + card.value.to_s}.join(';')
-#		end
 #
 #		def to_yaml
 #			[@card_index, self.cards.map {|card| card.suit[0..0] + card.value.to_s}].to_yaml

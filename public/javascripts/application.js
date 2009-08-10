@@ -26,8 +26,8 @@ function enable_image(input_id){
 }
 
 function move_message_to_log(){
-	var text = $('#log_message_text')[0].value;
+	var text = $('#log_message_text').val();
 	$('#log_message')[0].reset();
-	ChatSynchronizer.add_client_message(text);
+	RP_Log.player_message(RP_Client, text);
 }
 

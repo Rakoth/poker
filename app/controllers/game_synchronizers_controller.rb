@@ -23,7 +23,7 @@ class GameSynchronizersController < ApplicationController
 		render :json => SyncBuilder::Game::Stage.new(@game, :stage => params[:stage])
 	end
 
-	def really_pause
+	def really_paused
 		status = @game.paused_by_away? ? :ok : :bad_request
 		render :nothing => true, :status => status
 	end

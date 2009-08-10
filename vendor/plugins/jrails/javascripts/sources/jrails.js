@@ -182,7 +182,7 @@
 			return this.hide('slide', { direction: 'up'}, speed, callback);
 		},
 		slideDown : function(speed, callback) {
-			return this.show('slide', { direction: 'up'}, speed, callback);
+			return this.show('slide', { direction: 'down'}, speed, callback);
 		},
 		switchOff : function(speed, callback) {
 			return this.hide('clip', {}, speed, callback);

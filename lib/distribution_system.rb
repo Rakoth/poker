@@ -27,11 +27,12 @@ module DistributionSystem
   def final_distribution!
 		logger.info 'STARTED final_distribution!'
 
-		update_attribute :show_previous_final, !one_winner?
-		players.each_index{|i| players[i].open_hand = !players[i].fold? and show_previous_final?}
 
 		# если торги продолжать невозможно, но показаны еще не все карты на столе
 		deal_remained_cards! if allin_and_call?
+
+		save_previous_final!
+		
 		# сохраним текущее значение стэка для каждого игрока
 		players.each_index{|i| players[i].previous_stack = players[i].stack}
 		
@@ -60,6 +61,24 @@ module DistributionSystem
 	end
 
 	private
+
+	def save_previous_final!
+		if one_winner?
+			final_cards = {
+				:previous_flop => nil,
+				:previous_turn => nil,
+				:previous_river => nil
+			}
+		else
+			final_cards = {
+				:previous_flop => flop,
+				:previous_turn => turn,
+				:previous_river => river
+			}
+		end
+		update_attributes final_cards
+		players.each_index{|i| players[i].previous_hand = (players[i].fold? or one_winner?) ? nil : players[i].hand}
+	end
 
 	def generate_groups!
 		# разделить игроков на сделавших пас и не сделавших
@@ -141,20 +160,20 @@ module DistributionSystem
 			:deck => Poker::Deck.new.shuffle,
 			:flop => nil,
 			:turn => nil,
-			:river => nil,
+			:river => nil
 
 			#TODO сохранять предыдущие значения карт, только если установлен флаг show_previous_final
-			:previous_flop => Poker::Hand.new(flop),
-			:previous_turn => Poker::Hand.new(turn),
-			:previous_river => Poker::Hand.new(river)
+#			:previous_flop => Poker::Hand.new(flop),
+#			:previous_turn => Poker::Hand.new(turn),
+#			:previous_river => Poker::Hand.new(river)
 		)
     players.each do |player|
 			player.activate! unless player.active?
 			player.update_attributes(
 				:in_pot => 0,
-				:for_call => 0,
-				:previous_hand => (player.open_hand? ? player.hand : nil)
-			) unless 0 == player.in_pot and 0 == player.for_call and !player.open_hand?
+				:for_call => 0
+#				:previous_hand => (player.open_hand? ? player.hand : nil)
+			) unless 0 == player.in_pot and 0 == player.for_call# and !player.open_hand?
     end
 		# TODO сделать одним запросом
 		actions.each(&:destroy)

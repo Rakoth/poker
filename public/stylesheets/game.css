@@ -60,6 +60,7 @@ div{
 }
 #control .block{
   height:100px;
+	width:200px;
 }
 #info .block{
   height:20px;
@@ -96,6 +97,25 @@ div{
 #turn, #river{
 	width:44px;
 }
+#auto_actions{
+	display:none;
+	color:white;
+	position:absolute;
+	padding:10px;
+}
+#client_actions{
+	position:absolute;
+}
+#actions_veil{
+	position:absolute;
+	width:200px;
+	background-color:white;
+	display:none;
+	z-index:10;
+}
+#actions{
+	padding-top:5px;
+}
 .action_button{
 	outline:none;
 }
@@ -104,14 +124,6 @@ div{
 	padding-left:5px;
 }
 /* окно возврата из статуса "отошел" */
-#away_screen{
-	position:absolute;
-	top:0;
-	left:0;
-	width:700px;
-	height:400px;
-	background:white;
-}
 #away_message_container{
 	margin:150px 0 0 200px;
 	width:300px;
@@ -143,12 +155,10 @@ div{
 .log_message_submit input{
 	outline:none;
 }
-.system_log_record{
-	white-space:nowrap;
-	font:10px Verdana;
+.system{
 	color:#444;
 }
-.user_log_record{
+.log_record{
 	white-space:nowrap;
 	font:10px Verdana;
 }

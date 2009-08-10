@@ -47,18 +47,17 @@ ActiveRecord::Schema.define(:version => 20090521151119) do
   create_table "games", :force => true do |t|
     t.string   "status"
     t.string   "paused"
-    t.integer  "active_player_id",    :default => 0
+    t.integer  "active_player_id", :default => 0
     t.integer  "blind_position"
     t.integer  "blind_size"
-    t.integer  "blind_level",         :default => 0
-    t.integer  "ante",                :default => 0
-    t.integer  "current_bet",         :default => 0
+    t.integer  "blind_level",      :default => 0
+    t.integer  "ante",             :default => 0
+    t.integer  "current_bet",      :default => 0
     t.datetime "next_level_time"
-    t.integer  "players_count",       :default => 0
+    t.integer  "players_count",    :default => 0
     t.text     "flop"
     t.text     "turn"
     t.text     "river"
-    t.boolean  "show_previous_final", :default => false
     t.text     "previous_flop"
     t.text     "previous_turn"
     t.text     "previous_river"
@@ -69,7 +68,7 @@ ActiveRecord::Schema.define(:version => 20090521151119) do
   end
 
   create_table "log_messages", :force => true do |t|
-    t.integer  "user_id"
+    t.integer  "player_id"
     t.integer  "game_id"
     t.string   "text"
     t.datetime "created_at"
@@ -93,7 +92,6 @@ ActiveRecord::Schema.define(:version => 20090521151119) do
     t.text     "hand"
     t.text     "previous_hand"
     t.integer  "previous_win"
-    t.boolean  "open_hand"
     t.datetime "action_time"
     t.datetime "control_action_time"
     t.integer  "user_id"
