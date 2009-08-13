@@ -70,6 +70,7 @@ RP_Extend.update = function(new_state){ // принимает Hash
 RP_Extend.prepare_elements = function(){
 	$('#veil').click(RP_Visualizers.Game.hide_previous_final.bind(RP_Visualizers.Game));
 	$('#actions_veil').css('opacity', 0.2);
+	$('.away_veil').css('opacity', 0.5);
 	$('#auto_actions input').click(function(){
 		if(this.checked){
 			$('#auto_actions input').each(function(){
@@ -192,29 +193,34 @@ RP_Visualizers.Client = {
 	away: function(){
 		RP_AwayDialog.dialog('open');
 	},
-	update_actions_buttons: function(){
+	update_actions_buttons: function(disable_animation){
+		var animation_speed = disable_animation ? 0 : 1000;
 		if(RP_Client.is_turn()){
 			$('#actions a').each(function(){
 				$(this)[RP_Client.is_see_button(this.id) ? 'show' : 'hide']();
 			});
-
-			RP_StakeSlider.slider(RP_Client.can_only_call() ? 'disable' : 'enable');
-			RP_StakeSlider.slider('option', 'max', RP_Client.max_bet());
-			RP_StakeSlider.slider('option', 'min', Math.min(RP_Game.minimal_bet(), RP_Client.max_bet()));
-			RP_StakeSlider.slider('value', RP_StakeSlider.slider('option', 'min'));
-
-			$('#auto_actions').hide('slide', {direction: 'up'}, 'slow');
-			$('#client_actions').show('slide', {direction: 'down'}, 'slow');
+			this._update_stake_slider();
+			$('#auto_actions').hide('slide', {direction: 'up'}, animation_speed);
+			$('#client_actions').show('slide', {direction: 'down'}, animation_speed);
 		}else{
-			//TODO
-			if(parseInt($('#auto_call_value').text()) != RP_Client.for_call()){
-				$('#auto_call').checked = false;
-			}
-			$('#auto_call_value').text(RP_Client.for_call());
-
-			$('#client_actions').hide('slide', {direction: 'down'}, 'slow');
-			$('#auto_actions').show('slide', {direction: 'up'}, 'slow');
+			this._update_auto_actions();
+			$('#client_actions').hide('slide', {direction: 'down'}, animation_speed);
+			$('#auto_actions').show('slide', {direction: 'up'}, animation_speed);
 		}
+	},
+	_update_stake_slider: function(){
+		RP_StakeSlider.slider(RP_Client.can_only_call() ? 'disable' : 'enable');
+		RP_StakeSlider.slider('option', 'max', RP_Client.max_bet());
+		RP_StakeSlider.slider('option', 'min', Math.min(RP_Game.minimal_bet(), RP_Client.max_bet()));
+		RP_StakeSlider.slider('value', RP_StakeSlider.slider('option', 'min'));
+		$('#stake_value').val(RP_StakeSlider.slider('option', 'min'));
+	},
+	_update_auto_actions: function(){
+		//TODO
+		if(parseInt($('#auto_call_value').text()) != RP_Client.for_call()){
+			$('#auto_call').checked = false;
+		}
+		$('#auto_call_value').text(RP_Client.for_call());
 	},
 	show_game_over: function(){
 		setTimeout(function(){
@@ -269,6 +275,12 @@ RP_Visualizers.Player.prototype = {
 	_hand: function(){
 		return [$('#cards_' + this.sit + '_0'), $('#cards_' + this.sit + '_1')];
 	},
+	_away_veil:  function(){
+		return this._element('away_veil');
+	},
+	_cards: function(){
+		return this._element('cards');
+	},
 	_element: function(id){
 		return $('#' + id + '_' + this.sit);
 	},
@@ -315,16 +327,16 @@ RP_Visualizers.Player.prototype = {
 		this._sit().hide('slow');
 	},
 	away: function(){
-
+		this._away_veil().show();
 	},
 	active: function(){
-
+		this._away_veil().hide();
 	},
 	in_fold: function(){
-
+		this._cards().fadeTo('slow', 0.5);
 	},
 	unfold: function(){
-
+		this._cards().fadeTo(0, 1);
 	},
 	fold: function(){
 
@@ -408,8 +420,6 @@ var RP_GameMethods = {
 		this._take_blinds();
 		// запустить таймер активному игроку
 		RP_Timer.start(RP_Players.find(this.active_player_id), this.action_time_left);
-		// показать кнопки действий клиенту
-		RP_Client.view('update_actions_buttons');
 	},
 	_take_blinds: function(){
 		if(0 < RP_Game.ante){
@@ -635,7 +645,7 @@ var RP_Client = {
 		if(this.is_away()){
 			this.view('away');
 		}
-		this.view('update_actions_buttons');
+		this.view('update_actions_buttons', true);
 	},
 	_player: function(){
 		return RP_Players.at_sit(this.sit);
@@ -664,13 +674,14 @@ var RP_Client = {
 	is_a: function(player){
 		return this.sit == player.sit;
 	},
-	action: function(kind, value){
+	action: function(kind, value, active_player_id){
 		RP_Timer.stop();
 		new RP_Action({
 			player_id: this._player().id,
 			kind: kind,
 			value: value,
-			time_for_next_player: RP_Game.time_for_action
+			time_for_next_player: RP_Game.time_for_action,
+			next_active_player: RP_Players.find(active_player_id)
 		}).execute();
 	},
 	is_turn: function(){
@@ -783,7 +794,7 @@ var RP_Players = {
 		return player_found;
 	},
 	find_next_player: function(current_player){
-		var current_player_position = $.inArray(current_player, this._still_in_game_players());
+		var current_player_position = $.inArray(current_player, this._still_in_game_players(current_player));
 		return this._still_in_game_players()[current_player_position + 1] || this._still_in_game_players()[0];
 	},
 	at_sit: function(sit){
@@ -843,9 +854,9 @@ var RP_Players = {
 			return (!!player && -1 == $.inArray(player.sit, pemained_players_sits));
 		});
 	},
-	_still_in_game_players: function(){
+	_still_in_game_players: function(add_player_in_any_case){
 		return $.grep(this._players, function(player){
-			return (player && !player.is_fold());
+			return (player && (!player.is_fold() || player == add_player_in_any_case));
 		});
 	},
 	_must_call_players: function(){
@@ -872,6 +883,7 @@ var RP_Timer = {
 			this.stop();
 		}
 		this.player = player;
+		this.player.active();
 		this._activated = true;
 		this._set_time(init_value);
 		this._timer = setInterval(this._reduce_time.bind(this), 1000);
@@ -951,7 +963,11 @@ RP_Action.prototype = {
 			if(this._is_last_action_before_distribution){
 				RP_Timer.start(RP_Players.find(RP_Game.active_player_id), this.time_for_next_player);
 			}else{
-				RP_Timer.start(this.player.next_active(), this.time_for_next_player);
+				if(!this.next_active_player || this.next_active_player == this.player.next_active()){
+					RP_Timer.start(this.player.next_active(), this.time_for_next_player);
+				}else{
+					// ничего не делаем
+				}
 			}
 		}
 
@@ -1047,7 +1063,6 @@ var RP_Log = {
 		this._message(player.login, 'join');
 	},
 	_message: function(title, text, is_user){
-		$.debug([is_user, title, text], !RUN_TESTS);
 		this._add_to_log(this._build_message({
 			is_user: is_user,
 			title: title,

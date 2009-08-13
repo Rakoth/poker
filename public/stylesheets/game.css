@@ -176,13 +176,13 @@ div{
 	height:85px;
 	background:url("/images/game/sit/back.png") transparent;
 }
-.away_layer{
+.away_veil{
 	position:absolute;
 	width:120px;
 	height:85px;
 	display:none;
 	background:white;
-	z-index:1000;
+	z-index:9;
 }
 .main_part{
 	float:left;

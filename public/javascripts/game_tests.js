@@ -269,7 +269,7 @@ RP_TestsGroups.Game = {
 		assert(RP_Game._is_allin_and_call());
 		assert(RP_Game.is_new_distribution());
 	}},
-	testis_next_stage_should_return_true_if_all_players_acted: function(){with(this){
+	test_is_next_stage_should_return_true_if_all_players_acted: function(){with(this){
 		RP_Players._players[0].act_in_this_round = true;
 		RP_Players._players[1].act_in_this_round = true;
 		RP_Players._players[2].act_in_this_round = true;

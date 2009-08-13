@@ -6,6 +6,6 @@
 	:with => (action[:value] ? "'value=' + RP_StakeSlider.slider('value')" : ""),
 	:before => "$('#actions_veil').show()",
 	:complete => "$('#actions_veil').hide()",
-	:success => "RP_Client.action(#{action[:kind]}, RP_StakeSlider.slider('value'))",
+	:success => "RP_Client.action(#{action[:kind]}, RP_StakeSlider.slider('value'), parseInt(request))",
 	:failure => "alert('#{t 'views.games.show.action_failed'}')"
 )%>

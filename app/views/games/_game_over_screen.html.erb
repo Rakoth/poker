@@ -8,7 +8,7 @@
 		width: 300,
 		buttons: {
 			"<%= t('views.games._game_over_screen.watch')%>": function() {
-				if(1 == RP_Players.count){
+				if(RP_Game.is_finished()){
 					window.close();
 				}else{
 					$(this).dialog("close");
@@ -22,7 +22,7 @@
 			window.close();
 		},
 		open: function(){
-			if(1 == RP_Players.count){
+			if(RP_Game.is_finished()){
 				RP_Synchronizers.Action.stop();
 				RP_Synchronizers.Chat.stop();
 			}

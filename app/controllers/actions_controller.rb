@@ -21,11 +21,10 @@ class ActionsController < ApplicationController
 
   def create
     if !@game.paused? and player = @game.wait_action_from(current_user) and player.act!(params)
-      status = :ok # :no_content
+      render :json => @game.reload.active_player_id, :status => :ok
     else
-      status = :bad_request
+      render :nothing => true, :status => :forbidden
     end
-    render :nothing => true, :status => status
   end
 
   def timeout
