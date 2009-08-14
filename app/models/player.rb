@@ -11,8 +11,9 @@ class Player < ActiveRecord::Base
   aasm_state :absent#, :success => :act_on_away!
   aasm_state :pass_away
   aasm_state :leave
+  aasm_state :leave_now
 	
-	STATUS = {:leave => 'leave', :away => 'absent', :pass_away => 'pass_away'}
+	STATUS = {:leave => 'leave', :away => 'absent', :pass_away => 'pass_away', :leave_now => 'leave_now'}
 
 	named_scope :want_pause, :conditions => {:want_pause => true}
 	named_scope :away, :conditions => {:status => [STATUS[:away], STATUS[:pass_away]]}
@@ -30,7 +31,7 @@ class Player < ActiveRecord::Base
 #	end
 
 	def ready_for_next_stage?
-		act_in_this_round?
+		act_in_this_round? or fold?
 	end
 
 	def act_in_this_round?
@@ -75,7 +76,11 @@ class Player < ActiveRecord::Base
 	end
 
 	aasm_event :lose do
-		transitions :from => :allin , :to => :leave #, :guard => lambda {|player| player.has_empty_stack?}
+		transitions :from => :allin , :to => :leave_now #, :guard => lambda {|player| player.has_empty_stack?}
+	end
+
+	aasm_event :left_game do
+		transitions :from => :leave_now , :to => :leave
 	end
 
 	serialize :hand, Poker::Hand

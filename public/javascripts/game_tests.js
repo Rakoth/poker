@@ -86,7 +86,7 @@ var RP_Tests = {
 	},
 	_show_message: function(message){
 		if(!$.isArray(message)){
-			message = ['assert failed! ' + (message || '')];
+			message = ["assert failed! ", message || ''];
 		}
 		console.error.apply(console, message);
 	},
@@ -254,6 +254,21 @@ RP_TestsGroups.Game = {
 		RP_Players._players[2].stack = 100;
 		RP_Players._players[2].in_pot = 1000;
 		RP_Players._players[2].for_call = 0;
+		assert(RP_Game._is_allin_and_call());
+		assert(RP_Game.is_new_distribution());
+
+		RP_Players._players[0].set_status('fold');
+		RP_Players._players[0].stack = 0;
+		RP_Players._players[0].in_pot = 0;
+		RP_Players._players[0].for_call = 0;
+		RP_Players._players[1].set_status('allin');
+		RP_Players._players[1].stack = 0;
+		RP_Players._players[1].in_pot = 1000;
+		RP_Players._players[1].for_call = 0;
+		RP_Players._players[2].set_status('allin');
+		RP_Players._players[2].stack = 0;
+		RP_Players._players[2].in_pot = 900;
+		RP_Players._players[2].for_call = 100;
 		assert(RP_Game._is_allin_and_call());
 		assert(RP_Game.is_new_distribution());
 
@@ -589,6 +604,17 @@ RP_TestsGroups.Players = {
 		player = RP_Players.find_next_player(player_3);
 		assert_instanceof(player, RP_Player);
 		assert_equals(1, player.id);
+
+		player_1.status = 'pass';
+		player = RP_Players.find_next_player(player_1);
+		assert_instanceof(player, RP_Player);
+		assert_equals(233, player.id);
+
+		player_1.status = 'active';
+		player_2.status = 'pass';
+		player = RP_Players.find_next_player(player_2);
+		assert_instanceof(player, RP_Player);
+		assert_equals(32, player.id, 'pass');
 
 		delete RP_Players._players[1];
 		player = RP_Players.find_next_player(player_1);

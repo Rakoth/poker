@@ -204,8 +204,10 @@ RP_Visualizers.Client = {
 			$('#client_actions').show('slide', {direction: 'down'}, animation_speed);
 		}else{
 			this._update_auto_actions();
-			$('#client_actions').hide('slide', {direction: 'down'}, animation_speed);
-			$('#auto_actions').show('slide', {direction: 'up'}, animation_speed);
+			if('none' == $('#auto_actions').css('display')){
+				$('#client_actions').hide('slide', {direction: 'down'}, animation_speed);
+				$('#auto_actions').show('slide', {direction: 'up'}, animation_speed);
+			}
 		}
 	},
 	_update_stake_slider: function(){
@@ -282,14 +284,14 @@ RP_Visualizers.Player.prototype = {
 		return this._element('cards');
 	},
 	_element: function(id){
-		return $('#' + id + '_' + this.sit);
+		return $('#room #' + id + '_' + this.sit);
 	},
 	update_stack: function(){
 		var stack_value = (0 == this.player.stack) ? 'all-in' : this.player.stack;
 		this._stack().text(stack_value);
 	},
 	update_status: function(){
-		if(this.player.is_away()){
+		if(this.player.is_away() && !this.player.is_allin()){
 			this.away();
 		}else{
 			this.active();
@@ -324,7 +326,7 @@ RP_Visualizers.Player.prototype = {
 		this.update_hand();
 	},
 	leave: function(){
-		this._sit().hide('slow');
+		this._sit().remove();
 	},
 	away: function(){
 		this._away_veil().show();
@@ -585,7 +587,7 @@ RP_Player.prototype = {
 		return ('absent' == this.status || 'pass_away' == this.status);
 	},
 	has_called: function(){
-		return 0 == this.for_call;
+		return (0 == this.for_call || this.is_allin());
 	},
 	set_status: function(status){
 		var new_status;
@@ -795,7 +797,7 @@ var RP_Players = {
 	},
 	find_next_player: function(current_player){
 		var current_player_position = $.inArray(current_player, this._still_in_game_players(current_player));
-		return this._still_in_game_players()[current_player_position + 1] || this._still_in_game_players()[0];
+		return this._still_in_game_players(current_player)[current_player_position + 1] || this._still_in_game_players(current_player)[0];
 	},
 	at_sit: function(sit){
 		return this._players[sit];

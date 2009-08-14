@@ -161,20 +161,15 @@ module DistributionSystem
 			:flop => nil,
 			:turn => nil,
 			:river => nil
-
-			#TODO сохранять предыдущие значения карт, только если установлен флаг show_previous_final
-#			:previous_flop => Poker::Hand.new(flop),
-#			:previous_turn => Poker::Hand.new(turn),
-#			:previous_river => Poker::Hand.new(river)
 		)
     players.each do |player|
 			player.activate! unless player.active?
 			player.update_attributes(
 				:in_pot => 0,
 				:for_call => 0
-#				:previous_hand => (player.open_hand? ? player.hand : nil)
-			) unless 0 == player.in_pot and 0 == player.for_call# and !player.open_hand?
+			) unless 0 == player.in_pot and 0 == player.for_call
     end
+		leave_now_players.each(&:left_game!)
 		# TODO сделать одним запросом
 		actions.each(&:destroy)
   end
