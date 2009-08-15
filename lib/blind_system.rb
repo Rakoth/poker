@@ -22,7 +22,7 @@ module BlindSystem
   end
 	
 	def init_blinds_system!
-		logger.info 'STARTED init_blinds_system!'
+		logger.debug 'STARTED init_blinds_system!'
     #new_blind_position = next_blind_position
     update_attributes(
       #:blind_position => new_blind_position,
@@ -47,7 +47,7 @@ module BlindSystem
 	end
 
   def take_blinds!
-		logger.info 'STARTED take_blinds!'
+		logger.debug 'STARTED take_blinds!'
     players.map {|player| StackManipulator.take_chips(ante, player)} if ante > 0
     StackManipulator.take_chips small_blind_size, player_on_small_blind
     StackManipulator.take_chips blind_size, player_on_blind

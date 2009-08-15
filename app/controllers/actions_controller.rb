@@ -41,5 +41,4 @@ class ActionsController < ApplicationController
     end
     render :nothing => true, :status => status
   end
-
 end

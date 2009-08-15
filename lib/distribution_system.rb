@@ -4,7 +4,7 @@ module DistributionSystem
 	end
 
   def next_stage!
-		logger.info 'STARTED next_stage!'
+		logger.debug 'STARTED next_stage!'
 		Player.update_all({:act_in_this_round => false}, {:game_id => id})
     if on_preflop?
       show_flop!
@@ -25,7 +25,7 @@ module DistributionSystem
 	# метод разделяет банк игры между победителями раздачи,
 	# которые определяются самим методом исходя из карт игроков
   def final_distribution!
-		logger.info 'STARTED final_distribution!'
+		logger.debug 'STARTED final_distribution!'
 
 
 		# если торги продолжать невозможно, но показаны еще не все карты на столе
@@ -47,7 +47,7 @@ module DistributionSystem
   end
 
 	def continue_distribution!
-		logger.info "STARTED continue_distribution!"
+		logger.debug "STARTED continue_distribution!"
 		next_stage! if next_stage?
 		next_player_temp = next_player
 		self.active_player = next_player_temp
@@ -151,7 +151,7 @@ module DistributionSystem
 	end
 
   def before_distribution
-		logger.info 'STARTED before_distribution'
+		logger.debug 'STARTED before_distribution'
 		new_blind_position = next_blind_position
     update_attributes(
 			:current_bet => 0,
@@ -175,7 +175,7 @@ module DistributionSystem
   end
 
 	def start_distribution!
-		logger.info 'STARTED start_distribution!'
+		logger.debug 'STARTED start_distribution!'
 		before_distribution
 		next_blind_level
 		take_blinds!
