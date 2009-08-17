@@ -12,7 +12,7 @@ var RP_HttpStatus = {
 		hurry_sync: 440,
 		late_sync: 441
 	}
-}
+};
 
 //=============================================================================
 var RP_Extend = {
@@ -20,7 +20,7 @@ var RP_Extend = {
 //		return html_to_escape.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 //	},
 	is_request_ready: function(request){
-		return (!RUN_TESTS && (!request || 0 == request.readyState || 4 == request.readyState))
+		return (!RUN_TESTS && (!request || 0 == request.readyState || 4 == request.readyState));
 	},
 	debug: function(variable_or_vars_array, condition){
 		if($.browser.mozilla && console){
@@ -77,6 +77,9 @@ RP_Extend.prepare_elements = function(){
 				this.checked = false;
 			});
 			this.checked = true;
+			RP_Client.auto_action_name = $(this).val();
+		}else{
+			RP_Client.auto_action_name = undefined;
 		}
 	});
 };
@@ -114,8 +117,9 @@ var RP_Visualizers = {
 					new_arguments.push(arguments[i]);
 					i++;
 				}
-				visualizer[effect].apply(visualizer, new_arguments);
+				return visualizer[effect].apply(visualizer, new_arguments);
 			}
+			return false;
 		};
 	}
 };
@@ -193,18 +197,16 @@ RP_Visualizers.Client = {
 	away: function(){
 		RP_AwayDialog.dialog('open');
 	},
-	update_actions_buttons: function(disable_animation){
+	update_client_actions: function(disable_animation){
 		var animation_speed = disable_animation ? 0 : 1000;
-		if(RP_Client.is_turn()){
-			$('#actions a').each(function(){
-				$(this)[RP_Client.is_see_button(this.id) ? 'show' : 'hide']();
-			});
-			this._update_stake_slider();
+		this._update_stake_slider();
+		this._update_actions_buttons();
+		this._update_auto_actions();
+		if(RP_Client.is_turn() && undefined == RP_Client.auto_action_name){
 			$('#auto_actions').hide('slide', {direction: 'up'}, animation_speed);
 			$('#client_actions').show('slide', {direction: 'down'}, animation_speed);
 		}else{
-			this._update_auto_actions();
-			if('none' == $('#auto_actions').css('display')){
+			if($('#auto_actions').is(':hidden')){
 				$('#client_actions').hide('slide', {direction: 'down'}, animation_speed);
 				$('#auto_actions').show('slide', {direction: 'up'}, animation_speed);
 			}
@@ -213,16 +215,32 @@ RP_Visualizers.Client = {
 	_update_stake_slider: function(){
 		RP_StakeSlider.slider(RP_Client.can_only_call() ? 'disable' : 'enable');
 		RP_StakeSlider.slider('option', 'max', RP_Client.max_bet());
-		RP_StakeSlider.slider('option', 'min', Math.min(RP_Game.minimal_bet(), RP_Client.max_bet()));
-		RP_StakeSlider.slider('value', RP_StakeSlider.slider('option', 'min'));
-		$('#stake_value').val(RP_StakeSlider.slider('option', 'min'));
+		var min_bet = Math.max(0, Math.min(RP_Game.minimal_bet(), RP_Client.max_bet()));
+		RP_StakeSlider.slider('option', 'min', min_bet);
+		if(RP_StakeSlider.slider('value') < min_bet || RP_Client.max_bet() < RP_StakeSlider.slider('value')){
+			RP_StakeSlider.slider('value', min_bet);
+			$('#stake_value').val(min_bet);
+		}
 	},
 	_update_auto_actions: function(){
 		//TODO
-		if(parseInt($('#auto_call_value').text()) != RP_Client.for_call()){
-			$('#auto_call').checked = false;
+		$('#auto_actions > span').each(function(){
+			$(this)[RP_Client.can_perform_action($(this).find('input').val()) ? 'show' : 'hide']();
+		});
+		if(parseInt($('#auto_call_value').text()) != RP_Client.for_call() && 'fold' != RP_Client.auto_action_name){
+			$('#auto_actions input').each(function(){
+				if('fold' != $(this).val()){
+					this.checked = false;
+				}
+			});
+			RP_Client.auto_action_name = undefined;
 		}
-		$('#auto_call_value').text(RP_Client.for_call());
+		$('#auto_call_value').text(RP_ChipsCountHelper.format(RP_Client.for_call()));
+	},
+	_update_actions_buttons: function(){
+		$('#client_actions a').each(function(){
+			$(this)[RP_Client.can_perform_action(this.id) ? 'show' : 'hide']();
+		});
 	},
 	show_game_over: function(){
 		setTimeout(function(){
@@ -232,6 +250,12 @@ RP_Visualizers.Client = {
 				RP_WinDialog.dialog('open');
 			}
 		}, 3 * 1000);
+	},
+	button_for_auto_action: function(){
+		return $('#' + RP_Client.auto_action_name);
+	},
+	remove_auto_actions: function(){
+		$('#auto_actions input').each(function(){this.checked = false;});
 	}
 };
 RP_Visualizers.Player = function(player){
@@ -259,7 +283,7 @@ RP_Visualizers.Timer = {
 };
 RP_Visualizers.Log = {
 
-}
+};
 
 RP_Visualizers.Player.prototype = {
 	_sit: function(){
@@ -563,7 +587,7 @@ RP_Player.prototype = {
 		this.for_call += value;
 	},
 	active: function(){
-		this.set_status('active');
+		this.set_status('activated');
 		if(RP_Game.is_paused()){
 			RP_Game.resume();
 		}
@@ -606,6 +630,13 @@ RP_Player.prototype = {
 					new_status = 'absent';
 				}
 				break;
+			case 'activated':
+				switch(this.status){
+					case 'pass_away': new_status = 'pass'; break;
+					case 'allin': new_status = 'allin'; break;
+					default: new_status = 'active'; break;
+				}
+				break;
 			default:
 				new_status = status;
 				break;
@@ -637,6 +668,7 @@ var RP_Client = {
 	id: null,
 	sit: null,
 	login: '',
+	auto_action_name: undefined,
 	view: RP_Visualizers.create('Client'),
 	initialize: function(){
 		this.sit = RP_Game.client_sit;
@@ -647,7 +679,7 @@ var RP_Client = {
 		if(this.is_away()){
 			this.view('away');
 		}
-		this.view('update_actions_buttons', true);
+		this.view('update_client_actions', true);
 	},
 	_player: function(){
 		return RP_Players.at_sit(this.sit);
@@ -687,14 +719,14 @@ var RP_Client = {
 		}).execute();
 	},
 	is_turn: function(){
-		return RP_Timer.is_turn_of(this._player());
+		return RP_Timer.is_turn_of(this);
 	},
-	is_see_button: function(action_name){
+	can_perform_action: function(action_name){
 		switch(action_name){
 			case 'fold': return true;
 			case 'check': return (0 == this._player().for_call);
 			case 'call': return (0 < this._player().for_call);
-			case 'bet': return (RP_Game.current_bet == RP_Game.blind_size && this._player().for_call < this._player().stack);
+			case 'bet': return (RP_Game.is_wait() || (RP_Game.current_bet == RP_Game.blind_size && this._player().for_call < this._player().stack));
 			case 'raise': return (RP_Game.blind_size < RP_Game.current_bet && this._player().for_call < this._player().stack);
 			default: alert('Error in RP_Client.is_see_button(). Unexpected param: ' + action_name); return false;
 		}
@@ -710,6 +742,14 @@ var RP_Client = {
 	},
 	active: function(){
 		this._player().active();
+	},
+	perform_auto_action: function(){
+		this.view('button_for_auto_action').click();
+		this.remove_auto_actions();
+	},
+	remove_auto_actions: function(){
+		this.view('remove_auto_actions');
+		this.auto_action_name = undefined;
 	}
 };
 
@@ -723,26 +763,22 @@ var RP_ActionTimeoutNotificator = {
 		}
 		if($.is_request_ready(this._request)){
 			this._request = $.ajax({
+				async: false,
 				url: '/actions/timeout',
 				type: 'post',
 				data: {
 					game_id: RP_Game.id,
 					player_id: away_player.id
 				},
-				error: function(){
-					if(RP_HttpStatus.errors.hurry_sync == this._request.status){
-						setTimeout(
-							function(){
-								this.notify(away_player);
-							}.bind(this),
-							this._period
-						);
+				error: function(request){
+					if(RP_HttpStatus.errors.hurry_sync == request.status){
+						setTimeout(function(){this.notify(away_player);}.bind(this), this._period);
 					}
 				}.bind(this)
 			});
 		}
 	}
-}
+};
 
 //=============================================================================
 var RP_Players = {
@@ -796,8 +832,9 @@ var RP_Players = {
 		return player_found;
 	},
 	find_next_player: function(current_player){
-		var current_player_position = $.inArray(current_player, this._still_in_game_players(current_player));
-		return this._still_in_game_players(current_player)[current_player_position + 1] || this._still_in_game_players(current_player)[0];
+		var current_players = this._still_in_game_players(current_player);
+		var current_player_position = $.inArray(current_player, current_players);
+		return current_players[current_player_position + 1] || current_players[0];
 	},
 	at_sit: function(sit){
 		return this._players[sit];
@@ -884,11 +921,12 @@ var RP_Timer = {
 		if(this._activated){
 			this.stop();
 		}
+		this._activated = true;
 		this.player = player;
 		this.player.active();
-		this._activated = true;
 		this._set_time(init_value);
 		this._timer = setInterval(this._reduce_time.bind(this), 1000);
+		return true;
 	},
 	stop: function(){
 		if(this._activated){
@@ -932,10 +970,10 @@ RP_Action.prototype = {
 		'4': 'raise'
 	},
 	name: function(){
-		return this._name_by_kind[this.kind]
+		return this._name_by_kind[this.kind];
 	},
 	_is_last_omitted_action: function(){
-		return this.time_for_next_player != undefined
+		return this.time_for_next_player != undefined;
 	},
 	_is_auto_action: function(){
 		return this.kind < 0;
@@ -973,8 +1011,11 @@ RP_Action.prototype = {
 			}
 		}
 
-		RP_Client.view('update_actions_buttons');
-
+		RP_Client.view('update_client_actions');
+		// Выполнение автоматического действия, установленного клиентом
+		if(RP_Client.is_turn() && RP_Client.auto_action_name != undefined){
+			RP_Client.perform_auto_action();
+		}
 		return true;
 	},
 	_influence: function(){
@@ -1150,8 +1191,9 @@ RP_Synchronizers.Action = {
 			$.each(json.actions, function(){
 				var is_continue_execution = new RP_Action(this).execute();
 				if(!is_continue_execution){
-					return;
+					return false;
 				}
+				return true;
 			});
 		}
 	},
@@ -1185,11 +1227,11 @@ RP_Synchronizers.Game = {
 			RP_Client.set_hand(new_hand);
 			delete json.data_for_start.client_hand;
 
-			RP_Game.update(json.data_for_start)
+			RP_Game.update(json.data_for_start);
 
 			RP_Game.start();
 
-			RP_Client.view('update_actions_buttons');
+			RP_Client.view('update_client_actions');
 			RP_Game.view('update_all');
 
 			// остановить Game синхронизатор
@@ -1210,7 +1252,9 @@ RP_Synchronizers.Game = {
 	_sync_on_distribution: function(json){
 		if(json.previous_final){
 			$.each(json.previous_final.players, function(){
-				RP_Players.at_sit(this.sit).set_hand(new RP_CardsSet(this.hand));
+				if(this.hand){
+					RP_Players.at_sit(this.sit).set_hand(new RP_CardsSet(this.hand));
+				}
 			});
 			for(var stage in RP_Game.table_cards){
 				if(json.previous_final[stage]){
@@ -1226,6 +1270,7 @@ RP_Synchronizers.Game = {
 
 		RP_Game.clear_table_cards();
 		RP_Game.update(json);
+		RP_Client.remove_auto_actions();
 	},
 	_sync_players_on_distribution: function(players_array){
 		var remained_players_ids = $.map(players_array, function(player){
@@ -1255,6 +1300,7 @@ RP_Synchronizers.Game = {
 		RP_Game.status = json.status;
 		RP_Game.set_stage_cards(RP_Game.stage(), new RP_CardsSet(json.cards));
 		RP_Players.refresh_acted_flags();
+		RP_Client.remove_auto_actions();
 	},
 	is_really_paused: function(){
 		var answer = false;
@@ -1273,3 +1319,16 @@ RP_Synchronizers.Game = {
 RP_Synchronizers.Action = $.extend(new RP_Synchronizers.Base(), RP_Synchronizers.Action);
 RP_Synchronizers.Game = $.extend(new RP_Synchronizers.Base(), RP_Synchronizers.Game);
 RP_Synchronizers.Chat = $.extend(new RP_Synchronizers.Base(), RP_Synchronizers.Chat);
+
+
+var RP_ChipsCountHelper = {
+	format: function(number){
+		if(number < 10000){
+			return number;
+		}
+		if(number < 1000000){
+			return Math.round(number / 1000) + 'k';
+		}
+		return Math.round(number / 1000000) + 'm';
+	}
+};

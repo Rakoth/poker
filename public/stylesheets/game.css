@@ -1,233 +1,53 @@
-body{
-	margin:0;
-  background:#131313;
-}
-div{
-  overflow:hidden;
-}
-#room{
-  width:700px;
-  height:400px;
-  background:#000 url("");
-}
-#main{
-  width:500px;
-  height:400px;
-  float:left;
-}
-#control{
-  height:400px;
-  width:200px;
-}
-#stake_value{
-	height:1.2em;
-	font:11px monospace;
-}
-#info{
-  height:40px;
-  width:500px;
-}
-#table{
-  width:500px;
-  height:360px;
-  background:url(/images/game/table/table.gif);
-}
-#info_line{
-  background:url("/images/game/back/3.gif");
-}
-#game_info{
-  background:url("/images/game/back/3.gif");
-	color:#0078A3;
-}
-#game_info .info_part{
-	float:left;
-	width:250px;
-	height:20px;
-	text-align:center;
-}
-#pot, #blinds{
-	font-family:monospace;
-	color:orange;
-}
-#log{
-  background:url("/images/game/back/1.gif");
-}
-#notes{
-  background:url("/images/game/back/2.gif");
-}
-#help, #player_actions{
-  background:#000;
-}
-#control .block{
-  height:100px;
-	width:200px;
-}
-#info .block{
-  height:20px;
-  width:500px;
-}
-#veil{
-	position:absolute;
-  width:700px;
-  height:400px;
-	z-index:10;
-	background-color:#ccc;
-}
-#cards{
-	position:absolute;
-	top:170px;
-	left:140px;
-	width:220px;
-	height:60px;
-	background-image:url("/images/game/table/cards.png");
-}
-#cards div{
-	height:60px;
-	float:left;
-}
-#cards div img{
-	margin:5px 5px;
-	width:32px;
-	height:50px;
-	float:left;
-}
-#flop{
-	width:132px;
-}
-#turn, #river{
-	width:44px;
-}
-#auto_actions{
-	display:none;
-	color:white;
-	position:absolute;
-}
-#client_actions{
-	position:absolute;
-}
-#actions_veil{
-	position:absolute;
-	width:200px;
-	background-color:white;
-	display:none;
-	z-index:10;
-}
-#actions{
-	padding-top:5px;
-}
-.action_button{
-	outline:none;
-}
-.action_button img{
-	border:0;
-	padding-left:5px;
-}
+body{margin:0;background:#131313;}
+div{overflow:hidden;}
+#room{width:700px;height:400px;background:#000 url("");}
+#main{width:500px;height:400px;float:left;}
+#control{height:400px;width:200px;}
+#stake_value{height:1.2em;font:11px monospace;}
+#info{height:40px;width:500px;}
+#table{width:500px;height:360px;background:url(/images/game/table/table.gif);}
+#info_line{background:url("/images/game/back/3.gif");}
+#game_info{background:url("/images/game/back/3.gif");color:#0078A3;}
+#game_info .info_part{float:left;width:250px;height:20px;text-align:center;}
+#pot, #blinds{font-family:monospace;color:orange;}
+#log{background:url("/images/game/back/1.gif");}
+#notes{background:url("/images/game/back/2.gif");}
+#help, #player_actions{background:#000;}
+#control .block{height:100px;width:200px;}
+#info .block{height:20px;width:500px;}
+#veil{position:absolute;width:700px;height:400px;z-index:10;background-color:#ccc;}
+#cards{position:absolute;top:170px;left:140px;width:220px;height:60px;background-image:url("/images/game/table/cards.png");}
+#cards div{height:60px;float:left;}
+#cards div img{margin:5px 5px;width:32px;height:50px;float:left;}
+#flop{width:132px;}
+#turn, #river{width:44px;}
+#auto_actions{display:none;color:white;position:absolute;width:200px;padding-top:5px;font-size:12px;}
+#client_actions{position:absolute;padding-top:5px;}
+#auto_call_value{color:orange;font-family:monospace;}
+#actions_veil{position:absolute;width:200px;background-color:white;display:none;z-index:10;}
+.action_button{outline:none;}
+.action_button img{border:0;padding-left:5px;}
 /* окно возврата из статуса "отошел" */
-#away_message_container{
-	margin:150px 0 0 200px;
-	width:300px;
-	height:100px;
-	padding:10px;
-}
+#away_message_container{margin:150px 0 0 200px;width:300px;height:100px;padding:10px;}
 /* лог событий + чат */
-#log_body{
-	border:1px solid #996600;
-	width:190px;
-	height:70px;
-	margin:2px 0 0 5px;
-	overflow-y:scroll;
-	background-color:black;
-	color:white;
-}
-#log_message_text{
-	background:transparent;
-	height:12px;
-	width:150px;
-	color:#ccc;
-	border:1px solid #996600;
-	font:10px Verdana,monospase;
-	margin-left:5px;
-}
-.log_message_submit{
-	padding-top:5px;
-}
-.log_message_submit input{
-	outline:none;
-}
-.system{
-	color:#444;
-}
-.log_record{
-	white-space:nowrap;
-	font:10px Verdana;
-}
-.user_log_record .log_message_titile{
-	font-weight:bold;
-}
-.log_message_text{
-	white-space:normal;
-	font-style:italic;
-}
+#log_body{border:1px solid #996600;width:190px;height:70px;margin:2px 0 0 5px;overflow-y:scroll;background-color:black;color:white;}
+#log_message_text{background:transparent;height:12px;width:150px;color:#ccc;border:1px solid #996600;font:10px Verdana,monospase;margin-left:5px;}
+.log_message_submit{padding-top:5px;}
+.log_message_submit input{outline:none;}
+.system{color:#444;}
+.log_record{white-space:nowrap;font:10px Verdana;}
+.user_log_record .log_message_titile{font-weight:bold;}
+.log_message_text{white-space:normal;font-style:italic;}
 /* место игрока */
-.sit{
-	position:absolute;
-	width:120px;
-	height:85px;
-	background:url("/images/game/sit/back.png") transparent;
-}
-.away_veil{
-	position:absolute;
-	width:120px;
-	height:85px;
-	display:none;
-	background:white;
-	z-index:9;
-}
-.main_part{
-	float:left;
-	width:70px;
-	height:90px;
-}
-.side_part{
-	width:50px;
-	height:90px;
-}
-.last_action{
-	width:120px;
-	height:15px;
-}
-.login{
-	height:20px;
-	width:70px;
-	text-align:center;
-	font-size:13px;
-}
-.cards{
-	height:70px;
-	width:100px;
-}
-.cards img{
-	margin:10px 0 0 1px;
-	width:34px;
-	height:50px;
-	float:left;
-}
-.buttons{
-	height:20px;
-	width:50px;
-}
-.side_block{
-	height:35px;
-	width:50px;
-}
-.side_block img{
-	width:50px;
-	height:35px;
-}
-.stack{
-	width:50px;
-	height:15px;
-	margin-top:20px;
-	font:10px monospace;
-	text-align:center;
-}
+.sit{position:absolute;width:120px;height:85px;background:url("/images/game/sit/back.png") transparent;}
+.away_veil{position:absolute;width:120px;height:85px;display:none;background:white;z-index:9;}
+.main_part{float:left;width:70px;height:90px;}
+.side_part{width:50px;height:90px;}
+.last_action{width:120px;height:15px;}
+.login{height:20px;width:70px;text-align:center;font-size:13px;}
+.cards{height:70px;width:100px;}
+.cards img{margin:10px 0 0 1px;width:34px;height:50px;float:left;}
+.buttons{height:20px;width:50px;}
+.side_block{height:35px;width:50px;}
+.side_block img{width:50px;height:35px;}
+.stack{width:50px;height:15px;margin-top:20px;font:10px monospace;text-align:center;}

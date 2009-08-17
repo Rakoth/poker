@@ -23,7 +23,6 @@
 				success:function(){
 					$('#away_screen p').text('<%= t('views.games._away_screen.away_message')%>');
 					RP_Client.active();
-					//Game.resume();
 				},
 				error:function(){
 					$('#away_screen p').text('<%= t('views.games._away_screen.back_failed')%>');

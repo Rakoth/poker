@@ -1,4 +1,16 @@
 <h3><%=t 'views.games.index.title' %></h3>
+<!--p>
+	<%= t 'views.games.index.test_popups' %>
+	<%= link_to_function t('views.games.index.run_test'),
+		"try{
+			test_window = window.open('/', 'test', 'left=10,top=10,width=10,height=10');
+			test_window.close();
+			alert('#{t 'views.games.index.test_passed'}');
+		}catch(e){
+			alert('#{t 'views.games.index.test_failed'}');
+		}"
+%>
+</p-->
 <table>
   <thead>
     <tr>
@@ -11,6 +23,12 @@
     </tr>
   </thead>
   <tbody>
-      <%= render :partial => @games %>
+		<% if @games.any? %>
+			<%= render :partial => @games %>
+		<% else %>
+			<tr>
+				<td colspan="6"><%=t 'views.games.index.no_games' %></td>
+			</tr>
+		<% end %>
   </tbody>
 </table>

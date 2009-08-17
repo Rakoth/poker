@@ -8,12 +8,12 @@ class Player < ActiveRecord::Base
   aasm_state :active
   aasm_state :allin
   aasm_state :pass
-  aasm_state :absent#, :success => :act_on_away!
+  aasm_state :absent
   aasm_state :pass_away
   aasm_state :leave
   aasm_state :leave_now
 	
-	STATUS = {:leave => 'leave', :away => 'absent', :pass_away => 'pass_away', :leave_now => 'leave_now'}
+	STATUS = {:leave => 'leave', :away => 'absent', :pass_away => 'pass_away', :leave_now => 'leave_now', :pass => 'pass'}
 
 	named_scope :want_pause, :conditions => {:want_pause => true}
 	named_scope :away, :conditions => {:status => [STATUS[:away], STATUS[:pass_away]]}
@@ -25,10 +25,6 @@ class Player < ActiveRecord::Base
 	def away?
 		absent? or pass_away?
 	end
-
-#	def act_now?
-#		id == game.active_player_id
-#	end
 
 	def ready_for_next_stage?
 		act_in_this_round? or fold?
@@ -76,7 +72,7 @@ class Player < ActiveRecord::Base
 	end
 
 	aasm_event :lose do
-		transitions :from => :allin , :to => :leave_now #, :guard => lambda {|player| player.has_empty_stack?}
+		transitions :from => :allin , :to => :leave_now
 	end
 
 	aasm_event :left_game do
@@ -144,20 +140,6 @@ class Player < ActiveRecord::Base
 		user_id == watched_user_id
 	end
 
-#	def build_synch_data type = :init, for_user_id = nil
-#		case type
-#		when :init
-#			init_data
-#		when :after_start_game
-#			init_data_after_start_game for_user_id
-#		when :on_distribution
-#			init_data_on_distribution
-#		when :previous_final
-#			data_to_show_final
-#		else
-#			raise ArgumentError, 'Unexpected type for building player data: ' + type.to_s
-#		end
-#	end
 
 	def auto_check!
 		PlayerActions::Action.execute_auto_action PlayerActions::Action::AUTO_CHECK, :player => self, :game => game
@@ -176,39 +158,6 @@ class Player < ActiveRecord::Base
 	end
 
 	private
-	
-#	def init_data
-#		{
-#			:id => id,
-#			:login => login,
-#			:sit => sit
-#		}
-#	end
-#
-#	def init_data_after_start_game for_user_id
-#		data = init_data
-#		data.merge!(init_data_on_distribution).merge!(:hand_to_load => (show_hand_to?(for_user_id) ? hand.to_s : nil))
-#		return data
-#	end
-#
-#	def init_data_on_distribution
-#		{
-#			:sit => sit,
-#			:status => status,
-#			:stack => stack,
-#			:for_call => for_call,
-#			:in_pot => in_pot,
-#			:previous_win => previous_win,
-#			:act_in_this_round => act_in_this_round
-#		}
-#	end
-#
-#	def data_to_show_final
-#		{
-#			:sit => sit,
-#			:hand => previous_hand.to_s
-#		}
-#	end
 	
 	def return_user_money
 		user.update_attribute(:cash, user.cash + game.type.pay_for_play)

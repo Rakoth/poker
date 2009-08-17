@@ -451,6 +451,14 @@ RP_TestsGroups.Player = {
 		assert(player.is_away(), 'on setting "away" status');
 		player.set_status('allin');
 		assert(player.is_allin(), 'on setting "allin" status');
+		player.set_status('activated');
+		assert(player.is_allin(), 'on setting "activated" status');
+		player.status = 'pass_away';
+		player.set_status('activated');
+		assert_equals('pass', player.status);
+		player.status = 'absent';
+		player.set_status('activated');
+		assert(player.is_active(), 'on setting "activated" status');
 	}},
 	test_stake_should_inscrease_game_current_bet_if_value_more_than_zero: function(){with(this){
 		player = players.ordinary;
@@ -840,7 +848,7 @@ RP_TestsGroups.Action = {
 		new RP_Action({player_id: 1, kind: 3, value: 100}).execute();
 		assert_equals(800, RP_Players._players[0].stack);
 	}}
-}
+};
 
 RP_TestsGroups.Synchronizers = {
 	setup: function(){
@@ -862,5 +870,26 @@ RP_TestsGroups.Synchronizers = {
 		assert_equals('active', RP_Players._players[1].status);
 		assert_false(RP_Players._players[1].act_in_this_round);
 	}}
-}
+};
+
+RP_TestsGroups.ChipsCountHelper = {
+	setup: function(){
+		this.numbers_for_test = {
+			1: '1',
+			20: '20',
+			350: '350',
+			9999: '9999',
+			10000: '10k',
+			15499: '15k',
+			15500: '16k',
+			231092: '231k',
+			1000000: '1m'
+		}
+	},
+	test_format_should_return_correct_string_with_human_number: function(){with(this){
+		for(numner in numbers_for_test){
+			assert_equals(numbers_for_test[numner], RP_ChipsCountHelper.format(numner));
+		}
+	}}
+};
 

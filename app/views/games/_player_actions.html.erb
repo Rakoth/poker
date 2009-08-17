@@ -1,16 +1,35 @@
 <div id="actions_veil" class="block"></div>
-<div id="client_actions" class="block">
-<%- actions = [
-	{:name => 'fold',  :kind => PlayerActions::Action::FOLD,  :value => false},
-	{:name => 'check', :kind => PlayerActions::Action::CHECK, :value => false},
-	{:name => 'call',  :kind => PlayerActions::Action::CALL,  :value => false},
-	{:name => 'bet',   :kind => PlayerActions::Action::BET,   :value => true},
-	{:name => 'raise', :kind => PlayerActions::Action::RAISE, :value => true}
-] -%>
-<div id="actions">
-	<%= render :partial => 'player_action_button', :collection => actions, :as => :action %>
+<div class="block">
+
+<div id="client_actions">
+	<%= render :partial => 'player_action_button', :collection => client_actions, :as => :action %>
 </div>
-<div>
+
+<div id="auto_actions">
+	<span>
+		<input type="checkbox" id="auto_fold" name="auto_action" value="fold" />
+		<label for="auto_fold">fold</label>
+	</span>
+	<span>
+		<input type="checkbox" id="auto_check" name="auto_action" value="check" />
+		<label for="auto_check">check</label>
+	</span>
+	<span>
+		<input type="checkbox" id="auto_call" name="auto_action" value="call" />
+		<label for="auto_call">call</label>
+		<span id="auto_call_value"></span>
+	</span>
+	<span>
+		<input type="checkbox" id="auto_bet" name="auto_action" value="bet" />
+		<label for="auto_bet">bet</label>
+	</span>
+	<span>
+		<input type="checkbox" id="auto_raise" name="auto_action" value="raise" />
+		<label for="auto_raise">raise</label>
+	</span>
+</div>
+
+<div style="margin-top: 40px;">
 	<div style="float:left;width:70%;margin:5px 5px 0 0;"><div id="stake_slider"></div></div>
 	<div style="margin-top:2px;"><input id="stake_value" disabled="disabled" value="<%= @game.minimal_bet %>" size="5"/></div>
 	<script type="text/javascript">
@@ -44,19 +63,4 @@
 		});
 	</script>
 </div>
-</div>
-<div id="auto_actions" class="block">
-	<div>
-		<input type="checkbox" id="auto_fold" name="auto_action" value="fold" />
-		<label for="auto_fold">fold</label>
-	</div>
-	<div>
-		<input type="checkbox" id="auto_call" name="auto_action" value="call" />
-		<label for="auto_call">call</label>
-		<span id="auto_call_value"></span>
-	</div>
-	<div>
-		<input type="checkbox" id="auto_raise" name="auto_action" value="raise" />
-		<label for="auto_raise">raise</label>
-	</div>
 </div>

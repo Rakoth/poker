@@ -62,8 +62,7 @@ class Game < ActiveRecord::Base
   belongs_to :type, :class_name => 'GameType'
 	has_many :all_players, :class_name => 'Player'
   has_many :players, :conditions => ['status NOT IN (?)', [Player::STATUS[:leave], Player::STATUS[:leave_now]]]
-	has_many :previous_distribution_players, :class_name => 'Player',
-		:conditions => ['status NOT IN (?)', [Player::STATUS[:leave], Player::STATUS[:pass], Player::STATUS[:pass_away]]]
+	has_many :previous_distribution_players, :class_name => 'Player', :conditions => ['status <> ?', Player::STATUS[:leave]]
 	has_many :leave_now_players, :class_name => 'Player', :conditions => {:status => Player::STATUS[:leave_now]}
   has_many :users, :through => :players
   has_many :actions, :class_name => 'PlayerActions::Action'
@@ -71,7 +70,7 @@ class Game < ActiveRecord::Base
 	has_many :log_messages
 
 	def active_player
-		@active_player ||= Player.find active_player_id
+		@active_player ||= players.find active_player_id
 	end
 
 	def active_player= player

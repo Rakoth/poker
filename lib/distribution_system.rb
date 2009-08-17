@@ -27,7 +27,6 @@ module DistributionSystem
   def final_distribution!
 		logger.debug 'STARTED final_distribution!'
 
-
 		# если торги продолжать невозможно, но показаны еще не все карты на столе
 		deal_remained_cards! if allin_and_call?
 
@@ -180,6 +179,9 @@ module DistributionSystem
 		next_blind_level
 		take_blinds!
 		deal_hands!
+		# Важно! Выполняем авто действие, что бы не запускать таймер отошедшему игроку.
+		# Если игра на паузе, выполнение автодействия приведет к бесконечному циклу
+		active_player.auto_fold! if !paused? and active_player.away?
 	end
 	
   def deal_flop!
