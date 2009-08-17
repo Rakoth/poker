@@ -60,10 +60,10 @@ class Game < ActiveRecord::Base
 	include DistributionSystem
   
   belongs_to :type, :class_name => 'GameType'
-	has_many :all_players, :class_name => 'Player'
-  has_many :players, :conditions => ['status NOT IN (?)', [Player::STATUS[:leave], Player::STATUS[:leave_now]]]
+  has_many :players, :conditions => ['status NOT IN (?)', [Player::STATUS[:lose], Player::STATUS[:leave], Player::STATUS[:leave_now]]]
 	has_many :previous_distribution_players, :class_name => 'Player', :conditions => ['status <> ?', Player::STATUS[:leave]]
 	has_many :leave_now_players, :class_name => 'Player', :conditions => {:status => Player::STATUS[:leave_now]}
+	has_many :lose_players, :class_name => 'Player', :conditions => {:status => Player::STATUS[:lose]}
   has_many :users, :through => :players
   has_many :actions, :class_name => 'PlayerActions::Action'
   has_many :current_distribution_actions, :class_name => 'PlayerActions::Action', :conditions => ['deleted = ?', false]

@@ -10,10 +10,11 @@ class Player < ActiveRecord::Base
   aasm_state :pass
   aasm_state :absent
   aasm_state :pass_away
-  aasm_state :leave
+	aasm_state :lose
   aasm_state :leave_now
+  aasm_state :leave
 	
-	STATUS = {:leave => 'leave', :away => 'absent', :pass_away => 'pass_away', :leave_now => 'leave_now', :pass => 'pass'}
+	STATUS = {:leave => 'leave', :away => 'absent', :pass_away => 'pass_away', :leave_now => 'leave_now', :pass => 'pass', :lose => 'lose'}
 
 	named_scope :want_pause, :conditions => {:want_pause => true}
 	named_scope :away, :conditions => {:status => [STATUS[:away], STATUS[:pass_away]]}
@@ -72,7 +73,11 @@ class Player < ActiveRecord::Base
 	end
 
 	aasm_event :lose do
-		transitions :from => :allin , :to => :leave_now
+		transitions :from => :allin , :to => :lose
+	end
+
+	aasm_event :prepare_left_game do
+		transitions :from => :lose , :to => :leave_now
 	end
 
 	aasm_event :left_game do

@@ -169,6 +169,7 @@ module DistributionSystem
 			) unless 0 == player.in_pot and 0 == player.for_call
     end
 		leave_now_players.each(&:left_game!)
+		lose_players.each(&:prepare_left_game!)
 		# TODO сделать одним запросом
 		actions.each(&:destroy)
   end
