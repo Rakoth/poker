@@ -110,14 +110,13 @@ var RP_Visualizers = {
 		var visualizer = (object != undefined) ? new this[group](object) : this[group];
 		return function(){
 			if('undefined' == typeof DISABLE_VIEW){
-				var effect = arguments[0];
 				var new_arguments = [];
 				var i = 1;
 				while(arguments[i] != undefined){
 					new_arguments.push(arguments[i]);
 					i++;
 				}
-				return visualizer[effect].apply(visualizer, new_arguments);
+				return visualizer[arguments[0]].apply(visualizer, new_arguments);
 			}
 			return false;
 		};
@@ -229,9 +228,7 @@ RP_Visualizers.Client = {
 		});
 		if(parseInt($('#auto_call_value').text()) != RP_Client.for_call() && 'fold' != RP_Client.auto_action_name){
 			$('#auto_actions input').each(function(){
-				if('fold' != $(this).val()){
 					this.checked = false;
-				}
 			});
 			RP_Client.auto_action_name = undefined;
 		}
@@ -728,7 +725,7 @@ var RP_Client = {
 			case 'call': return (0 < this._player().for_call);
 			case 'bet': return (RP_Game.is_wait() || (RP_Game.current_bet == RP_Game.blind_size && this._player().for_call < this._player().stack));
 			case 'raise': return (RP_Game.blind_size < RP_Game.current_bet && this._player().for_call < this._player().stack);
-			default: alert('Error in RP_Client.is_see_button(). Unexpected param: ' + action_name); return false;
+			default: alert('Error in RP_Client.can_perform_action(). Unexpected param: ' + action_name); return false;
 		}
 	},
 	is_lose: function(){
@@ -1319,7 +1316,6 @@ RP_Synchronizers.Game = {
 RP_Synchronizers.Action = $.extend(new RP_Synchronizers.Base(), RP_Synchronizers.Action);
 RP_Synchronizers.Game = $.extend(new RP_Synchronizers.Base(), RP_Synchronizers.Game);
 RP_Synchronizers.Chat = $.extend(new RP_Synchronizers.Base(), RP_Synchronizers.Chat);
-
 
 var RP_ChipsCountHelper = {
 	format: function(number){

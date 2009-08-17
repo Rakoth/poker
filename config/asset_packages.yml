@@ -1,0 +1,13 @@
+--- 
+javascripts: 
+- base: 
+  - jrails
+  - jquery
+  - jquery-ui
+  - game
+  - application
+stylesheets: 
+- base: 
+  - game
+  - jquery-ui
+  - style

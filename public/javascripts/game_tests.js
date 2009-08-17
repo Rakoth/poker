@@ -49,7 +49,7 @@ var RP_Tests = {
 		this.assert(assertion, ["assert_defined failed! variable was undefined; ", message || '']);
 	},
 	assert_diplay: function(element_id, message){
-		var assertion = ($('#' + element_id).attr('display') != 'none');
+		var assertion = ($('#' + element_id).is(':visible'));
 		this.assert(assertion, ["assert_diplay failed! element was hidden; ", message || '']);
 	},
 	run: function(){
@@ -382,32 +382,32 @@ RP_TestsGroups.Client = {
 		RP_Timer.player = RP_Client._player();
 		RP_Timer._activated = true;
 	},
-	test_is_see_button_should_return_true_for_fold_button: function(){with(this){
-		assert(RP_Client.is_see_button('fold'));
+	test_can_perform_action_should_return_true_for_fold_button: function(){with(this){
+		assert(RP_Client.can_perform_action('fold'));
 		RP_Players._players[0].stack = 0;
-		assert(RP_Client.is_see_button('fold'));
+		assert(RP_Client.can_perform_action('fold'));
 		RP_Game.current_bet = 200;
-		assert(RP_Client.is_see_button('fold'));
+		assert(RP_Client.can_perform_action('fold'));
 	}},
-	test_is_see_button_should_return_true_for_check_and_false_for_call_if_client_for_call_equal_zero: function(){with(this){
+	test_can_perform_action_should_return_true_for_check_and_false_for_call_if_client_for_call_equal_zero: function(){with(this){
 		RP_Players._players[0].for_call = 0;
-		assert(RP_Client.is_see_button('check'));
-		assert_false(RP_Client.is_see_button('call'));
+		assert(RP_Client.can_perform_action('check'));
+		assert_false(RP_Client.can_perform_action('call'));
 	}},
-	test_is_see_button_should_return_false_for_check_and_true_for_call_if_client_for_call_more_than_zero: function(){with(this){
+	test_can_perform_action_should_return_false_for_check_and_true_for_call_if_client_for_call_more_than_zero: function(){with(this){
 		RP_Players._players[0].for_call = 100;
-		assert_false(RP_Client.is_see_button('check'));
-		assert(RP_Client.is_see_button('call'));
+		assert_false(RP_Client.can_perform_action('check'));
+		assert(RP_Client.can_perform_action('call'));
 	}},
-	test_is_see_button_should_return_true_for_bet_and_false_for_raise_if_client_can_do_bet: function(){with(this){
+	test_can_perform_action_should_return_true_for_bet_and_false_for_raise_if_client_can_do_bet: function(){with(this){
 		RP_Game.current_bet = 100;
-		assert(RP_Client.is_see_button('bet'));
-		assert_false(RP_Client.is_see_button('raise'));
+		assert(RP_Client.can_perform_action('bet'));
+		assert_false(RP_Client.can_perform_action('raise'));
 	}},
-	test_is_see_button_should_return_true_for_raise_and_false_for_bet_if_client_can_do_raise: function(){with(this){
+	test_can_perform_action_should_return_true_for_raise_and_false_for_bet_if_client_can_do_raise: function(){with(this){
 		RP_Game.current_bet = 200;
-		assert(RP_Client.is_see_button('raise'));
-		assert_false(RP_Client.is_see_button('bet'));
+		assert(RP_Client.can_perform_action('raise'));
+		assert_false(RP_Client.can_perform_action('bet'));
 	}}
 };
 

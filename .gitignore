@@ -6,3 +6,4 @@ doc/app
 .idea/**/*
 nbproject/*
 nbproject/**/*
+public/favicon.ico
