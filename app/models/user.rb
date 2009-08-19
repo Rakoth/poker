@@ -2,19 +2,17 @@ require 'digest/sha1'
 
 class User < ActiveRecord::Base
 	acts_as_authentic
- 
+	apply_simple_captcha :message => I18n.t('activerecord.errors.messages.wrong_captcha')
+
   has_one :info, :dependent => :destroy, :class_name => "UserInfo", :foreign_key => "user_id"
   has_many :players
   has_many :user_balance_logs
   has_many :games, :through => :players
   has_many :notes
+	has_one :purse
 
   def authorize? password
     password.crypt(salt) == self.crypted_password
-  end
-
-  def have_money? type
-    cash >= type.pay_for_play
   end
   
   def can_join? game
@@ -22,7 +20,7 @@ class User < ActiveRecord::Base
   end
 
   def can_create? type
-    have_money?(type) and type.verify_user_level(level)
+    purse.has?(type.pay_for_play) and type.verify_user_level(level)
   end
 
 	def join! game

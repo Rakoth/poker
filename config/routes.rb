@@ -31,6 +31,8 @@ ActionController::Routing::Routes.draw do |map|
 
   # Install the default routes as the lowest priority.
 
+	map.simple_captcha '/simple_captcha/:action', :controller => 'simple_captcha'
+	
   map.root :controller => 'games'
 	map.resource :user_session
   map.login 'login', :controller => 'user_sessions', :action => 'new'
@@ -38,7 +40,7 @@ ActionController::Routing::Routes.draw do |map|
   map.resources :users
   map.resources :actions, :collection => { :omitted => :get, :timeout => :post }
   map.resources :log_messages
-  map.resources :games, :has_many => 'players'
+  map.resources :games, :has_many => 'players', :member => { :info => :get }, :collection => { :started => :get, :finished => :get }
   map.resources :players, :member => { :i_am_back => :put }
   map.resources :game_types
   map.resources :notes

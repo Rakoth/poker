@@ -1,19 +1,19 @@
 <h3><%=h User.human_name + ' ' + @user.login %></h3>
 <table class="userInfo">
   <tr>
-    <td><%= UserInfo.human_attribute_name("name") %></td>
+    <td><%= UserInfo.attr_name("name") %></td>
     <td><%= @user.info.name %></td>
   </tr>
   <tr>
-    <td><%= UserInfo.human_attribute_name("birthday") %></td>
+    <td><%= UserInfo.attr_name("birthday") %></td>
     <td><%= @user.info.birthday %></td>
   </tr>
   <tr>
-    <td><%= UserInfo.human_attribute_name("country") %></td>
+    <td><%= UserInfo.attr_name("country") %></td>
     <td><%= @user.info.country %></td>
   </tr>
   <tr>
-    <td><%= User.human_attribute_name("level") %></td>
+    <td><%= User.attr_name("level") %></td>
     <td><%= @user.level %></td>
   </tr>
 </table>

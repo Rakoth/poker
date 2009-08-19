@@ -1,0 +1,54 @@
+<% title t('views.games.info.title', :id => @game.id) %>
+<table id="game_info">
+	<thead>
+		<tr>
+			<th><%=h @game.type.title %></th>
+			<th><%= render 'game_actions' %></th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td><%= Game.attr_name('status') %></td>
+			<td><%= human_status @game %></td>
+		</tr>
+		<tr>
+			<td><%= GameType.attr_name('start_cash') %></td>
+			<td><%=h @game.type.pay_for_play %></td>
+		</tr>
+		<tr>
+			<td><%= Game.attr_name('players_count') %></td>
+			<td><%= players_stat @game %></td>
+		</tr>
+		<tr>
+			<td><%=  GameType.attr_name('start_stack') %></td>
+			<td><%=h @game.type.start_stack %></td>
+		</tr>
+		<tr>
+			<td><%=  GameType.attr_name('start_blind') %></td>
+			<td><%=h @game.blind_size %></td>
+		</tr>
+		<tr>
+			<td><%= GameType.attr_name('change_level_time') %></td>
+			<td><%=h @game.type.change_level_time %></td>
+		</tr>
+		<tr>
+			<td><%= Game.attr_name('players_level') %></td>
+			<td><%= levels_stat @game.type %></td>
+		</tr>
+	</tbody>
+</table>
+
+<h4><%=t 'views.games.info.players_info' %></h4>
+
+<table>
+	<thead>
+		<tr>
+			<th><%= Player.attr_name('sit') %></th>
+			<th><%= User.attr_name('login') %></th>
+			<th><%= Player.attr_name('level') %></th>
+		</tr>
+	</thead>
+	<tbody>
+		<%= render @game.all_players %>
+	</tbody>
+</table>

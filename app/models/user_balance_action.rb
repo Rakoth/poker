@@ -1,23 +1,17 @@
 class UserBalanceAction < ActiveRecord::Base
-
   belongs_to :user
 
-  def self.in(user, value, title, game = true)
+  def self.in(user, value)
     self.create(
-      :direction => 'in',
       :user => user,
-      :value => value,
-      :comment => (game ? "Покинул игру '#{title}' до старта" : title)
+      :value => value
     )
   end
 
-  def self.out(user, value, title, game = true)
+  def self.out(user, value)
     self.create(
-      :direction => 'out',
       :user => user,
-      :value => value,
-      :comment => (game ? "Присоединился к игре '#{title}'" : title)
+      :value => -value
     )
   end
-  
 end

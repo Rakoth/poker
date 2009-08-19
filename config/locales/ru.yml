@@ -11,6 +11,27 @@
 # была возможность минимальной локализации приложения на русский язык.
 
 ru:
+  authlogic:
+    error_messages:
+      login_blank: не может быть пустым
+      login_not_found: is not valid
+      login_invalid: может содержать только буквы, цифры, пробелы и некоторые символы
+      consecutive_failed_logins_limit_exceeded: Consecutive failed logins limit exceeded, account is disabled.
+      email_invalid: должен иметь верный формат
+      password_blank: не может быть пустым
+      password_invalid: неверен
+      not_active: Your account is not active
+      not_confirmed: Your account is not confirmed
+      not_approved: Your account is not approved
+      no_authentication_details: Введите данные для авторизации
+    models:
+      user_session: UserSession (or whatever name you are using)
+    attributes:
+      user_session: (or whatever name you are using)
+      login: login
+      email: email
+      password: password
+      remember_me: remember me
   date:
     formats:
       default: "%d.%m.%Y"
@@ -156,8 +177,9 @@ ru:
         login: "Логин"
         password: "Пароль"
         password_confirmation: "Повторите пароль"
-        email: "Емэил"
+        email: "Электронный адрес"
         level: "Уровень"
+        captcha: "Символы"
       user_info:
         name: "Имя"
         birthday: "День рождения"
@@ -175,7 +197,12 @@ ru:
         max_level: "Максимальный уровень игрока"
       game:
         players_count: "Кол-во игроков"
-        state: "Состояние"
+        status: "Состояние"
+        type: "Тип игры"
+        players_level: "Уровни игроков"
+      player:
+        sit: "Кресло"
+        level: "Уровень"
     errors:
       template:
         header:
@@ -196,7 +223,7 @@ ru:
         blank: "не может быть пустым"
         too_long:
           one: "слишком большой длины (не может быть больше чем {{count}} символ)"
-          few: "слишком большой длины (не может быть больше чем {{count}} символа)"
+          few: "слишком большой длины (не может быть больше чем {{count}} символов)"
           many: "слишком большой длины (не может быть больше чем {{count}} символов)"
           other: "слишком большой длины (не может быть больше чем {{count}} символа)"
         too_short:
@@ -206,7 +233,7 @@ ru:
           other: "недостаточной длины (не может быть меньше {{count}} символа)"
         wrong_length:
           one: "неверной длины (может быть длиной ровно {{count}} символ)"
-          few: "неверной длины (может быть длиной ровно {{count}} символа)"
+          few: "неверной длины (может быть длиной ровно {{count}} символов)"
           many: "неверной длины (может быть длиной ровно {{count}} символов)"
           other: "неверной длины (может быть длиной ровно {{count}} символа)"
         taken: "уже существует"
@@ -218,6 +245,7 @@ ru:
         less_than_or_equal_to: "может иметь значение меньшее или равное {{count}}"
         odd: "может иметь лишь четное значение"
         even: "может иметь лишь нечетное значение"
+        wrong_captcha: "с картинки введены неверно"
 
   support:
     array:
@@ -240,9 +268,10 @@ ru:
       edit:
         title: "Изменение типа игры"
       index:
-        title: "Выберите тип игры"
+        title: "Создание игры"
         pay_for_play: "Плата за вход"
         level_for_play: "Уровень для участия"
+        no_types: "Типы игр еще не созданы."
       new:
         title: "Создание нового типа игры!"
       show:
@@ -255,6 +284,7 @@ ru:
         required_data: "Обязательно"
         sign_up: "Зарегистрироваться"
         input_registration_data: "Введите данные для регистраци"
+        captcha_title: "Символы на картинке"
     games:
       actions:
         leave_game_confirm: "Вы собираетесь покинуть игру {{title}}?"
@@ -267,12 +297,18 @@ ru:
         test_passed: "Все ок, можно играть!"
         test_failed: "Разрешите всплывающие окна, они необходимы для игры!"
         no_games: "В данный момент открытых игр нет, Вы можете создать игру сами из меню."
+        waited: "Ожидающие игры"
+        started: "Начавшиеся игры"
+        finished: "Завершенные игры"
       new:
         title: "Создать новую игру"
       show:
         in_pot: "В банке:"
         blinds: "Блайнды:"
         action_failed: "При выполнении действия возникла ошибка!"
+      info:
+        title: "Информация об игре №{{id}}"
+        players_info: "Игроки"
       _away_screen:
         away_message: "Нажмите на кнопку для продолжения игры"
         i_am_back: "Я вернулся"
@@ -309,6 +345,13 @@ ru:
       bye: "До свидания, {{login}}!"
     application:
       authorisation_required: "Необходимо авторизоваться для выполнения данного действия!"
+
+  helpers:
+    games:
+      status:
+        wait: "Еще не началась"
+        start: "Уже идет"
+        finish: "Закончилась"
 
   # global
   click_here:   "Кликни"
@@ -350,3 +393,4 @@ ru:
   sign_up: "Регистрация"
   really_exit: "Вы действительно желаете выйти?"
   send: "Отправить"
+  default_title: "Руби в покер!"

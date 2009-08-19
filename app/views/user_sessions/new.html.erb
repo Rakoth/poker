@@ -1,10 +1,15 @@
-<h2><%=t 'views.sessions.new.title' %></h2>
-<%= error_messages_for 'user_session' %>
-<%- form_for @user_session, :url => user_session_path do |form| -%>
-	<p class="formTitle"><%= form.label :login, User.human_attribute_name("login") %></p>
-	<%= form.text_field :login %>
-	<p class="formTitle"><%= form.label :password, User.human_attribute_name("password") %></p>
-	<%= form.password_field :password %><br /><br />
+<% title t('views.sessions.new.title') %>
+<div id="signin_form">
+	<%- form_for @user_session, :url => user_session_path do |form| -%>
+		<p class="formTitle"><%= form.label :login, User.attr_name("login") %></p>
+		<%= form.text_field :login %>
+		<p class="formTitle"><%= form.label :password, User.attr_name("password") %></p>
+		<%= form.password_field :password %><br /><br />
 
-	<%= form.submit t(:entry) %>
-<%- end -%>
+		<%= image_submit_tag 'main/log.gif',
+			:alt => t(:entry),
+			:onmouseover => "this.src = '#{image_path 'main/log_a.gif'}'",
+			:onmouseout => "this.src = '#{image_path 'main/log.gif'}'"
+		%>
+	<%- end -%>
+</div>

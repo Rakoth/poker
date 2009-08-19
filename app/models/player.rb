@@ -165,11 +165,12 @@ class Player < ActiveRecord::Base
 	private
 	
 	def return_user_money
+		game.return_payment user
 		user.update_attribute(:cash, user.cash + game.type.pay_for_play)
 	end
 
 	def take_user_money
-		user.update_attribute(:cash, user.cash - game.type.pay_for_play)
+		game.pay_for_game user
 	end
 
 	def destroy_game

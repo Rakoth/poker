@@ -7,8 +7,6 @@ class CreateUsers < ActiveRecord::Migration
       t.integer  :type
       t.string   :email
       t.string   :locate
-      t.decimal  :cash, :default => 0, :precision => 10, :scale => 2
-      t.integer  :chips, :default => 1000
       t.integer  :level, :default => 0
 			t.string   :persistence_token,   :null => false                # required
 			t.string   :single_access_token, :null => false                # optional, see Authlogic::Session::Params
@@ -22,14 +20,6 @@ class CreateUsers < ActiveRecord::Migration
 			t.string   :last_login_ip                                      # optional, see Authlogic::Session::MagicColumns
 
       t.timestamps
-    end
-
-    5.times do |i|
-      user = User.new :password => '1111', :password_confirmation => '1111'
-      user.login = "user#{i}"
-      user.email = "user#{i}@mail.ru"
-      user.cash = 1000
-      user.save!
     end
   end
 

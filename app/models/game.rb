@@ -37,7 +37,8 @@ class Game < ActiveRecord::Base
 		:waited => 'waited',
 		:on_preflop => 'on_preflop',
 		:on_flop => 'on_flop',
-		:on_turn => 'on_turn'
+		:on_turn => 'on_turn',
+		:finished => 'finished'
 	}
 	PAUSE_TYPE = {
 		:by_away => 'by_away',
@@ -45,6 +46,8 @@ class Game < ActiveRecord::Base
 	}
 
 	named_scope :waited, :conditions => { :status => STATUS[:waited] }, :include => [:type]
+	named_scope :finished, :conditions => { :status => STATUS[:finished] }, :include => [:type]
+	named_scope :started, :conditions => ['status NOT IN (?)', [STATUS[:waited], STATUS[:finished]]], :include => [:type]
 
   self.inheritance_column = "class"
 
@@ -60,6 +63,7 @@ class Game < ActiveRecord::Base
 	include DistributionSystem
   
   belongs_to :type, :class_name => 'GameType'
+  has_many :all_players, :class_name => 'Player'
   has_many :players, :conditions => ['status NOT IN (?)', [Player::STATUS[:lose], Player::STATUS[:leave], Player::STATUS[:leave_now]]]
 	has_many :previous_distribution_players, :class_name => 'Player', :conditions => ['status <> ?', Player::STATUS[:leave]]
 	has_many :leave_now_players, :class_name => 'Player', :conditions => {:status => Player::STATUS[:leave_now]}
@@ -162,10 +166,6 @@ class Game < ActiveRecord::Base
 		begin
 			player = get_first_player_from player.sit, :out => :self
 		end while player.fold?
-#   player = get_first_player_from current_player.sit, :out => :self
-#		while player.fold?# and player != current_player
-#			 player = get_first_player_from player.sit, :out => :self
-#		end
 		return player
 	end
 
@@ -189,6 +189,14 @@ class Game < ActiveRecord::Base
 
 	def allin_and_call?
 		0 == players.select{|p| p.must_call? and !p.fold? and !p.allin?}.length and players.select{|p| !p.fold? and !p.allin? }.length <= 1
+	end
+
+	def pay_for_game user
+		user.purse.pay type.pay_for_play
+	end
+
+	def return_payment user
+		user.purse.receive type.pay_for_play
 	end
 
   private

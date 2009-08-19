@@ -18,10 +18,10 @@ class UsersController < ApplicationController
     @user = User.new params[:user]
     @user.login = params[:user][:login]
     @user.email = params[:user][:email]
-    if @user.save
+    if @user.save_with_captcha
       @user.create_info params[:info]
       flash[:notice] = t 'controllers.users.successfully_sign_up'
-      redirect_to login_url
+      redirect_to games_url
     else
       @user.password = nil
       flash[:error] = t 'controllers.users.failed_sign_up'

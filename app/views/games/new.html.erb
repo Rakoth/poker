@@ -1,6 +1,0 @@
-<h2><%=t 'views.games.new.title' %></h2>
-<%- form_for @game do |form| -%>
-  <p>Выберите тип игры: </p>
-  <%= collection_select :game , :type, @types, :id, :title %><br />
-  <%= form.submit t(:create) %>
-<%- end -%>

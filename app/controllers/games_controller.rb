@@ -6,8 +6,18 @@ class GamesController < ApplicationController
     @games = Game.waited
   end
 
+	def started
+		@games = Game.started
+		render :action => :index
+	end
+
+	def finished
+		@games = Game.finished
+		render :action => :index
+	end
+
   def show
-    @game = Game.find params[:id], :include => :type
+    @game = Game.find params[:id], :include => [:type]
 		if @game and @game.users.include?(current_user)
 			if @game.waited?
 				@game_data = SyncBuilder::Game::Init.new(@game, :for_user => current_user)
@@ -20,10 +30,9 @@ class GamesController < ApplicationController
 		end
   end
 
-  def new
-    @game = Game.new
-    @types = GameType.for_create
-  end
+	def info
+		@game = Game.find params[:id]
+	end
 
   def create
     if @type = GameType.find_by_id(params[:type_id]) and current_user.can_create?(@type)

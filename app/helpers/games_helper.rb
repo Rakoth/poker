@@ -3,6 +3,17 @@ module GamesHelper
     "#{game.players_count} / #{game.type.max_players}"
   end
 
+	def human_status game
+		case game.status
+		when Game::STATUS[:waited]
+			content_tag :span, t('helpers.games.status.wait'), :class => 'waited_game'
+		when Game::STATUS[:finished]
+			content_tag :span, t('helpers.games.status.finish'), :class => 'finished_game'
+		else
+			content_tag :span, t('helpers.games.status.start'), :class => 'started_game'
+		end
+	end
+
   def levels_stat type
     "#{type.min_level} - #{type.max_level}"
   end

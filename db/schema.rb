@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20090521151119) do
+ActiveRecord::Schema.define(:version => 20090818224031) do
 
   create_table "actions", :force => true do |t|
     t.integer  "game_id"
@@ -100,6 +100,13 @@ ActiveRecord::Schema.define(:version => 20090521151119) do
     t.datetime "updated_at"
   end
 
+  create_table "purses", :force => true do |t|
+    t.decimal  "balance",    :precision => 10, :scale => 2, :default => 0.0
+    t.integer  "user_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
   create_table "sessions", :force => true do |t|
     t.string   "session_id", :default => "", :null => false
     t.text     "data"
@@ -110,11 +117,16 @@ ActiveRecord::Schema.define(:version => 20090521151119) do
   add_index "sessions", ["session_id"], :name => "index_sessions_on_session_id"
   add_index "sessions", ["updated_at"], :name => "index_sessions_on_updated_at"
 
+  create_table "simple_captcha_data", :force => true do |t|
+    t.string   "key",        :limit => 40
+    t.string   "value",      :limit => 6
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
   create_table "user_balance_actions", :id => false, :force => true do |t|
     t.integer  "user_id"
-    t.string   "direction"
     t.decimal  "value",      :precision => 10, :scale => 2
-    t.string   "comment"
     t.datetime "created_at"
   end
 
@@ -130,19 +142,17 @@ ActiveRecord::Schema.define(:version => 20090521151119) do
 
   create_table "users", :force => true do |t|
     t.string   "login"
-    t.string   "crypted_password",                                   :default => "",   :null => false
-    t.string   "password_salt",                                      :default => "",   :null => false
+    t.string   "crypted_password",    :default => "", :null => false
+    t.string   "password_salt",       :default => "", :null => false
     t.integer  "type"
     t.string   "email"
     t.string   "locate"
-    t.decimal  "cash",                :precision => 10, :scale => 2, :default => 0.0
-    t.integer  "chips",                                              :default => 1000
-    t.integer  "level",                                              :default => 0
-    t.string   "persistence_token",                                  :default => "",   :null => false
-    t.string   "single_access_token",                                :default => "",   :null => false
-    t.string   "perishable_token",                                   :default => "",   :null => false
-    t.integer  "login_count",                                        :default => 0,    :null => false
-    t.integer  "failed_login_count",                                 :default => 0,    :null => false
+    t.integer  "level",               :default => 0
+    t.string   "persistence_token",   :default => "", :null => false
+    t.string   "single_access_token", :default => "", :null => false
+    t.string   "perishable_token",    :default => "", :null => false
+    t.integer  "login_count",         :default => 0,  :null => false
+    t.integer  "failed_login_count",  :default => 0,  :null => false
     t.datetime "last_request_at"
     t.datetime "current_login_at"
     t.datetime "last_login_at"

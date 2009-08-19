@@ -1,43 +1,43 @@
 <%- form_for @game_type, :html => { :method => method } do |form| -%>
   <table id="gameTypeTable">
     <tr>
-      <td><%= form.label :title, GameType.human_attribute_name("title") %></td>
+      <td><%= form.label :title, GameType.attr_name("title") %></td>
       <td><%= form.text_field :title %></td>
     </tr>
     <tr>
-      <td><%= form.label :max_players, GameType.human_attribute_name("max_players") %></td>
+      <td><%= form.label :max_players, GameType.attr_name("max_players") %></td>
       <td><%= select_tag('game_type[max_players]', options_for_select([2, 3, 4, 5, 6, 7, 8, 9, 10], @game_type.max_players)) %></td>
     </tr>
     <tr>
-      <td><%= form.label :start_stack, GameType.human_attribute_name("start_stack") %></td>
+      <td><%= form.label :start_stack, GameType.attr_name("start_stack") %></td>
       <td><%= form.text_field :start_stack %></td>
     </tr>
     <tr>
-      <td><%= form.label :start_cash, GameType.human_attribute_name("start_cash") %></td>
+      <td><%= form.label :start_cash, GameType.attr_name("start_cash") %></td>
       <td><%= form.text_field :start_cash %></td>
     </tr>
     <tr>
-      <td><%= form.label :additional_cash, GameType.human_attribute_name("additional_cash") %></td>
+      <td><%= form.label :additional_cash, GameType.attr_name("additional_cash") %></td>
       <td><%= form.text_field :additional_cash %></td>
     </tr>
     <tr>
-      <td><%= form.label :start_blind, GameType.human_attribute_name("start_blind") %></td>
+      <td><%= form.label :start_blind, GameType.attr_name("start_blind") %></td>
       <td><%= form.text_field :start_blind %></td>
     </tr>
     <tr>
-      <td><%= form.label :change_level_time, GameType.human_attribute_name("change_level_time") %></td>
+      <td><%= form.label :change_level_time, GameType.attr_name("change_level_time") %></td>
       <td><%= select_tag('game_type[change_level_time]', options_for_select([1, 2, 3, 4, 5, 6, 7, 8], @game_type.change_level_time)) %></td>
     </tr>
     <tr>
-      <td><%= form.label :template, GameType.human_attribute_name("template") %></td>
+      <td><%= form.label :template, GameType.attr_name("template") %></td>
       <td><%= form.text_field :template %></td>
     </tr>
     <tr>
-      <td><%= form.label :min_level, GameType.human_attribute_name("min_level") %></td>
+      <td><%= form.label :min_level, GameType.attr_name("min_level") %></td>
       <td><%= select_tag('game_type[min_level]', options_for_select([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], @game_type.min_level)) %></td>
     </tr>
     <tr>
-      <td><%= form.label :max_level, GameType.human_attribute_name("max_level") %></td>
+      <td><%= form.label :max_level, GameType.attr_name("max_level") %></td>
       <td><%= select_tag('game_type[max_level]', options_for_select([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], @game_type.max_level)) %></td>
     </tr>
   </table>

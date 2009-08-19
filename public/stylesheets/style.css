@@ -1,86 +1,118 @@
 body{
 	background: #1d1d1d;
-	color:#ccc;
 }
-
-
-td{
-	background:url('/images/main/fon_content.jpg');
-
-	border-bottom:1px solid #ccc;
-}
-th{
-	background:url('/images/main/fon_index.jpg');
-}
-
-a:link {color: #ccc; text-decoration: none;}
-a:visited{color: #ccc;text-decoration: none;}
-a:active{color: #c96;text-decoration: none;}
-a:hover{color: #ffc; text-decoration: underline;}
-
-input{
-	color:#000;
+form input, form select{
+	background-color:#45070b;
+	border-color:black;
+	color:#ac6c12;
+	font-weight:bold;
 	font:8pt sans-serif;
+	margin-bottom:5px;
 }
-
-.actions a{
-	color:#f93;
-}
-
-td{
-	white-space:nowrap;
-	overflow:hidden;
+h3, h4{
 	text-align:center;
 }
-
+h5{
+	font-style:italic;
+}
+table{
+	font-size:12px;
+	width:100%
+}
+td{
+	background:url('/images/main/fon_content.jpg');
+	border-bottom:1px solid #ccc;
+}
+th{background:url('/images/main/fon_index.jpg');}
+a:link {text-decoration: none;}
+a:visited{text-decoration: none;}
+a:active{text-decoration: none;}
+a:hover{text-decoration: underline;}
+a{color:#f93;}
+td{white-space:nowrap;overflow:hidden;text-align:center;}
 #index{
 	width:710px;
 	min-height:500px;
 	background:url('/images/main/fon_content.jpg') #101010;
-	border:0px solid #3f3f3f;
-	position: absolute;
-	top: 10px;
 	margin:0 22%;
-	text-align: center;
 	padding-bottom:50px;
 }
-
 #head{
 	width:710px;
 	height:83px;
 	background-color:#101010;
-	border:0px;
 }
-
 #under_logo{
 	width:710px;
-	border:0px;
 }
-
 #menu{
 	float:left;
-	border:0px solid #fff;
-	width:155px;
-	font:8pt times;
-	color:#ff9933;
-	text-align: left;
+	width:145px;
+	text-align:left;
 	letter-spacing:1px;
-	padding:5px;
 }
-
-#auth{
-	width:155px;
-	height:45px;
-	border:0px solid #fff;
+#menu a{
+	color:#f88f32;
+	font:16px times;
+	font-weight:bold;
+	font-style:italic;
 }
-
-#reg{
-	width:125px;
-	padding-top:10px;
+#menu ul{
+	padding-left:20px;
 }
-
+#menu li{
+	list-style-type:square;
+	color:#b5894c;
+}
+#registration_form{
+	height:200px;
+	padding:10px;
+}
+#signin_form{
+	margin-left:25%;
+}
+#required, #additional{
+	width:50%;
+	float:left;
+}
 #body{
-	margin-left:153px;
-	border:0px solid #fff;
-	color:white;
+	height:100%;
+	margin-left:145px;
+	padding-left:10px;
+	color:#b5894c;
+}
+.flash{
+	margin-top:5px;
+	text-align:center;
+}
+#notice{
+	border: 1px solid green;
+	color:green;
+}
+#error{
+	border: 1px solid red;
+	color:red;
+}
+.clear{
+	clear:both;
+}
+.errorExplanation{
+	font:12px Tahoma;
+}
+.simple_captcha_image{
+	padding:1px 0 3px 5px;
+}
+
+.started_game{
+	color:red;
+}
+.finished_game{
+	color:blue;
+}
+.waited_game{
+	color:green;
+}
+#other_games{
+	padding:10px;
+	text-align:center;
 }

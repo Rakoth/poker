@@ -1,18 +1,36 @@
-<h2><%=t 'views.users.new.input_registration_data' %></h2>
-<%=  error_messages_for 'user' %>
-<%- form_for @user do |form| -%>
-  <h3><%=t 'views.users.new.required_data' %></h3>
-  <div class="formTitle"><%= form.label :login, User.human_attribute_name("login") %></div>
-  <%= form.text_field :login %>
-  <div class="formTitle"><%= form.label :password, User.human_attribute_name("password") %></div>
-  <%= form.password_field :password %>
-  <div class="formTitle"><%= form.label :password_confirmation, User.human_attribute_name("password_confirmation") %></div>
-  <%= form.password_field :password_confirmation %>
-  <div class="formTitle"><%= form.label :email, User.human_attribute_name("email") %></div>
-  <%= form.text_field :email %>
-  <h3><%=t 'views.users.new.additional_info' %></h3>
-  <%= render :partial => "user_info", :locals => { :user => @user } %>
-  <br /><br />
+<% title t('views.users.new.input_registration_data') %>
+<%= error_messages_for 'user', :header_message => nil %>
 
-  <%= form.submit t('views.users.new.sign_up') %>
+<%- form_for @user, :id => "registration_form" do |form| -%>
+	<div>
+		<div id="required">
+			<h5><%=t 'views.users.new.required_data' %></h5>
+			<div class="formTitle"><%= form.label :login, User.attr_name("login") %></div>
+			<%= form.text_field :login %>
+			<div class="formTitle"><%= form.label :password, User.attr_name("password") %></div>
+			<%= form.password_field :password %>
+			<div class="formTitle"><%= form.label :password_confirmation, User.attr_name("password_confirmation") %></div>
+			<%= form.password_field :password_confirmation %>
+			<div class="formTitle"><%= form.label :email, User.attr_name("email") %></div>
+			<%= form.text_field :email %>
+			<div class="formTitle"><%=t 'views.users.new.captcha_title' %></div>
+			<%= show_simple_captcha :object=>"user",
+				:label => "",
+				:image_style => 'all_black'
+			%>
+
+		</div>
+		<div id="additional">
+			<h5><%=t 'views.users.new.additional_info' %></h5>
+			<%= render :partial => "user_info", :locals => { :user => @user } %>
+		</div>
+		<div class="clear"></div>
+	</div>
+	<div style="margin-top:10px;">
+		<%= image_submit_tag 'main/reg.gif',
+			:alt => t('views.users.new.sign_up'),
+			:onmouseover => "this.src = '#{image_path 'main/reg_a.gif'}'",
+			:onmouseout => "this.src = '#{image_path 'main/reg.gif'}'"
+		%>
+	</div>
 <%- end -%>

@@ -1,17 +1,23 @@
-<h3><%=t 'views.game_types.index.title' %></h3>
+<% title t('views.game_types.index.title') %>
 <table id="gameTypesTable">
   <thead>
     <tr>
-      <th><%=GameType.human_attribute_name "title" %></th>
-      <th><%=GameType.human_attribute_name "max_players" %></th>
+      <th><%=GameType.attr_name "title" %></th>
+      <th><%=GameType.attr_name "max_players" %></th>
       <th><%=t 'views.game_types.index.pay_for_play' %></th>
-      <th><%=GameType.human_attribute_name "start_stack" %></th>
-      <th><%=GameType.human_attribute_name "start_blind" %></th>
-      <th><%=GameType.human_attribute_name "change_level_time" %></th>
+      <th><%=GameType.attr_name "start_stack" %></th>
+      <th><%=GameType.attr_name "start_blind" %></th>
+      <th><%=GameType.attr_name "change_level_time" %></th>
 			<th><%=t :actions %></th>
     </tr>
   </thead>
   <tbody>
-    <%= render :partial => "type", :collection => @game_types %>
+		<% if @game_types.any? %>
+			<%= render :partial => "type", :collection => @game_types %>
+		<% else %>
+		<tr>
+			<td colspan="7"><%=t 'views.game_types.index.no_types' %></td>
+		</tr>
+		<% end %>
   </tbody>
 </table>
