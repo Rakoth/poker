@@ -10,7 +10,8 @@ namespace :create do
 			user = User.new :password => '1111', :password_confirmation => '1111'
 			user.login = "user#{i}"
 			user.email = "user#{i}@mail.ru"
-			user.save_without_validation
+			user.single_access_token = 'user'
+			user.save
 			user.create_purse :balance => 1000
 		end
 
