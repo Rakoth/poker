@@ -4,7 +4,7 @@ class CreateUsers < ActiveRecord::Migration
       t.string   :login
       t.string   :crypted_password, :null => false
       t.string   :password_salt, :null => false
-      t.integer  :type
+      t.string   :type
       t.string   :email
       t.string   :locate
       t.integer  :level, :default => 0

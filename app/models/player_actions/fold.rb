@@ -1,5 +1,4 @@
-class PlayerActions::FoldAction < PlayerActions::Action
-
+class PlayerActions::Fold < PlayerActions::Base
 	def kind
 		FOLD
 	end

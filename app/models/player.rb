@@ -1,4 +1,4 @@
-require 'cards/poker'
+#require 'cards/poker'
 
 class Player < ActiveRecord::Base
   include AASM
@@ -110,7 +110,7 @@ class Player < ActiveRecord::Base
 		kind = params[:kind].to_i
 		action_params = {:player => self, :game => game}
 		action_params[:value] = params[:value] unless params[:value].nil?
-		PlayerActions::Action.execute_player_action kind, action_params
+		PlayerActions::Base.execute_player_action kind, action_params
 	end
 
 	def has_acted!
@@ -147,30 +147,29 @@ class Player < ActiveRecord::Base
 
 
 	def auto_check!
-		PlayerActions::Action.execute_auto_action PlayerActions::Action::AUTO_CHECK, :player => self, :game => game
+		PlayerActions::Action.execute_auto_action PlayerActions::Base::AUTO_CHECK, :player => self, :game => game
 	end
 
 	def auto_fold!
-		PlayerActions::Action.execute_auto_action PlayerActions::Action::AUTO_FOLD, :player => self, :game => game
+		PlayerActions::Action.execute_auto_action PlayerActions::Base::AUTO_FOLD, :player => self, :game => game
 	end
 
 	def fold_on_away!
-		PlayerActions::Action.execute_auto_action PlayerActions::Action::TIMEOUT_FOLD, :player => self, :game => game
+		PlayerActions::Action.execute_auto_action PlayerActions::Base::TIMEOUT_FOLD, :player => self, :game => game
 	end
 
 	def check_on_away!
-		PlayerActions::Action.execute_auto_action PlayerActions::Action::TIMEOUT_CHECK, :player => self, :game => game
+		PlayerActions::Action.execute_auto_action PlayerActions::Base::TIMEOUT_CHECK, :player => self, :game => game
 	end
 
 	private
 	
 	def return_user_money
-		game.return_payment user
-		user.update_attribute(:cash, user.cash + game.type.pay_for_play)
+		game.type.return_payment user
 	end
 
 	def take_user_money
-		game.pay_for_game user
+		game.type.get_payment user
 	end
 
 	def destroy_game

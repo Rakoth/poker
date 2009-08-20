@@ -1,5 +1,4 @@
-class PlayerActions::RaiseAction < PlayerActions::BetAction
-
+class PlayerActions::Raise < PlayerActions::Bet
 	def kind
 		RAISE
 	end

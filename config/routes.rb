@@ -31,6 +31,10 @@ ActionController::Routing::Routes.draw do |map|
 
   # Install the default routes as the lowest priority.
 
+	map.namespace(:admin) do |admin|
+    admin.resources :game_types
+  end
+
 	map.simple_captcha '/simple_captcha/:action', :controller => 'simple_captcha'
 	
   map.root :controller => 'games'
@@ -42,7 +46,7 @@ ActionController::Routing::Routes.draw do |map|
   map.resources :log_messages
   map.resources :games, :has_many => 'players', :member => { :info => :get }, :collection => { :started => :get, :finished => :get }
   map.resources :players, :member => { :i_am_back => :put }
-  map.resources :game_types
+  map.game_types '/game_types', :controller => 'game_types', :action => 'index'
   map.resources :notes
   map.connect 'game_synchronizers/:action/:game_id', :controller => 'game_synchronizers'
   map.connect ':controller/:action/:id'

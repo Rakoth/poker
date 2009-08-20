@@ -23,12 +23,7 @@ module BlindSystem
 	
 	def init_blinds_system!
 		logger.debug 'STARTED init_blinds_system!'
-    #new_blind_position = next_blind_position
-    update_attributes(
-      #:blind_position => new_blind_position,
-			:next_level_time => Time.now + type.change_level_time.minutes #,
-      #:active_player_id => get_first_player_from(new_blind_position)
-    )
+    update_attribute :next_level_time, Time.now + type.change_level_time.minutes
 	end
 
 	def next_blind_level

@@ -1,5 +1,4 @@
-class PlayerActions::TimeoutCheckAction < PlayerActions::CheckAction
-
+class PlayerActions::TimeoutCheck < PlayerActions::Check
 	def kind
 		TIMEOUT_CHECK
 	end

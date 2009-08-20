@@ -1,5 +1,4 @@
 class GamesController < ApplicationController
-
   before_filter :check_authorization, :except => :index
 
   def index
@@ -35,14 +34,12 @@ class GamesController < ApplicationController
 	end
 
   def create
-    if @type = GameType.find_by_id(params[:type_id]) and current_user.can_create?(@type)
+    if @type = GameTypes::Base.find_by_id(params[:type_id]) and @type.may_be_created_by? current_user
       if @game = Game.create(:type => @type, :blind_size => @type.start_blind)
-        if current_user.join!(@game)
-					render :json => @game.id and return
-        end
+        current_user.join!(@game)
+				render :json => @game.id and return
       end
     end
-		render :nothing => true, :status => :bad_request
+		render :nothing => true, :status => :forbidden
   end
-
 end

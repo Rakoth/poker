@@ -4,7 +4,8 @@ class PlayersController < ApplicationController
 
   def create
     @game = Game.find params[:game_id]
-    if @game and current_user.join!(@game)
+    if @game and current_user.can_join? @game
+			current_user.join!(@game)
 			render :nothing => true #, :status => :no_content
     else
 			render :nothing => true, :status => :bad_request

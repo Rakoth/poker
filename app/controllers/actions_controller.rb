@@ -9,7 +9,7 @@ class ActionsController < ApplicationController
     respond_to do |format|
       format.html {raise 'Wrong format'}
       format.js do
-        actions = PlayerActions::Action.omitted(params[:game_id], params[:last_action_id], current_user.current_player(params[:game_id]).id)
+        actions = PlayerActions::Base.omitted(params[:game_id], params[:last_action_id], current_user.current_player(params[:game_id]).id)
         if actions.empty?
           render :nothing => true #, :status => :no_content
         else

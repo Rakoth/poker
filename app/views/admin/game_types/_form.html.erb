@@ -1,0 +1,64 @@
+<%- form_for @game_type, :url => admin_game_types_path, :html => { :method => method } do |form| -%>
+  <table>
+    <tr>
+      <td><%= form.label :title, t('.game_main_type') %></td>
+      <td><%= select_tag('game_main_type', options_for_select([[t('.free'), GameTypes::Base::FREE], [t('.paid'), GameTypes::Base::PAID]])) %></td>
+    </tr>
+    <tr>
+      <td><%= form.label :title, GameTypes::Base.attr_name("title") %></td>
+      <td><%= form.text_field :title %></td>
+    </tr>
+    <tr>
+      <td><%= form.label :max_players, GameTypes::Base.attr_name("max_players") %></td>
+      <td><%= select_tag('game_types_base[max_players]', options_for_select([2, 3, 4, 5, 6, 7, 8, 9, 10], @game_type.max_players)) %></td>
+    </tr>
+    <tr>
+      <td><%= form.label :start_stack, GameTypes::Base.attr_name("start_stack") %></td>
+      <td><%= form.text_field :start_stack %></td>
+    </tr>
+    <tr>
+      <td><%= form.label :start_cash, GameTypes::Base.attr_name("start_payment") %></td>
+      <td><%= form.text_field :start_payment %></td>
+    </tr>
+    <tr>
+      <td><%= form.label :start_blind, GameTypes::Base.attr_name("start_blind") %></td>
+      <td><%= form.text_field :start_blind %></td>
+    </tr>
+    <tr>
+      <td><%= form.label :change_level_time, GameTypes::Base.attr_name("change_level_time") %></td>
+      <td><%= select_tag('game_types_base[change_level_time]', options_for_select([1, 2, 3, 4, 5, 6, 7, 8], @game_type.change_level_time)) %></td>
+    </tr>
+    <tr>
+      <td><%= form.label :template, GameTypes::Base.attr_name("template") %></td>
+      <td><%= form.text_field :template %></td>
+    </tr>
+    <tr>
+      <td><%= form.label :min_level, GameTypes::Base.attr_name("min_level") %></td>
+      <td><%= select_tag('game_types_base[min_level]', options_for_select([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], @game_type.min_level)) %></td>
+    </tr>
+    <tr>
+      <td><%= form.label :max_level, GameTypes::Base.attr_name("max_level") %></td>
+      <td><%= select_tag('game_types_base[max_level]', options_for_select([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], @game_type.max_level)) %></td>
+    </tr>
+  </table>
+  <h3><%=t 'views.game_types.form.blind_levels' %></h3>
+  <table>
+    <thead>
+      <tr>
+        <th><%=t :level%></th>
+        <th><%=t :blind%></th>
+        <th><%=t :ante%></th>
+      </tr>
+    </thead>
+    <% fields_for 'blind_value[]' do |blind_value| %>
+      <%- for level in 1..10 do -%>
+        <tr>
+          <td><%= level %><%= blind_value.hidden_field :level, :value => level %></td>
+          <td><%= blind_value.text_field :value, :size => 5 %></td>
+          <td><%= blind_value.text_field :ante, :size => 3 %></td>
+        </tr>
+      <%- end -%>
+    <%- end -%>
+  </table>
+  <%= form.submit t(:save) %>
+<%- end -%>

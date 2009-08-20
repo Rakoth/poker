@@ -1,4 +1,4 @@
-<div id="lose_screen"><p><%= t('views.games._game_over_screen.lose_message')%></p></div>
+<div id="lose_screen"><p><%= t('.lose_message')%></p></div>
 <script type="text/javascript">
 	var RP_LoseDialog = $('#lose_screen').dialog({
 		resizable: false,
@@ -7,7 +7,7 @@
 		closeOnEscape: false,
 		width: 300,
 		buttons: {
-			"<%= t('views.games._game_over_screen.watch')%>": function() {
+			"<%=t '.watch' %>": function() {
 				if(RP_Game.is_finished()){
 					window.close();
 				}else{
@@ -29,7 +29,7 @@
 		}
 	});
 </script>
-<div id="win_screen"><p><%= t('views.games._game_over_screen.win_message')%></p></div>
+<div id="win_screen"><p><%= t('.win_message')%></p></div>
 <script type="text/javascript">
 	var RP_WinDialog = $('#win_screen').dialog({
 		resizable: false,

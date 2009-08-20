@@ -1,0 +1,17 @@
+class GameTypes::Paid < GameTypes::Base
+	def get_payment user
+    user.money_purse.pay(payment_value)
+  end
+
+	def return_payment user
+		user.money_purse.receive(payment_value)
+	end
+
+	def payment_value
+		start_payment * Conf[:profitability]
+	end
+
+	def may_be_created_by? user
+		user.money_purse.has?(payment_value) and verify_user_level(user.level)
+	end
+end

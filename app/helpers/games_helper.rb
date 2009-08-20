@@ -38,10 +38,10 @@ module GamesHelper
 	end
 
 	def client_actions
-		[ {:name => 'fold',  :kind => PlayerActions::Action::FOLD,  :value => false},
-			{:name => 'check', :kind => PlayerActions::Action::CHECK, :value => false},
-			{:name => 'call',  :kind => PlayerActions::Action::CALL,  :value => false},
-			{:name => 'bet',   :kind => PlayerActions::Action::BET,   :value => true},
-			{:name => 'raise', :kind => PlayerActions::Action::RAISE, :value => true} ]
+		[ {:name => 'fold',  :kind => PlayerActions::Base::FOLD,  :value => false},
+			{:name => 'check', :kind => PlayerActions::Base::CHECK, :value => false},
+			{:name => 'call',  :kind => PlayerActions::Base::CALL,  :value => false},
+			{:name => 'bet',   :kind => PlayerActions::Base::BET,   :value => true},
+			{:name => 'raise', :kind => PlayerActions::Base::RAISE, :value => true} ]
 	end
 end

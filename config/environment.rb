@@ -63,5 +63,4 @@ Rails::Initializer.run do |config|
   # Locate
   config.i18n.default_locale = :ru
   # config.i18n.default_locale = :en
-
 end

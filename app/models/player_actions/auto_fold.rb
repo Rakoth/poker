@@ -1,4 +1,4 @@
-class PlayerActions::AutoFoldAction < PlayerActions::FoldAction
+class PlayerActions::AutoFold < PlayerActions::Fold
 
 	def kind
 		AUTO_FOLD

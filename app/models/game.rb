@@ -9,7 +9,7 @@ class Game < ActiveRecord::Base
   aasm_state :on_preflop, :enter => :start_distribution!
   aasm_state :on_flop, :enter => :deal_flop!
   aasm_state :on_turn, :enter => :deal_turn!
-  aasm_state :on_river, :enter => :deal_river!#, :exit => :final_distribution!
+  aasm_state :on_river, :enter => :deal_river!
   aasm_state :finished, :enter => :give_prize_to_winners
 
   aasm_event :start do
@@ -62,15 +62,15 @@ class Game < ActiveRecord::Base
 	include BlindSystem
 	include DistributionSystem
   
-  belongs_to :type, :class_name => 'GameType'
+  belongs_to :type, :class_name => 'GameTypes::Base'
   has_many :all_players, :class_name => 'Player'
   has_many :players, :conditions => ['status NOT IN (?)', [Player::STATUS[:lose], Player::STATUS[:leave], Player::STATUS[:leave_now]]]
 	has_many :previous_distribution_players, :class_name => 'Player', :conditions => ['status <> ?', Player::STATUS[:leave]]
 	has_many :leave_now_players, :class_name => 'Player', :conditions => {:status => Player::STATUS[:leave_now]}
 	has_many :lose_players, :class_name => 'Player', :conditions => {:status => Player::STATUS[:lose]}
   has_many :users, :through => :players
-  has_many :actions, :class_name => 'PlayerActions::Action'
-  has_many :current_distribution_actions, :class_name => 'PlayerActions::Action', :conditions => ['deleted = ?', false]
+  has_many :actions, :class_name => 'PlayerActions::Base'
+  has_many :current_distribution_actions, :class_name => 'PlayerActions::Base', :conditions => ['deleted = ?', false]
 	has_many :log_messages
 
 	def active_player
@@ -150,7 +150,7 @@ class Game < ActiveRecord::Base
   end
 
   def minimal_bet
-    blind_size * type.bet_multiplier
+    blind_size
   end
 
   def wait_action_from user
@@ -192,11 +192,11 @@ class Game < ActiveRecord::Base
 	end
 
 	def pay_for_game user
-		user.purse.pay type.pay_for_play
+		user.purse.pay type.get_payment
 	end
 
 	def return_payment user
-		user.purse.receive type.pay_for_play
+		user.purse.receive type.get_payment
 	end
 
   private

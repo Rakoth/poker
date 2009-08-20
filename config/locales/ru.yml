@@ -32,6 +32,7 @@ ru:
       email: email
       password: password
       remember_me: remember me
+      
   date:
     formats:
       default: "%d.%m.%Y"
@@ -184,12 +185,11 @@ ru:
         name: "Имя"
         birthday: "День рождения"
         country: "Страна"
-      game_type:
-        title: "Заголовок"
+      game_types/base:
+        title: "Тип"
         max_players: "Кол-во игроков"
         start_stack: "Начальный стэк"
-        start_cash: "Стартовый взнос"
-        additional_cash: "Плата за игру"
+        start_payment: "Стартовый взнос"
         start_blind: "Начальный блайнд"
         change_level_time: "Время роста блайнда(мин)"
         template: "Шаблон стола"
@@ -246,6 +246,7 @@ ru:
         odd: "может иметь лишь четное значение"
         even: "может иметь лишь нечетное значение"
         wrong_captcha: "с картинки введены неверно"
+        wrong_start_stack_size: "не может быть меньше начального блайнда"
 
   support:
     array:
@@ -258,69 +259,85 @@ ru:
       two_words_connector: " и "
       last_word_connector: " и "
 
-
-#  хз как тут че переводить..((
-  views:
+# дальше вьюшки пошли
+  admin:
     game_types:
       form:
+        game_main_type: "Основной тип"
+        paid: "Платная"
+        free: "Бесплатная"
         players_count: "Количество игроков"
         blind_levels: "Значения блайндов"
       edit:
         title: "Изменение типа игры"
-      index:
-        title: "Создание игры"
-        pay_for_play: "Плата за вход"
-        level_for_play: "Уровень для участия"
-        no_types: "Типы игр еще не созданы."
       new:
         title: "Создание нового типа игры!"
       show:
         title: "Просмотр типа игры"
-      type:
-        cant_create_game: "Вы не можете создавать игру такого типа"
-    users:
-      new:
-        additional_info: "Дополнительно"
-        required_data: "Обязательно"
-        sign_up: "Зарегистрироваться"
-        input_registration_data: "Введите данные для регистраци"
-        captcha_title: "Символы на картинке"
-    games:
-      actions:
-        leave_game_confirm: "Вы собираетесь покинуть игру {{title}}?"
-        cant_join_game: "Не получилось присоединиться к игре"
-      index:
-        title: "Выберите игру"
-        pay_for_play: "Плата за вход"
-        test_popups: "Перед началом игры проверьте, разрешены ли в Вашем браузере всплывающие окна:"
-        run_test: "Проверить"
-        test_passed: "Все ок, можно играть!"
-        test_failed: "Разрешите всплывающие окна, они необходимы для игры!"
-        no_games: "В данный момент открытых игр нет, Вы можете создать игру сами из меню."
-        waited: "Ожидающие игры"
-        started: "Начавшиеся игры"
-        finished: "Завершенные игры"
-      new:
-        title: "Создать новую игру"
-      show:
-        in_pot: "В банке:"
-        blinds: "Блайнды:"
-        action_failed: "При выполнении действия возникла ошибка!"
-      info:
-        title: "Информация об игре №{{id}}"
-        players_info: "Игроки"
-      _away_screen:
-        away_message: "Нажмите на кнопку для продолжения игры"
-        i_am_back: "Я вернулся"
-        back_failed: "Не удалось вернуться в игру, попробуйте ещё раз"
-      _game_over_screen:
-        win_message: "Вы победили!"
-        lose_message: "Вы проиграли!"
-        watch: "Смотреть дальше"
-    sessions:
-      new:
-        title: "Введите свой логин и пароль"
 
+  game_types:
+    index:
+      paid: "Типы платных игр"
+      free: "Tипы бесплатных игр"
+      pay_for_play: "Стартовый взнос"
+      no_types: "Такие типы игр еще не созданы"
+      title: "Создание игры"
+      level_for_play: "Уровень для участия"
+      no_types: "Типы игр еще не созданы."
+    type:
+      cant_create_game: "Вы не можете создавать игру такого типа"
+
+  users:
+    new:
+      additional_info: "Дополнительно"
+      required_data: "Обязательно"
+      sign_up: "Зарегистрироваться"
+      input_registration_data: "Введите данные для регистраци"
+      captcha_title: "Символы на картинке"
+
+  partials:
+    menu:
+      games: "Игры"
+      create_game: "Создать игру"
+
+  games:
+    game_actions:
+      leave_game_confirm: "Вы собираетесь покинуть игру {{title}}?"
+      cant_join_game: "Не получилось присоединиться к игре"
+    index:
+      title: "Выберите игру"
+      test_popups: "Перед началом игры проверьте, разрешены ли в Вашем браузере всплывающие окна:"
+      run_test: "Проверить"
+      test_passed: "Все ок, можно играть!"
+      test_failed: "Разрешите всплывающие окна, они необходимы для игры!"
+      no_games: "В данный момент подходящих игр нет."
+      waited: "Ожидающие игры"
+      started: "Начавшиеся игры"
+      finished: "Завершенные игры"
+    new:
+      title: "Создать новую игру"
+    show:
+      in_pot: "В банке:"
+      blinds: "Блайнды:"
+    info:
+      title: "Информация об игре №{{id}}"
+      players_info: "Игроки"
+    away_screen:
+      away_message: "Нажмите на кнопку для продолжения игры"
+      i_am_back: "Я вернулся"
+      back_failed: "Не удалось вернуться в игру, попробуйте ещё раз"
+    game_over_screen:
+      win_message: "Вы победили!"
+      lose_message: "Вы проиграли!"
+      watch: "Смотреть дальше"
+    player_action_button:
+      action_failed: "При выполнении действия возникла ошибка!"
+      
+  user_sessions:
+    new:
+      title: "Введите свой логин и пароль"
+
+# дальше сонтроллеровские flash и хелперы
   controllers:
     users:
       successfully_sign_up: "Регистрация прошла успешно"
@@ -387,9 +404,6 @@ ru:
   message: "Сообщение"
   type: "Тип"
   actions: "Действия"
-  games: "Игры"
-  create_game: "Создать игру"
-  game_types: "Типы игр"
   sign_up: "Регистрация"
   really_exit: "Вы действительно желаете выйти?"
   send: "Отправить"

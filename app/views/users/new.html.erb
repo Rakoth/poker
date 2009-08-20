@@ -1,10 +1,10 @@
-<% title t('views.users.new.input_registration_data') %>
+<% title t('.input_registration_data') %>
 <%= error_messages_for 'user', :header_message => nil %>
 
 <%- form_for @user, :id => "registration_form" do |form| -%>
 	<div>
 		<div id="required">
-			<h5><%=t 'views.users.new.required_data' %></h5>
+			<h5><%=t '.required_data' %></h5>
 			<div class="formTitle"><%= form.label :login, User.attr_name("login") %></div>
 			<%= form.text_field :login %>
 			<div class="formTitle"><%= form.label :password, User.attr_name("password") %></div>
@@ -13,7 +13,7 @@
 			<%= form.password_field :password_confirmation %>
 			<div class="formTitle"><%= form.label :email, User.attr_name("email") %></div>
 			<%= form.text_field :email %>
-			<div class="formTitle"><%=t 'views.users.new.captcha_title' %></div>
+			<div class="formTitle"><%=t '.captcha_title' %></div>
 			<%= show_simple_captcha :object=>"user",
 				:label => "",
 				:image_style => 'all_black'
@@ -21,14 +21,14 @@
 
 		</div>
 		<div id="additional">
-			<h5><%=t 'views.users.new.additional_info' %></h5>
+			<h5><%=t '.additional_info' %></h5>
 			<%= render :partial => "user_info", :locals => { :user => @user } %>
 		</div>
 		<div class="clear"></div>
 	</div>
 	<div style="margin-top:10px;">
 		<%= image_submit_tag 'main/reg.gif',
-			:alt => t('views.users.new.sign_up'),
+			:alt => t('.sign_up'),
 			:onmouseover => "this.src = '#{image_path 'main/reg_a.gif'}'",
 			:onmouseout => "this.src = '#{image_path 'main/reg.gif'}'"
 		%>

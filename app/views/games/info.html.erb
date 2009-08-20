@@ -1,4 +1,4 @@
-<% title t('views.games.info.title', :id => @game.id) %>
+<% title t('.title', :id => @game.id) %>
 <table id="game_info">
 	<thead>
 		<tr>
@@ -12,23 +12,23 @@
 			<td><%= human_status @game %></td>
 		</tr>
 		<tr>
-			<td><%= GameType.attr_name('start_cash') %></td>
-			<td><%=h @game.type.pay_for_play %></td>
+			<td><%= GameTypes::Base.attr_name('start_cash') %></td>
+			<td><%=h @game.type.payment_value %></td>
 		</tr>
 		<tr>
 			<td><%= Game.attr_name('players_count') %></td>
 			<td><%= players_stat @game %></td>
 		</tr>
 		<tr>
-			<td><%=  GameType.attr_name('start_stack') %></td>
+			<td><%=  GameTypes::Base.attr_name('start_stack') %></td>
 			<td><%=h @game.type.start_stack %></td>
 		</tr>
 		<tr>
-			<td><%=  GameType.attr_name('start_blind') %></td>
+			<td><%=  GameTypes::Base.attr_name('start_blind') %></td>
 			<td><%=h @game.blind_size %></td>
 		</tr>
 		<tr>
-			<td><%= GameType.attr_name('change_level_time') %></td>
+			<td><%= GameTypes::Base.attr_name('change_level_time') %></td>
 			<td><%=h @game.type.change_level_time %></td>
 		</tr>
 		<tr>
@@ -38,7 +38,7 @@
 	</tbody>
 </table>
 
-<h4><%=t 'views.games.info.players_info' %></h4>
+<h4><%=t '.players_info' %></h4>
 
 <table>
 	<thead>

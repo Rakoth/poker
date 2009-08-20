@@ -1,7 +1,7 @@
 <tr>
   <td><%= game.id %></td>
   <td title="<%=h game.type.title %>"><%=h truncate(game.type.title, :length => 40) %></td>
-  <td><%= number_to_currency game.type.pay_for_play %></td>
+  <td><%= number_to_currency game.type.payment_value %></td>
   <td><%= players_stat game %></td>
   <td><%= link_to t(:detail), info_game_path(game) %></td>
 </tr>

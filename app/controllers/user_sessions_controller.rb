@@ -11,7 +11,7 @@ class UserSessionsController < ApplicationController
       flash[:notice] = t 'controllers.user_sessions.hello', :login => current_user.login
       redirect_to games_url
     else
-      flash[:error] = t 'controllers.user_sessions.wrong_password'
+      flash.now[:error] = t 'controllers.user_sessions.wrong_password'
       render :action => :new
     end
   end

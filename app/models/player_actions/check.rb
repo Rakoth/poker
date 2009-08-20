@@ -1,5 +1,4 @@
-class PlayerActions::CheckAction < PlayerActions::Action
-
+class PlayerActions::Check < PlayerActions::Base
 	def kind
 		CHECK
 	end

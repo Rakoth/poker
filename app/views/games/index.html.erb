@@ -1,13 +1,13 @@
- <% title t('views.games.index.title') if current_user %>
+ <% title t('.title') if current_user %>
 <!--p>
-	<%= t 'views.games.index.test_popups' %>
-	<%= link_to_function t('views.games.index.run_test'),
+	<%= t '.test_popups' %>
+	<%= link_to_function t('.run_test'),
 		"try{
 			test_window = window.open('/', 'test', 'left=10,top=10,width=10,height=10');
 			test_window.close();
-			alert('#{t 'views.games.index.test_passed'}');
+			alert('#{t '.test_passed'}');
 		}catch(e){
-			alert('#{t 'views.games.index.test_failed'}');
+			alert('#{t '.test_failed'}');
 		}"
 %>
 </p-->
@@ -16,7 +16,7 @@
     <tr>
       <th>№</th>
       <th><%=t :type %></th>
-      <th><%=t 'views.games.index.pay_for_play' %></th>
+      <th><%=t 'game_types.index.pay_for_play' %></th>
       <th><%=h Game.attr_name("players_count") %></th>
       <th></th>
     </tr>
@@ -26,14 +26,15 @@
 			<%= render @games %>
 		<% else %>
 			<tr>
-				<td colspan="5"><%=t 'views.games.index.no_games' %></td>
+				<td colspan="5"><%=t '.no_games' %></td>
 			</tr>
 		<% end %>
   </tbody>
 </table>
 
 <div id="other_games">
-	<%= link_to t('views.games.index.waited'), games_path %>&nbsp;|&nbsp;
-	<%= link_to t('views.games.index.started'), started_games_path %>&nbsp;|&nbsp;
-	<%= link_to t('views.games.index.finished'), finished_games_path %>
+	<%= link_to t('.waited'), games_path %>&nbsp;|&nbsp;
+	<%= link_to t('.started'), started_games_path %>&nbsp;|&nbsp;
+	<%= link_to t('.finished'), finished_games_path %>
 </div>
+

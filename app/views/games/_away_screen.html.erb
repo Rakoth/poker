@@ -1,4 +1,4 @@
-<div id="away_screen"><p><%= t('views.games._away_screen.away_message')%></p></div>
+<div id="away_screen"><p><%= t('.away_message')%></p></div>
 <script type="text/javascript">
 	var RP_AwayDialog = $('#away_screen').dialog({
 		resizable: false,
@@ -8,7 +8,7 @@
 		closeOnEscape: false,
 		width: 300,
 		buttons: {
-			"<%= t('views.games._away_screen.i_am_back')%>": function() {
+			"<%=t '.i_am_back' %>": function() {
 				$(this).dialog("close");
 			}
 		},
@@ -21,11 +21,11 @@
 					"_method":"put"
 				},
 				success:function(){
-					$('#away_screen p').text('<%= t('views.games._away_screen.away_message')%>');
+					$('#away_screen p').text('<%= t('.away_message')%>');
 					RP_Client.active();
 				},
 				error:function(){
-					$('#away_screen p').text('<%= t('views.games._away_screen.back_failed')%>');
+					$('#away_screen p').text('<%= t('.back_failed')%>');
 					RP_AwayDialog.dialog("open");
 				}
 			});

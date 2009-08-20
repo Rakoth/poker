@@ -1,0 +1,8 @@
+development: &defaults
+  profitability: 1.01
+
+test:
+  <<: *defaults
+
+production:
+  <<: *defaults

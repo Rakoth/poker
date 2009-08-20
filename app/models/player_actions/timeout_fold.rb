@@ -1,5 +1,4 @@
-class PlayerActions::TimeoutFoldAction < PlayerActions::FoldAction
-
+class PlayerActions::TimeoutFold < PlayerActions::Fold
 	def kind
 		TIMEOUT_FOLD
 	end

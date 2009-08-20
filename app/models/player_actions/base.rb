@@ -1,5 +1,6 @@
-class PlayerActions::Action < ActiveRecord::Base
-
+class PlayerActions::Base < ActiveRecord::Base
+	set_table_name :actions
+	
 	AUTO_CHECK = -4
 	TIMEOUT_CHECK = -3
 	AUTO_FOLD = -2
@@ -13,15 +14,15 @@ class PlayerActions::Action < ActiveRecord::Base
 	def self.execute_player_action kind, params = {}
 		action = case kind
 		when FOLD
-			PlayerActions::FoldAction.new params
+			PlayerActions::Fold.new params
 		when CHECK
-			PlayerActions::CheckAction.new params
+			PlayerActions::Check.new params
 		when CALL
-			PlayerActions::CallAction.new params
+			PlayerActions::Call.new params
 		when BET
-			PlayerActions::BetAction.new params
+			PlayerActions::Bet.new params
 		when RAISE
-			PlayerActions::RaiseAction.new params
+			PlayerActions::Raise.new params
 		else
 			raise 'Unexpected action type in Action#execute_action: "' + kind + '"'
 		end
@@ -31,13 +32,13 @@ class PlayerActions::Action < ActiveRecord::Base
 	def self.execute_auto_action kind, params = {}
 		action = case kind
 		when AUTO_CHECK
-			PlayerActions::AutoCheckAction.new params
+			PlayerActions::AutoCheck.new params
 		when TIMEOUT_CHECK
-			PlayerActions::TimeoutCheckAction.new params
+			PlayerActions::TimeoutCheck.new params
 		when AUTO_FOLD
-			PlayerActions::AutoFoldAction.new params
+			PlayerActions::AutoFold.new params
 		when TIMEOUT_FOLD
-			PlayerActions::TimeoutFoldAction.new params
+			PlayerActions::TimeoutFold.new params
 		else
 			raise 'Unexpected action type in Action#execute_action: "' + kind + '"'
 		end
@@ -54,7 +55,7 @@ class PlayerActions::Action < ActiveRecord::Base
   
   named_scope :omitted, lambda{ |game_id, last_id, player_id|
 		{
-			:conditions => ["game_id = ? AND id > ? AND (player_id <> ? OR type IN ('AutoFoldAction', 'AutoCheckAction', 'TimeoutFoldAction', 'TimeoutCheckAction')) ", game_id, last_id, player_id],
+			:conditions => ["game_id = ? AND id > ? AND (player_id <> ? OR type IN ('AutoFold', 'AutoCheck', 'TimeoutFold', 'TimeoutCheck')) ", game_id, last_id, player_id],
 			:order => 'created_at'
 		}
 	}

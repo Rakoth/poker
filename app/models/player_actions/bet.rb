@@ -1,13 +1,7 @@
-class PlayerActions::BetAction < PlayerActions::Action
-
+class PlayerActions::Bet < PlayerActions::Base
 	def kind
 		BET
 	end
-
-#	def after_initialize
-#		self.value += player.for_call
-#		super
-#	end
 
 	def has_value?
 		true

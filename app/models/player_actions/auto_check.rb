@@ -1,4 +1,4 @@
-class PlayerActions::AutoCheckAction < PlayerActions::CheckAction
+class PlayerActions::AutoCheck < PlayerActions::Check
 
 	def kind
 		AUTO_CHECK

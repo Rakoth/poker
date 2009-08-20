@@ -1,0 +1,2 @@
+module Admin::GameTypesHelper
+end

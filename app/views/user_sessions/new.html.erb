@@ -1,4 +1,4 @@
-<% title t('views.sessions.new.title') %>
+<% title t('.title') %>
 <div id="signin_form">
 	<%- form_for @user_session, :url => user_session_path do |form| -%>
 		<p class="formTitle"><%= form.label :login, User.attr_name("login") %></p>

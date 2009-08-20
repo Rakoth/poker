@@ -28,11 +28,11 @@ ActiveRecord::Schema.define(:version => 20090818224031) do
   end
 
   create_table "game_types", :force => true do |t|
+    t.string   "type"
     t.string   "title"
     t.integer  "max_players"
     t.integer  "start_stack"
-    t.decimal  "start_cash",        :precision => 10, :scale => 2
-    t.decimal  "additional_cash",   :precision => 10, :scale => 2
+    t.decimal  "start_payment",     :precision => 10, :scale => 2
     t.integer  "start_blind"
     t.integer  "bet_multiplier"
     t.integer  "change_level_time"
@@ -101,6 +101,7 @@ ActiveRecord::Schema.define(:version => 20090818224031) do
   end
 
   create_table "purses", :force => true do |t|
+    t.string   "type"
     t.decimal  "balance",    :precision => 10, :scale => 2, :default => 0.0
     t.integer  "user_id"
     t.datetime "created_at"
@@ -144,7 +145,7 @@ ActiveRecord::Schema.define(:version => 20090818224031) do
     t.string   "login"
     t.string   "crypted_password",    :default => "", :null => false
     t.string   "password_salt",       :default => "", :null => false
-    t.integer  "type"
+    t.string   "type"
     t.string   "email"
     t.string   "locate"
     t.integer  "level",               :default => 0
