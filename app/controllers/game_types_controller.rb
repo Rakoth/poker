@@ -1,6 +1,10 @@
 class GameTypesController < ApplicationController
 	def index
-		@free_game_types = GameTypes::Free.all
-		@paid_game_types = GameTypes::Paid.all
+		@game_types = GameTypes::Free.all
+	end
+
+	def paid
+		@game_types = GameTypes::Paid.all
+		render :action => :index
 	end
 end

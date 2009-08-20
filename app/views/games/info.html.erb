@@ -12,7 +12,7 @@
 			<td><%= human_status @game %></td>
 		</tr>
 		<tr>
-			<td><%= GameTypes::Base.attr_name('start_cash') %></td>
+			<td><%= GameTypes::Base.attr_name('start_payment') %></td>
 			<td><%=h @game.type.payment_value %></td>
 		</tr>
 		<tr>
@@ -43,12 +43,15 @@
 <table>
 	<thead>
 		<tr>
-			<th><%= Player.attr_name('sit') %></th>
 			<th><%= User.attr_name('login') %></th>
+			<th><%= Player.attr_name('sit') %></th>
 			<th><%= Player.attr_name('level') %></th>
+			<%- if @game.finished? -%>
+				<th><%= Player.attr_name('place') %></th>
+			<%- end -%>
 		</tr>
 	</thead>
 	<tbody>
-		<%= render @game.all_players %>
+		<%= render @game.all_players.sort_by{|p| p.place or p.sit} %>
 	</tbody>
 </table>

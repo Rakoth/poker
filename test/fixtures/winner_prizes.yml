@@ -1,0 +1,11 @@
+# Read about fixtures at http://ar.rubyonrails.org/classes/Fixtures.html
+
+one:
+  game_type: 
+  grade: 1
+  prize: 
+
+two:
+  game_type: 
+  grade: 1
+  prize: 

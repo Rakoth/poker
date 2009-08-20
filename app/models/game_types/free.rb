@@ -1,17 +1,17 @@
 class GameTypes::Free < GameTypes::Base
-	def get_payment user
-    user.chips_purse.pay(payment_value)
-  end
-
-	def return_payment user
-		user.chips_purse.receive(payment_value)
-	end
+	before_save :set_start_payment
 
 	def payment_value
 		start_payment
 	end
 	
-	def may_be_created_by? user
-		user.chips_purse.has?(payment_value) and verify_user_level(user.level)
+	protected
+
+	def purse user
+		user.chips_purse
+	end
+
+	def set_start_payment
+		self.start_payment = start_stack
 	end
 end

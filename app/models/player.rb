@@ -10,7 +10,7 @@ class Player < ActiveRecord::Base
   aasm_state :pass
   aasm_state :absent
   aasm_state :pass_away
-	aasm_state :lose
+	aasm_state :lose, :enter => :give_prize
   aasm_state :leave_now
   aasm_state :leave
 	
@@ -162,6 +162,11 @@ class Player < ActiveRecord::Base
 		PlayerActions::Action.execute_auto_action PlayerActions::Base::TIMEOUT_CHECK, :player => self, :game => game
 	end
 
+	def give_prize
+		update_attribute :place, game.players.count
+		game.type.give_prize_to_winner self
+	end
+	
 	private
 	
 	def return_user_money
@@ -183,5 +188,4 @@ class Player < ActiveRecord::Base
 	def calculate_winning
 		self.previous_win = stack - previous_stack
 	end
-
 end

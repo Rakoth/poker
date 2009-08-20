@@ -4,35 +4,16 @@
     <tr>
       <th><%= GameTypes::Base.attr_name "title" %></th>
       <th><%= GameTypes::Base.attr_name "max_players" %></th>
-      <th><%=t '.pay_for_play' %></th>
+      <th><%= GameTypes::Base.attr_name "start_payment" %></th>
       <th><%= GameTypes::Base.attr_name "start_stack" %></th>
       <th><%= GameTypes::Base.attr_name "start_blind" %></th>
       <th><%= GameTypes::Base.attr_name "change_level_time" %></th>
 			<th><%=t :actions %></th>
     </tr>
   </thead>
-	<tbody>
-		<tr>
-			<td colspan="7" class="title"><%= t '.free' %></td>
-		</tr>
-	</tbody>
   <tbody>
-		<% if @free_game_types.any? %>
-			<%= render :partial => "type", :collection => @free_game_types %>
-		<% else %>
-		<tr>
-			<td colspan="7"><%=t '.no_types' %></td>
-		</tr>
-		<% end %>
-  </tbody>
-	<tbody>
-		<tr>
-			<td colspan="7" class="title"><%= t '.paid' %></td>
-		</tr>
-	</tbody>
-  <tbody>
-		<% if @paid_game_types.any? %>
-			<%= render :partial => "type", :collection => @paid_game_types %>
+		<% if @game_types.any? %>
+			<%= render :partial => "type", :collection => @game_types %>
 		<% else %>
 		<tr>
 			<td colspan="7"><%=t '.no_types' %></td>
@@ -40,3 +21,9 @@
 		<% end %>
   </tbody>
 </table>
+
+
+<div id="other_links">
+	<%= link_to t('.free'), game_types_path %>&nbsp;|&nbsp;
+	<%= link_to t('.paid'), paid_game_types_path %>
+</div>

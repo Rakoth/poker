@@ -3,7 +3,7 @@ class CreatePurses < ActiveRecord::Migration
     create_table :purses do |t|
 			t.string :type
       t.decimal :balance, :precision => 10, :scale => 2, :default => 0
-      t.integer :user_id
+      t.references :user
 
       t.timestamps
     end

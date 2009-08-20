@@ -1,5 +1,5 @@
 development: &defaults
-  profitability: 1.01
+  drop: 1.01
 
 test:
   <<: *defaults

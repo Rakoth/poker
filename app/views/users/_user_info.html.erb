@@ -2,7 +2,7 @@
   <div class="formTitle"><%= info.label :name, UserInfo.attr_name("name") %></div>
   <%= info.text_field :name %>
   <div class="formTitle"><%= info.label :birthday, UserInfo.attr_name("birthday") %></div>
-  <%= info.date_select :birthday, :start_year => 1950, :end_year => 2000, :order => [:day, :month, :year], :default => 21.year.ago%>
+  <%= info.date_select :birthday, :start_year => 1950, :end_year => 2000, :order => [:day, :month, :year], :default => 22.year.ago%>
   <div class="formTitle"><%= info.label :country, UserInfo.attr_name("country") %></div>
   <%= info.text_field :country %>
 <%- end -%>

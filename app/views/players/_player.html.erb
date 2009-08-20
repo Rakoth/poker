@@ -1,5 +1,8 @@
 <tr>
-	<td><%= player.sit + 1 %></td>
 	<td><%= link_to player.login, user_path(player.user) %></td>
+	<td><%= player.sit + 1 %></td>
 	<td><%= player.level %></td>
+	<%- if @game.finished? -%>
+		<td><%= player.place %></td>
+	<%- end -%>
 </tr>

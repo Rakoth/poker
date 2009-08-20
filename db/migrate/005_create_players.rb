@@ -13,6 +13,7 @@ class CreatePlayers < ActiveRecord::Migration
 			t.integer :previous_win
       t.datetime :action_time
       t.datetime :control_action_time
+			t.integer :place
       t.references :user
       t.references :game
 

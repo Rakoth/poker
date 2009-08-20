@@ -187,11 +187,11 @@ ru:
         country: "Страна"
       game_types/base:
         title: "Тип"
-        max_players: "Кол-во игроков"
-        start_stack: "Начальный стэк"
-        start_payment: "Стартовый взнос"
-        start_blind: "Начальный блайнд"
-        change_level_time: "Время роста блайнда(мин)"
+        max_players: "Игроков"
+        start_stack: "Cтэк"
+        start_payment: "Взнос"
+        start_blind: "Блайнды"
+        change_level_time: "Темп"
         template: "Шаблон стола"
         min_level: "Минимальный уровень игрока"
         max_level: "Максимальный уровень игрока"
@@ -203,6 +203,7 @@ ru:
       player:
         sit: "Кресло"
         level: "Уровень"
+        place: "Занял место"
     errors:
       template:
         header:

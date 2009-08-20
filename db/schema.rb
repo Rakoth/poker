@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20090818224031) do
+ActiveRecord::Schema.define(:version => 20090820163836) do
 
   create_table "actions", :force => true do |t|
     t.integer  "game_id"
@@ -34,7 +34,6 @@ ActiveRecord::Schema.define(:version => 20090818224031) do
     t.integer  "start_stack"
     t.decimal  "start_payment",     :precision => 10, :scale => 2
     t.integer  "start_blind"
-    t.integer  "bet_multiplier"
     t.integer  "change_level_time"
     t.integer  "time_for_action"
     t.string   "template"
@@ -94,6 +93,7 @@ ActiveRecord::Schema.define(:version => 20090818224031) do
     t.integer  "previous_win"
     t.datetime "action_time"
     t.datetime "control_action_time"
+    t.integer  "place"
     t.integer  "user_id"
     t.integer  "game_id"
     t.datetime "created_at"
@@ -161,6 +161,12 @@ ActiveRecord::Schema.define(:version => 20090818224031) do
     t.string   "last_login_ip"
     t.datetime "created_at"
     t.datetime "updated_at"
+  end
+
+  create_table "winner_prizes", :id => false, :force => true do |t|
+    t.integer "game_type_id"
+    t.integer "grade"
+    t.decimal "prize",        :precision => 10, :scale => 2, :default => 0.0
   end
 
 end

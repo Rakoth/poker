@@ -17,7 +17,7 @@ h5{
 }
 table{
 	font-size:12px;
-	width:100%
+	width:100%;
 }
 td{
 	background:url('/images/main/fon_content.jpg');
@@ -112,7 +112,7 @@ td{white-space:nowrap;overflow:hidden;text-align:center;}
 .waited_game{
 	color:green;
 }
-#other_games{
+#other_links{
 	padding:10px;
 	text-align:center;
 }

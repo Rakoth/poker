@@ -47,6 +47,7 @@ ActionController::Routing::Routes.draw do |map|
   map.resources :games, :has_many => 'players', :member => { :info => :get }, :collection => { :started => :get, :finished => :get }
   map.resources :players, :member => { :i_am_back => :put }
   map.game_types '/game_types', :controller => 'game_types', :action => 'index'
+  map.paid_game_types '/game_types/paid', :controller => 'game_types', :action => 'paid'
   map.resources :notes
   map.connect 'game_synchronizers/:action/:game_id', :controller => 'game_synchronizers'
   map.connect ':controller/:action/:id'

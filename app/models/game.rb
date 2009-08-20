@@ -10,7 +10,7 @@ class Game < ActiveRecord::Base
   aasm_state :on_flop, :enter => :deal_flop!
   aasm_state :on_turn, :enter => :deal_turn!
   aasm_state :on_river, :enter => :deal_river!
-  aasm_state :finished, :enter => :give_prize_to_winners
+  aasm_state :finished, :enter => :give_prize_to_last_winner
 
   aasm_event :start do
     transitions :from => :waited, :to => :on_preflop
@@ -221,7 +221,7 @@ class Game < ActiveRecord::Base
     end
   end
 
-	def give_prize_to_winners
-		#TODO
+	def give_prize_to_last_winner
+		players.first.give_prize
 	end
 end

@@ -2,11 +2,12 @@ class GameTypes::Base < ActiveRecord::Base
 	set_table_name :game_types
   has_many :games
   has_many :blind_values
+	has_many :winner_prizes, :order => 'grade', :foreign_key => 'game_type_id'
 
 	validate :check_start_stack_and_blind
-	validates_presence_of :title, :start_stack, :start_blind, :start_payment
+	validates_presence_of :title, :start_stack, :start_blind
 	validates_length_of :title, :within => 10..40
-	validates_numericality_of :start_stack, :start_blind, :start_payment, :greater_than_or_equal_to => 0
+	validates_numericality_of :start_stack, :start_blind, :greater_than_or_equal_to => 0
 
 	FREE = 0
 	PAID = 1
@@ -23,13 +24,28 @@ class GameTypes::Base < ActiveRecord::Base
 			raise 'Unknown game type'
 		end
 	end
-  def prize
-    start_payment * max_players
-  end
 
   def get_blind_size level
     BlindValue.find_by_game_type_id_and_level(id, level)
   end
+	
+	def get_payment user
+    purse(user).pay(payment_value)
+  end
+
+	def return_payment user
+		purse(user).receive(payment_value)
+	end
+
+	def may_be_created_by? user
+		purse(user).has?(payment_value) and verify_user_level(user.level)
+	end
+
+	def give_prize_to_winner player
+		if winner_prize = winner_prizes.find_by_grade(player.place)
+			purse(player.user).receive(winner_prize.prize)
+		end
+	end
 
 	protected
 
