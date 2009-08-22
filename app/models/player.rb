@@ -50,9 +50,8 @@ class Player < ActiveRecord::Base
 	aasm_event :fold do
 		# игрок сам сделал пасс
 		transitions :from => :active, :to => :pass
-		#transitions :from => :pass_away, :to => :pass_away
 		# автопасс для отошедшего ранее игрока
-		transitions :from => :absent, :to => :pass_away #, :on_transition => :auto_fold!
+		transitions :from => :absent, :to => :pass_away
 	end
 	
 	# пасс по таймауту - ставим статус отошел

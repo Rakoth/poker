@@ -11,13 +11,13 @@ class CreateGames < ActiveRecord::Migration
       t.integer :current_bet, :default => 0
       t.datetime :next_level_time
       t.integer :players_count, :default => 0
-      t.text :flop
-      t.text :turn
-      t.text :river
-			t.text :previous_flop
-      t.text :previous_turn
-      t.text :previous_river
-      t.text :deck
+      t.string :flop
+      t.string :turn
+      t.string :river
+			t.string :previous_flop
+      t.string :previous_turn
+      t.string :previous_river
+      t.string :deck
       t.references :type
 
       t.timestamps

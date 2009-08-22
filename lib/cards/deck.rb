@@ -29,6 +29,7 @@ module Poker
 		end
 
 		def self.load string
+			raise ArgumentError unless /\A\d{1,2},([DCSH][AKQJT\d]:){51}[DCSH][AKQJT\d]\Z/ === string
 			deck = string.split(',')
 			new_deck = self.new(false)
 			new_deck.send(:card_index=, deck.first.to_i)

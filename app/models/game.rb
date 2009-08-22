@@ -79,9 +79,7 @@ class Game < ActiveRecord::Base
 	def before_save
 		SERIALIZED_ATTRIBUTES.each do |attribute_name|
 			attr_value = send(attribute_name)
-			unless attr_value.nil?
-				self[attribute_name] = attr_value.dump
-			end
+			self[attribute_name] = (attr_value.nil? ? nil : attr_value.dump)
 		end
 	end
 
