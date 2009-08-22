@@ -5,19 +5,23 @@ class Admin::GameTypesController < Admin::AdminController
 
   def new
     @game_type = GameTypes::Base.new
-    @blind_value = BlindValue.new
+    @blind_values = [BlindValue.new :level => 1]
+		@winner_prizes = [WinnerPrize.new(:grade => 1, :prize_part => 1)]
   end
 
   def create
     @game_type = GameTypes::Base.factory params[:game_main_type], params[:game_types_base]
+		params[:blind_value].delete_if {|level| level[:value].blank? }
+		@game_type.blind_values.build params[:blind_value]
+		@game_type.winner_prizes.build params[:winner_prize]
     if @game_type.save
-      params[:blind_value].delete_if {|level| level[:value].blank? }
-      @game_type.blind_values.create params[:blind_value]
       flash[:notice] = t 'controllers.game_types.new_type_successfully_created'
-      redirect_to admin_game_types_path
+      redirect_to game_types_path
     else
+			@game_type_with_errors = @game_type
 			@game_type = GameTypes::Base.new params[:game_types_base]
-			@blind_value = BlindValue.new
+			@blind_values = params[:blind_value].map{|options| BlindValue.new options}
+			@winner_prizes = params[:winner_prize].map{|options| WinnerPrize.new options}
       flash[:error] = t 'controllers.game_types.cant_create_new_game_type'
       render :action => :new
     end

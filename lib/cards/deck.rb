@@ -24,10 +24,17 @@ module Poker
       @cards[@card_index...(@card_index += quantity)]
     end
 
-#
-#		def to_yaml
-#			[@card_index, self.cards.map {|card| card.suit[0..0] + card.value.to_s}].to_yaml
-#		end
+		def dump
+			"#{@card_index},#{@cards.map(&:dump).join(':')}"
+		end
+
+		def self.load string
+			deck = string.split(',')
+			new_deck = self.new(false)
+			new_deck.send(:card_index=, deck.first.to_i)
+			new_deck.send(:cards=, deck.last.split(':').map{|card| Poker::Card.load card})
+			new_deck
+		end
 
     private
 

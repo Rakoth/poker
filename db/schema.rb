@@ -166,7 +166,7 @@ ActiveRecord::Schema.define(:version => 20090820163836) do
   create_table "winner_prizes", :id => false, :force => true do |t|
     t.integer "game_type_id"
     t.integer "grade"
-    t.decimal "prize",        :precision => 10, :scale => 2, :default => 0.0
+    t.decimal "prize_part",   :precision => 10, :scale => 2
   end
 
 end

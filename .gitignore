@@ -7,3 +7,4 @@ doc/app
 nbproject/*
 nbproject/**/*
 public/favicon.ico
+db/schema.rb

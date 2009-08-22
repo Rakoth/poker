@@ -2,7 +2,7 @@
   <table>
     <tr>
       <td><%= form.label :title, t('.game_main_type') %></td>
-      <td><%= select_tag('game_main_type', options_for_select([[t('.free'), GameTypes::Base::FREE], [t('.paid'), GameTypes::Base::PAID]])) %></td>
+      <td><%= select_tag('game_main_type', options_for_select([[t('.free'), GameTypes::Base::FREE], [t('.paid'), GameTypes::Base::PAID]], params[:game_main_type])) %></td>
     </tr>
     <tr>
       <td><%= form.label :title, GameTypes::Base.attr_name("title") %></td>
@@ -17,7 +17,7 @@
       <td><%= form.text_field :start_stack %></td>
     </tr>
     <tr>
-      <td><%= form.label :start_cash, GameTypes::Base.attr_name("start_payment") %></td>
+      <td><%= form.label :start_payment, GameTypes::Base.attr_name("start_payment") %></td>
       <td><%= form.text_field :start_payment %></td>
     </tr>
     <tr>
@@ -41,24 +41,13 @@
       <td><%= select_tag('game_types_base[max_level]', options_for_select([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], @game_type.max_level)) %></td>
     </tr>
   </table>
-  <h3><%=t 'views.game_types.form.blind_levels' %></h3>
-  <table>
-    <thead>
-      <tr>
-        <th><%=t :level%></th>
-        <th><%=t :blind%></th>
-        <th><%=t :ante%></th>
-      </tr>
-    </thead>
-    <% fields_for 'blind_value[]' do |blind_value| %>
-      <%- for level in 1..10 do -%>
-        <tr>
-          <td><%= level %><%= blind_value.hidden_field :level, :value => level %></td>
-          <td><%= blind_value.text_field :value, :size => 5 %></td>
-          <td><%= blind_value.text_field :ante, :size => 3 %></td>
-        </tr>
-      <%- end -%>
-    <%- end -%>
-  </table>
-  <%= form.submit t(:save) %>
+
+  <h3><%=t '.blind_levels' %></h3>
+	<%= render 'admin/blind_values/index' %>
+
+  <h3><%=t '.winner_prizes' %></h3>
+	<%= render 'admin/winner_prizes/index' %>
+	<center>
+		<%= form.submit t(:save) %>
+	</center>
 <%- end -%>

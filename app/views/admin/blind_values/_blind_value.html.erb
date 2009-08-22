@@ -1,0 +1,8 @@
+<% @blind_value = BlindValue.new %>
+<% fields_for 'blind_value[]' do |blind_value_rows| %>
+	<tr>
+		<td><%= object.level %><%= blind_value_rows.hidden_field :level, :value => object.level %></td>
+		<td><%= blind_value_rows.text_field :value, :size => 5, :value => object.value %></td>
+		<td><%= blind_value_rows.text_field :ante, :size => 3, :value => object.ante %></td>
+	</tr>
+<%- end -%>

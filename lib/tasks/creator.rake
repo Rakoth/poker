@@ -37,8 +37,8 @@ namespace :create do
 				:max_level => 10
       )
 			type.save!
-			type.winner_prizes.create :grade => 1, :prize => (type.max_players - 1) * type.start_payment
-			type.winner_prizes.create :grade => 2, :prize => type.start_payment
+			type.winner_prizes.create :grade => 1, :prize_part => 0.6
+			type.winner_prizes.create :grade => 2, :prize_part => 0.4
     end
 		
     Rake::Task['log:clear'].invoke

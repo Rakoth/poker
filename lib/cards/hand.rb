@@ -86,6 +86,14 @@ module Poker
 			cards.map(&:to_s).join(':')
 		end
 
+		def dump
+			to_s
+		end
+
+		def self.load string
+			self.new string.split(':').map{|card| Poker::Card.load card}
+		end
+
     protected
 		def rank
 			@rank ||= if straight_flush?: 8

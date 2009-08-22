@@ -1,0 +1,7 @@
+<% @winner_prize = WinnerPrize.new %>
+<% fields_for 'winner_prize[]' do |winner_prize_rows| %>
+	<tr>
+		<td><%= object.grade %><%= winner_prize_rows.hidden_field :grade, :value => object.grade %></td>
+		<td><%= winner_prize_rows.text_field :prize_part, :size => 5, :value => object.prize_part %></td>
+	</tr>
+<% end %>

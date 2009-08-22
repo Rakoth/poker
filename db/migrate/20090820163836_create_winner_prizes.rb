@@ -3,7 +3,7 @@ class CreateWinnerPrizes < ActiveRecord::Migration
     create_table :winner_prizes, :id => false do |t|
       t.references :game_type
       t.integer :grade
-			t.decimal :prize, :precision => 10, :scale => 2, :default => 0
+			t.decimal :prize_part, :precision => 10, :scale => 2
     end
   end
 

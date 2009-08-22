@@ -33,6 +33,8 @@ ActionController::Routing::Routes.draw do |map|
 
 	map.namespace(:admin) do |admin|
     admin.resources :game_types
+		admin.resources :blind_values
+		admin.resources :winner_prizes
   end
 
 	map.simple_captcha '/simple_captcha/:action', :controller => 'simple_captcha'

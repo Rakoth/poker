@@ -1,3 +1,3 @@
-<h3><%=t 'views.game_types.new.title' %></h3>
-<%= error_messages_for 'game_type' %>
+<% title t('.title') %>
+<%= error_messages_for 'game_type_with_errors', :header_message => nil %>
 <%= render :partial => "form", :locals => { :method => :post } %>

@@ -1,7 +1,7 @@
 class GameTypes::Base < ActiveRecord::Base
 	set_table_name :game_types
   has_many :games
-  has_many :blind_values
+  has_many :blind_values, :foreign_key => 'game_type_id'
 	has_many :winner_prizes, :order => 'grade', :foreign_key => 'game_type_id'
 
 	validate :check_start_stack_and_blind
@@ -43,8 +43,12 @@ class GameTypes::Base < ActiveRecord::Base
 
 	def give_prize_to_winner player
 		if winner_prize = winner_prizes.find_by_grade(player.place)
-			purse(player.user).receive(winner_prize.prize)
+			purse(player.user).receive(bank * winner_prize.prize_part)
 		end
+	end
+
+	def bank
+		max_players * start_payment
 	end
 
 	protected
@@ -54,6 +58,8 @@ class GameTypes::Base < ActiveRecord::Base
   end
 
 	def check_start_stack_and_blind
-		errors.add(:start_stack, I18n.t('activerecord.errors.messages.wrong_start_stack_size')) if !start_stack || start_stack < start_blind
+		if !start_stack or !start_blind or start_stack < start_blind
+			errors.add(:start_stack, I18n.t('activerecord.errors.messages.wrong_start_stack_size'))
+		end
 	end
 end

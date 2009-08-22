@@ -51,26 +51,56 @@ class Game < ActiveRecord::Base
 
   self.inheritance_column = "class"
 
-  serialize :deck, Poker::Deck
-  serialize :flop, Poker::Hand
-  serialize :turn, Poker::Hand
-  serialize :river, Poker::Hand
-  serialize :previous_flop, Poker::Hand
-  serialize :previous_turn, Poker::Hand
-  serialize :previous_river, Poker::Hand
+	#  serialize :deck, Poker::Deck
+	#  serialize :flop, Poker::Hand
+	#  serialize :turn, Poker::Hand
+	#  serialize :river, Poker::Hand
+	#  serialize :previous_flop, Poker::Hand
+	#  serialize :previous_turn, Poker::Hand
+	#  serialize :previous_river, Poker::Hand
+
+	# переопределяем rails-овские методы доступа к отрибутам
+	# теперь в self[:deck] храниться сериализованный объект Poker::Deck
+	# a self.deck ссылается на @deck, в котором лежит загруженный из строки объект Poker::Deck
+	attr_accessor :deck, :flop, :turn, :river, :previous_flop, :previous_turn, :previous_river
+	
+	SERIALIZED_ATTRIBUTES = [:deck, :flop, :turn, :river, :previous_flop, :previous_turn, :previous_river]
+
+	def after_initialize
+		SERIALIZED_ATTRIBUTES.each do |attribute_name|
+			attr_value = self[attribute_name]
+			unless attr_value.nil?
+				cards_class = (attribute_name == :deck ? Poker::Deck : Poker::Hand)
+				send("#{attribute_name}=", cards_class.load(attr_value))
+			end
+		end
+	end
+
+	def before_save
+		SERIALIZED_ATTRIBUTES.each do |attribute_name|
+			attr_value = send(attribute_name)
+			unless attr_value.nil?
+				self[attribute_name] = attr_value.dump
+			end
+		end
+	end
 
 	include BlindSystem
 	include DistributionSystem
   
   belongs_to :type, :class_name => 'GameTypes::Base'
+
   has_many :all_players, :class_name => 'Player'
   has_many :players, :conditions => ['status NOT IN (?)', [Player::STATUS[:lose], Player::STATUS[:leave], Player::STATUS[:leave_now]]]
 	has_many :previous_distribution_players, :class_name => 'Player', :conditions => ['status <> ?', Player::STATUS[:leave]]
 	has_many :leave_now_players, :class_name => 'Player', :conditions => {:status => Player::STATUS[:leave_now]}
 	has_many :lose_players, :class_name => 'Player', :conditions => {:status => Player::STATUS[:lose]}
+
   has_many :users, :through => :players
+
   has_many :actions, :class_name => 'PlayerActions::Base'
   has_many :current_distribution_actions, :class_name => 'PlayerActions::Base', :conditions => ['deleted = ?', false]
+	
 	has_many :log_messages
 
 	def active_player
@@ -222,6 +252,6 @@ class Game < ActiveRecord::Base
   end
 
 	def give_prize_to_last_winner
-		players.first.give_prize
+		players.first.take_prize
 	end
 end

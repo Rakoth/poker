@@ -204,6 +204,13 @@ ru:
         sit: "Кресло"
         level: "Уровень"
         place: "Занял место"
+      blind_value:
+        level: "Уровень"
+        blind: "Значение блайнда"
+        ante: "Значение анте"
+      winner_prize:
+        grade: "Место"
+        prize_part: "Часть банка"
     errors:
       template:
         header:
@@ -269,12 +276,19 @@ ru:
         free: "Бесплатная"
         players_count: "Количество игроков"
         blind_levels: "Значения блайндов"
+        winner_prizes: "Таблица выйгрышей"
       edit:
         title: "Изменение типа игры"
       new:
-        title: "Создание нового типа игры!"
+        title: "Создание нового типа игры"
       show:
         title: "Просмотр типа игры"
+    blind_values:
+      index:
+        add_blind_value: "Добавить еще уровень"
+    winner_prizes:
+      index:
+        add_winner_prizes: "Добавить еще призовое место"
 
   game_types:
     index:

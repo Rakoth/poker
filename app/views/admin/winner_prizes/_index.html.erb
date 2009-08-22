@@ -1,0 +1,25 @@
+<table>
+	<thead>
+		<tr>
+			<th><%= WinnerPrize.attr_name('grade') %></th>
+			<th><%= WinnerPrize.attr_name('prize_part') %></th>
+		</tr>
+	</thead>
+	<tbody id="winner_prizes">
+		<% @winner_prizes.each do |grade| %>
+			<%= render :partial => 'admin/winner_prizes/winner_prize', :locals => {:object => grade} %>
+		<% end %>
+	</tbody>
+</table>
+
+<script type="text/javascript">
+	var current_grade =  <%= @winner_prizes.size %>;
+</script>
+
+<%= link_to_remote t('.add_winner_prizes'),
+	:url => new_admin_winner_prize_path,
+	:method => :get,
+	:condition => "parseFloat($('#winner_prizes tr:last input#winner_prize__prize_part').val()) > 0",
+	:with => "'grade=' + current_grade",
+	:complete => "current_grade++"
+%>

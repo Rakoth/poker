@@ -1,16 +1,14 @@
-#require 'cards/poker'
-
 class Player < ActiveRecord::Base
-  include AASM
-  aasm_initial_state :active
+	include AASM
   aasm_column :status
+	aasm_initial_state :active
 
   aasm_state :active
   aasm_state :allin
   aasm_state :pass
   aasm_state :absent
   aasm_state :pass_away
-	aasm_state :lose, :enter => :give_prize
+	aasm_state :lose, :enter => :take_prize
   aasm_state :leave_now
   aasm_state :leave
 	
@@ -162,7 +160,7 @@ class Player < ActiveRecord::Base
 		PlayerActions::Action.execute_auto_action PlayerActions::Base::TIMEOUT_CHECK, :player => self, :game => game
 	end
 
-	def give_prize
+	def take_prize
 		update_attribute :place, game.players.count
 		game.type.give_prize_to_winner self
 	end
