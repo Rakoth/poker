@@ -51,37 +51,14 @@ class Game < ActiveRecord::Base
 
   self.inheritance_column = "class"
 
-	#  serialize :deck, Poker::Deck
-	#  serialize :flop, Poker::Hand
-	#  serialize :turn, Poker::Hand
-	#  serialize :river, Poker::Hand
-	#  serialize :previous_flop, Poker::Hand
-	#  serialize :previous_turn, Poker::Hand
-	#  serialize :previous_river, Poker::Hand
-
-	# переопределяем rails-овские методы доступа к отрибутам
-	# теперь в self[:deck] храниться сериализованный объект Poker::Deck
-	# a self.deck ссылается на @deck, в котором лежит загруженный из строки объект Poker::Deck
-	attr_accessor :deck, :flop, :turn, :river, :previous_flop, :previous_turn, :previous_river
-	
-	SERIALIZED_ATTRIBUTES = [:deck, :flop, :turn, :river, :previous_flop, :previous_turn, :previous_river]
-
-	def after_initialize
-		SERIALIZED_ATTRIBUTES.each do |attribute_name|
-			attr_value = self[attribute_name]
-			unless attr_value.nil?
-				cards_class = (attribute_name == :deck ? Poker::Deck : Poker::Hand)
-				send("#{attribute_name}=", cards_class.load(attr_value))
-			end
-		end
-	end
-
-	def before_save
-		SERIALIZED_ATTRIBUTES.each do |attribute_name|
-			attr_value = send(attribute_name)
-			self[attribute_name] = (attr_value.nil? ? nil : attr_value.dump)
-		end
-	end
+	include SerializeCards
+	serialize_cards :deck, Poker::Deck
+	serialize_cards :flop
+	serialize_cards :turn
+	serialize_cards :river
+	serialize_cards :previous_flop
+	serialize_cards :previous_turn
+	serialize_cards :previous_river
 
 	include BlindSystem
 	include DistributionSystem

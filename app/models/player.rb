@@ -80,9 +80,13 @@ class Player < ActiveRecord::Base
 	aasm_event :left_game do
 		transitions :from => :leave_now , :to => :leave
 	end
-
-	serialize :hand, Poker::Hand
-	serialize :previous_hand, Poker::Hand
+	
+	include SerializeCards
+	serialize_cards :hand
+	serialize_cards :previous_hand
+#
+#	serialize :hand, Poker::Hand
+#	serialize :previous_hand, Poker::Hand
 
   belongs_to :user
   belongs_to :game, :counter_cache => true
@@ -95,7 +99,7 @@ class Player < ActiveRecord::Base
   before_destroy :return_user_money, :if => lambda {|player| player.game.waited?}
 	after_destroy :destroy_game, :if => lambda {|player| player.game.empty_players_set?}
 	before_save :calculate_winning, :unless => lambda {|player| player.previous_stack.nil? }
-
+	
 	attr_accessor :previous_stack
   attr_writer :persent # процент выйгрыша
 	

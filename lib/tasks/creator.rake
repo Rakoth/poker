@@ -27,7 +27,7 @@ namespace :create do
 
 		6.times do |i|
       type = GameTypes::Base.factory(kind = rand(2), :title => "Стандартный техасский №#{i+1}",
-				:max_players => 2 + i,
+				:max_players => rand(3) + 2,
 				:start_stack => 1000 * (i + 1),
 				:start_payment => kind.zero? ? nil : i * 20 + 10,
 				:start_blind => 100 * (i + 1),
@@ -37,8 +37,8 @@ namespace :create do
 				:max_level => 10
       )
 			type.save!
-			type.winner_prizes.create :grade => 1, :prize_part => 0.6
-			type.winner_prizes.create :grade => 2, :prize_part => 0.4
+			type.winner_prizes.create :grade => 1, :prize_part => 0.7
+			type.winner_prizes.create :grade => 2, :prize_part => 0.3
     end
 		
     Rake::Task['log:clear'].invoke
