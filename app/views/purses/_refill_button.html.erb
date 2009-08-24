@@ -1,0 +1,5 @@
+<%= button_to_remote t(:add),
+	:url => path,
+	:method => :put,
+	:condition => path == add_money_path ? "false" : "true"
+%>

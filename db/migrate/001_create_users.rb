@@ -8,6 +8,8 @@ class CreateUsers < ActiveRecord::Migration
       t.string   :email
       t.string   :locate
       t.integer  :level, :default => 0
+			t.datetime :refill_chips_at
+			
 			t.string   :persistence_token,   :null => false                # required
 			t.string   :single_access_token, :null => false                # optional, see Authlogic::Session::Params
 			t.string   :perishable_token,    :null => false                # optional, see Authlogic::Session::Perishability

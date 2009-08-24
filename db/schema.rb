@@ -149,6 +149,7 @@ ActiveRecord::Schema.define(:version => 20090820163836) do
     t.string   "email"
     t.string   "locate"
     t.integer  "level",               :default => 0
+    t.datetime "refill_chips_at"
     t.string   "persistence_token",                  :null => false
     t.string   "single_access_token",                :null => false
     t.string   "perishable_token",                   :null => false

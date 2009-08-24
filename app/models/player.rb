@@ -84,9 +84,6 @@ class Player < ActiveRecord::Base
 	include SerializeCards
 	serialize_cards :hand
 	serialize_cards :previous_hand
-#
-#	serialize :hand, Poker::Hand
-#	serialize :previous_hand, Poker::Hand
 
   belongs_to :user
   belongs_to :game, :counter_cache => true

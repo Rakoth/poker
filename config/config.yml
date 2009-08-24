@@ -1,6 +1,10 @@
 development: &defaults
   drop: 1.01
 
+  refill_chips_max_value: 100000
+  refill_chips_value: 1000
+  refill_chips_time: 1800
+
 test:
   <<: *defaults
 

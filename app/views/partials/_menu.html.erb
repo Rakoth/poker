@@ -1,9 +1,9 @@
 <ul>
   <%- if current_user -%>
-    <li><%= link_to t('.games'), games_path %><%#= yield :games_menu %></li>
-    <li><%= link_to t('.create_game'), game_types_path %><%#= yield :game_types_menu %></li>
-    <!--li><%# link_to t(:exit), user_session_path, :method => :delete, :confirm => t(:really_exit) %></li-->
-    <li><%= link_to t(:exit), user_session_path, :method => :delete %></li>
+    <li><%= link_to t('.games'), games_path %></li>
+    <li><%= link_to t('.create_game'), game_types_path %></li>
+		<li><%= link_to t('.balance'), purses_path %></li>
+    <li><%= link_to t(:exit), user_session_path, :method => :delete, :confirm => t(:really_exit) %></li>
   <%- else -%>
     <li><%= link_to t(:entry), login_path %></li>
     <li><%= link_to t(:sign_up), new_user_path %></li>

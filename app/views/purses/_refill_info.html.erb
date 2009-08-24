@@ -1,0 +1,15 @@
+<span id="refill_chips_info">
+	<%= t '.next_refill_time' %>&nbsp;
+	<span id="refill_time"><%= current_user.next_refill_in %></span>
+</span>
+<script type="text/javascript">
+	var timer = setInterval(function(){
+		var time = parseInt($('#refill_time').text());
+		if(0 < time){
+			$('#refill_time').text(time - 1);
+		}else{
+			clearInterval(timer);
+			$.getScript("<%= refill_chips_info_purses_path %>");
+		}
+	}, 1000);
+</script>

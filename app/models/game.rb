@@ -45,9 +45,10 @@ class Game < ActiveRecord::Base
 		:by_request => 'by_request'
 	}
 
+	named_scope :current, :conditions => ['`games`.`status` <> ?', STATUS[:finished]], :include => [:type]
 	named_scope :waited, :conditions => { :status => STATUS[:waited] }, :include => [:type]
 	named_scope :finished, :conditions => { :status => STATUS[:finished] }, :include => [:type]
-	named_scope :started, :conditions => ['status NOT IN (?)', [STATUS[:waited], STATUS[:finished]]], :include => [:type]
+	named_scope :started, :conditions => ['`games`.`status` NOT IN (?)', [STATUS[:waited], STATUS[:finished]]], :include => [:type]
 
   self.inheritance_column = "class"
 

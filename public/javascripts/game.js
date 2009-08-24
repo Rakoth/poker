@@ -9,6 +9,7 @@ Function.prototype.bind = function(object){
 
 var RP_HttpStatus = {
 	errors: {
+		forbidden: 403,
 		hurry_sync: 440,
 		late_sync: 441
 	}
@@ -1142,8 +1143,14 @@ RP_Synchronizers.Base.prototype = {
 				method: 'get',
 				dataType: 'json',
 				data: this._data(),
-				success: this._parse_data.bind(this)
+				success: this._parse_data.bind(this),
+				error: this._error_handler
 			});
+		}
+	},
+	_error_handler: function(request){
+		if(RP_HttpStatus.errors.forbidden == request.status){
+			window.close();
 		}
 	}
 };

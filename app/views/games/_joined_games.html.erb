@@ -1,0 +1,14 @@
+<h4><%= t '.yours_games' %></h4>
+<table id="joined_games">
+	<thead>
+		<tr>
+			<th>№</th>
+			<th><%=t :type %></th>
+			<th></th>
+		</tr>
+	</thead>
+	<tbody>
+		<%= render :partial => 'current_game', :collection => @current_games, :as => :game %>
+	</tbody>
+</table>
+<h4><%= t '.other_games' %></h4>

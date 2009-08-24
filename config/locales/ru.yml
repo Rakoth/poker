@@ -314,6 +314,7 @@ ru:
     menu:
       games: "Игры"
       create_game: "Создать игру"
+      balance: "Ваш счет"
 
   games:
     game_actions:
@@ -347,10 +348,25 @@ ru:
       watch: "Смотреть дальше"
     player_action_button:
       action_failed: "При выполнении действия возникла ошибка!"
+    joined_games:
+      yours_games: "Игры, в которых вы принимаете участие"
+      other_games: "Все игры"
+    current_game:
+      open: "Открыть игру"
       
   user_sessions:
     new:
       title: "Введите свой логин и пароль"
+
+  purses:
+    index:
+      balance: "У Вас на счету: {{value}}"
+      title: "Пополнение баланса"
+      chips_purse: "Фишки"
+      money_purse: "Деньги"
+      too_many_chips: "У вас и так достаточно фишек"
+    refill_info:
+      next_refill_time: "Вы сможете добавить фишки через: "
 
 # дальше сонтроллеровские flash и хелперы
   controllers:
@@ -423,3 +439,4 @@ ru:
   really_exit: "Вы действительно желаете выйти?"
   send: "Отправить"
   default_title: "Руби в покер!"
+  add: "Добавить"

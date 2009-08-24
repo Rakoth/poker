@@ -26,4 +26,25 @@ class User < ActiveRecord::Base
 	def admin?
 		false
 	end
+
+	def can_refill_chips?
+		!has_too_many_chips? and next_refill_in <= 0
+	end
+
+	def has_too_many_chips?
+		chips_purse.has?(Conf[:refill_chips_max_value])
+	end
+
+	def next_refill_in
+		(Conf[:refill_chips_time] - (Time.now - refill_chips_at)).round
+	end
+
+	def refill_chips!
+		chips_purse.receive Conf[:refill_chips_value]
+		update_attribute :refill_chips_at, Time.now
+	end
+
+	def refill_chips_at
+		self[:refill_chips_at] ||= 1.year.ago
+	end
 end

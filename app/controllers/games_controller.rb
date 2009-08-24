@@ -1,5 +1,6 @@
 class GamesController < ApplicationController
   before_filter :check_authorization, :except => :index
+	before_filter :find_current_user_games, :only => [:index, :started, :finished]
 
   def index
     @games = Game.waited
@@ -42,4 +43,10 @@ class GamesController < ApplicationController
     end
 		render :nothing => true, :status => :forbidden
   end
+
+	protected
+
+	def find_current_user_games
+		@current_games = current_user ? current_user.games.current : []
+	end
 end

@@ -1,0 +1,1 @@
+page[:refill_chips].replace_html :partial => 'refill_button', :locals => {:path => add_chips_path}

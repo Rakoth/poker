@@ -1,5 +1,4 @@
 class UsersController < ApplicationController
-
   before_filter :check_authorization, :only => [:index, :show]
 
   def index
@@ -18,8 +17,10 @@ class UsersController < ApplicationController
     @user = User.new params[:user]
     @user.login = params[:user][:login]
     @user.email = params[:user][:email]
+    @user.build_info params[:info]
+		@user.build_money_purse
+		@user.build_chips_purse :balance => 10000
     if @user.save_with_captcha
-      @user.create_info params[:info]
       flash.now[:notice] = t 'controllers.users.successfully_sign_up'
       redirect_to games_url
     else
@@ -28,5 +29,4 @@ class UsersController < ApplicationController
       render :action => :new
     end
   end
-  
 end

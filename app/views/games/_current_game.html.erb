@@ -1,0 +1,8 @@
+<tr>
+	<td><%= game.id %></td>
+	<td><%= game.type.title %></td>
+	<td>
+		<%= link_to_function t('.open'), "game_window('#{game_path game}')" %>&nbsp;
+		<%= link_to t(:detail), info_game_path(game) %>
+	</td>
+</tr>

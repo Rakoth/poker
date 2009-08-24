@@ -1,16 +1,9 @@
- <% title t('.title') if current_user %>
-<!--p>
-	<%= t '.test_popups' %>
-	<%= link_to_function t('.run_test'),
-		"try{
-			test_window = window.open('/', 'test', 'left=10,top=10,width=10,height=10');
-			test_window.close();
-			alert('#{t '.test_passed'}');
-		}catch(e){
-			alert('#{t '.test_failed'}');
-		}"
-%>
-</p-->
+<% title t('.title') if current_user %>
+
+<% if @current_games.any? %>
+	<%= render 'joined_games' %>
+<% end %>
+
 <table>
   <thead>
     <tr>

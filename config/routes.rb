@@ -44,6 +44,9 @@ ActionController::Routing::Routes.draw do |map|
   map.login 'login', :controller => 'user_sessions', :action => 'new'
   map.leave_game ':game_id/leave', :controller => 'players', :action => 'destroy'
   map.resources :users
+	map.add_chips 'add_chips', :controller => 'purses', :action => 'add_chips', :requirements => {:method => :put}
+	map.add_money 'add_money', :controller => 'purses', :action => 'add_money', :requirements => {:method => :put}
+	map.resources :purses, :collection => { :refill_chips_info => :get }
   map.resources :actions, :collection => { :omitted => :get, :timeout => :post }
   map.resources :log_messages
   map.resources :games, :has_many => 'players', :member => { :info => :get }, :collection => { :started => :get, :finished => :get }

@@ -1,0 +1,33 @@
+<% title t('.title') %>
+<div class="purse">
+	<h5>
+		<%= t('.chips_purse') %>
+	</h5>
+	<div>
+		<span id="chips_balance">
+			<%= t('.balance', :value => current_user.chips_purse.balance) %>
+		</span>
+		<div id="refill_chips">
+			<% if current_user.can_refill_chips? %>
+				<%= render :partial => 'refill_button', :locals => {:path => add_chips_path} %>
+			<% elsif !current_user.has_too_many_chips? %>
+				<%= render 'refill_info' %>
+			<% else %>
+				<%= t '.too_many_chips' %>
+			<% end %>
+		</div>
+	</div>
+</div>
+<div class="purse">
+	<h5>
+		<%= t('.money_purse') %>
+	</h5>
+	<div>
+		<span id="money_balance">
+			<%= t('.balance', :value => current_user.money_purse.balance) %>
+		</span>
+		<div id="refill_money">
+			<%= render :partial => 'refill_button', :locals => {:path => add_money_path} %>
+		</div>
+	</div>
+</div>
