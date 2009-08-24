@@ -17,9 +17,6 @@ var RP_HttpStatus = {
 
 //=============================================================================
 var RP_Extend = {
-//	escape_html: function(html_to_escape){
-//		return html_to_escape.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-//	},
 	is_request_ready: function(request){
 		return (!RUN_TESTS && (!request || 0 == request.readyState || 4 == request.readyState));
 	},
@@ -392,6 +389,7 @@ var RP_GameMethods = {
 		'on_river': 'river'
 	},
 	view: RP_Visualizers.create('Game'),
+	update: RP_Extend.update,
 	stage: function(){
 		return this._stage_name[this.status];
 	},
@@ -417,10 +415,7 @@ var RP_GameMethods = {
 		return 'on_river' == this.status;
 	},
 	is_started: function(){
-		return 'on_preflop' == this.status ||
-		'on_flop'    == this.status ||
-		'on_turn'    == this.status ||
-		'on_river'   == this.status;
+		return 0 <= $.inArray(this.status, ['on_preflop', 'on_flop', 'on_turn', 'on_river']);
 	},
 	is_paused: function(){
 		return (undefined != this.paused || (RP_Players.is_all_away() && RP_Synchronizers.Game.is_really_paused()));
@@ -468,7 +463,6 @@ var RP_GameMethods = {
 
 		// если надо запустить таймер
 		if(this._is_need_start_timer()){
-			// запустить его
 			RP_Timer.start(RP_Players.find(this.active_player_id), this.action_time_left);
 			delete this.active_player_id;
 			delete this.action_time_left;
@@ -499,9 +493,6 @@ var RP_GameMethods = {
 			RP_Players.add_player(new RP_Player(this));
 		});
 		delete this.players_to_load;
-//		for(var index in this.players_to_load){
-//			RP_Players.add_player(new RP_Player(this.players_to_load[index]));
-//		}
 	},
 	is_new_distribution: function(){
 		return (this._is_one_winner() || (this.is_next_stage() && this._is_on_river()) || this._is_allin_and_call());
@@ -515,11 +506,6 @@ var RP_GameMethods = {
 	_is_allin_and_call: function(){
 		return (0 == RP_Players.must_call_count() && RP_Players.has_chips_and_can_act_count() <= 1);
 	},
-	next_distribution: function(){
-		RP_Players.refresh_acted_flags();
-		RP_Synchronizers.Game.distribution();
-	},
-	update: RP_Extend.update,
 	set_next_level_time: function(new_time){
 		this.next_level_time = new_time;
 		//TODO
@@ -722,10 +708,10 @@ var RP_Client = {
 	can_perform_action: function(action_name){
 		switch(action_name){
 			case 'fold': return true;
-			case 'check': return (0 == this._player().for_call);
-			case 'call': return (0 < this._player().for_call);
-			case 'bet': return (RP_Game.is_wait() || (RP_Game.current_bet == RP_Game.blind_size && this._player().for_call < this._player().stack));
-			case 'raise': return (RP_Game.blind_size < RP_Game.current_bet && this._player().for_call < this._player().stack);
+			case 'check': return (0 == this.for_call());
+			case 'call': return (0 < this.for_call());
+			case 'bet': return (RP_Game.is_wait() || (RP_Game.current_bet == RP_Game.blind_size && this.for_call() < this.stack()));
+			case 'raise': return (RP_Game.blind_size < RP_Game.current_bet && this.for_call() < this.stack());
 			default: alert('Error in RP_Client.can_perform_action(). Unexpected param: ' + action_name); return false;
 		}
 	},
@@ -1157,7 +1143,7 @@ RP_Synchronizers.Base.prototype = {
 
 RP_Synchronizers.Chat = {
 	_url: '/log_messages',
-	_period: 15,
+	_period: 10,
 	_last_message_id: 0,
 	_initialize: function(){
 		this._last_message_id = RP_Game.last_message_id || 0;

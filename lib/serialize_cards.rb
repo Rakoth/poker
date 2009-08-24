@@ -1,3 +1,4 @@
+require 'cards/poker'
 module SerializeCards
 	# переопределяем rails-овские методы доступа к отрибутам
 	# теперь в self[:deck] храниться сериализованный объект Poker::Deck

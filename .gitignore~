@@ -8,4 +8,3 @@ nbproject/*
 nbproject/**/*
 public/favicon.ico
 db/schema.rb
-lib/tasks/creator.rake

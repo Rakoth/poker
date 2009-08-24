@@ -145,19 +145,19 @@ class Player < ActiveRecord::Base
 
 
 	def auto_check!
-		PlayerActions::Action.execute_auto_action PlayerActions::Base::AUTO_CHECK, :player => self, :game => game
+		PlayerActions::Base.execute_auto_action PlayerActions::Base::AUTO_CHECK, :player => self, :game => game
 	end
 
 	def auto_fold!
-		PlayerActions::Action.execute_auto_action PlayerActions::Base::AUTO_FOLD, :player => self, :game => game
+		PlayerActions::Base.execute_auto_action PlayerActions::Base::AUTO_FOLD, :player => self, :game => game
 	end
 
 	def fold_on_away!
-		PlayerActions::Action.execute_auto_action PlayerActions::Base::TIMEOUT_FOLD, :player => self, :game => game
+		PlayerActions::Base.execute_auto_action PlayerActions::Base::TIMEOUT_FOLD, :player => self, :game => game
 	end
 
 	def check_on_away!
-		PlayerActions::Action.execute_auto_action PlayerActions::Base::TIMEOUT_CHECK, :player => self, :game => game
+		PlayerActions::Base.execute_auto_action PlayerActions::Base::TIMEOUT_CHECK, :player => self, :game => game
 	end
 
 	def take_prize
