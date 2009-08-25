@@ -17,8 +17,9 @@
         <div id="info">
           <div id="info_line" class="block"></div>
           <div id="game_info" class="block">
-						<div class="info_part"><%= @game.type.title %></div>
-						<div class="info_part">blinds: <span id="blinds"></span>&nbsp;&nbsp;&nbsp;pot: <span id="pot"></span></div>
+            <div class="info_part"><div id="game_info_part"><%= @game.type.title %></div></div>
+            <div class="info_part"><div id="blinds_info_part">blinds: <span id="blinds"></span>&nbsp;&nbsp;
+                pot: <span id="pot"></span>&nbsp;&nbsp;level time:<span id="level_time"></span> </div></div>
 					</div>
         </div>
         <div id="table">

@@ -8,7 +8,7 @@ class SyncBuilder::Game::Distribution < SyncBuilder::Base
 			:blind_size => blind_size,
 			:ante => ante,
 			:current_bet => current_bet,
-			:next_level_time => next_level_time,
+			:next_level_time => time_before_next_level,
 			:client_hand => (current_player(@for_user.id) ? current_player(@for_user.id).hand.to_s : nil),
 			:action_time_left => action_time_left,
 			:players_to_load => players.map{|player| SyncBuilder::Player::Distribution.new player},

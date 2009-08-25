@@ -8,8 +8,10 @@ div{overflow:hidden;}
 #table{width:500px;height:360px;background:url(/images/game/table/table.gif);}
 #info_line{background:url("/images/game/back/3.gif");}
 #game_info{background:url("/images/game/back/3.gif");color:#0078A3;}
-#game_info .info_part{float:left;width:250px;height:20px;text-align:center;}
-#pot, #blinds{font-family:monospace;color:orange;}
+#game_info .info_part{float:left;height:20px;text-align:center;}
+#game_info_part{width:200px}
+#blinds_info_part{width:300px}
+#pot, #blinds,#level_time{font-family:monospace;color:orange;}
 #log{background:url("/images/game/back/1.gif");}
 #notes{background:url("/images/game/back/2.gif");}
 #help, #player_actions{background:#000;}

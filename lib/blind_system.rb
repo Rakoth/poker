@@ -6,6 +6,10 @@ module BlindSystem
 	def small_blind_size
     @small_blind_size ||= blind_size / 2
   end
+
+  def time_before_next_level
+    next_level_time and Time.now < next_level_time ? (next_level_time - Time.now).seconds.round : 0
+  end
 	
 	private
 	
