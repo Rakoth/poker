@@ -1,4 +1,7 @@
 class Admin::GameTypesController < Admin::AdminController
+  def index
+    
+  end
   def show
     @game_type = GameTypes::Base.find params[:id]
   end
@@ -29,7 +32,8 @@ class Admin::GameTypesController < Admin::AdminController
 
   def edit
     @game_type = GameTypes::Base.find params[:id]
-    @blind_value = @game_type.blind_values.all
+    @blind_values = @game_type.blind_values.all
+    @winner_prizes = @game_type.winner_prizes.all
   end
 
   def update

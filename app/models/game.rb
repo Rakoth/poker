@@ -61,6 +61,10 @@ class Game < ActiveRecord::Base
 	serialize_cards :previous_turn
 	serialize_cards :previous_river
 
+  def ante
+    self[:ante] or 0
+  end
+  
 	include BlindSystem
 	include DistributionSystem
   

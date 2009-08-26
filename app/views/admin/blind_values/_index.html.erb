@@ -7,7 +7,7 @@
 		</tr>
 	</thead>
 	<tbody id="blind_values">
-    <%-@blind_values||=[]-%>
+    <%-@blind_values||=[BlindValue.new :level => 1]-%>
 		<% @blind_values.each do |value| %>
 			<%= render :partial => 'admin/blind_values/blind_value', :locals => {:object => value} %>
 		<% end %>
