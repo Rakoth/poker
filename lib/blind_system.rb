@@ -10,6 +10,22 @@ module BlindSystem
   def time_before_next_level
     next_level_time and Time.now < next_level_time ? (next_level_time - Time.now).seconds.round : 0
   end
+
+  def next_blind_level
+		if next_level_time and Time.now >= next_level_time
+			if new_blind_size = type.get_blind_size(blind_level + 1)
+				update_attributes(
+					:blind_level => blind_level + 1,
+					:blind_size => new_blind_size.value,
+					:ante => new_blind_size.ante,
+					:next_level_time => Time.now + type.change_level_time.minutes
+				)
+			else
+				update_attribute(:next_level_time, nil)
+			end
+		end
+	end
+
 	
 	private
 	
@@ -30,20 +46,6 @@ module BlindSystem
     update_attribute :next_level_time, Time.now + type.change_level_time.minutes
 	end
 
-	def next_blind_level
-		if next_level_time and Time.now >= next_level_time
-			if new_blind_size = type.get_blind_size(blind_level + 1)
-				update_attributes(
-					:blind_level => blind_level + 1,
-					:blind_size => new_blind_size.value,
-					:ante => new_blind_size.ante,
-					:next_level_time => Time.now + type.change_level_time.minutes
-				)
-			else
-				update_attribute(:next_level_time, nil)
-			end
-		end
-	end
 
   def take_blinds!
 		logger.debug 'STARTED take_blinds!'

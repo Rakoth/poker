@@ -560,6 +560,7 @@ var RP_GameMethods = {
   },
   set_blind_size: function(blind_size){
     RP_Game.blind_size = blind_size;
+    RP_Game.view('update_blinds');
   },
   set_ante: function(ante){
     RP_Game.ante = ante;

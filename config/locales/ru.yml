@@ -32,6 +32,13 @@ ru:
       email: email
       password: password
       remember_me: remember me
+  views:
+    game_types:
+      show:
+        title: Типы игр
+      index:
+        pay_for_play: Плата за игру
+        level_for_play: Уровень игрока
       
   date:
     formats:
@@ -195,6 +202,8 @@ ru:
         template: "Шаблон стола"
         min_level: "Минимальный уровень игрока"
         max_level: "Максимальный уровень игрока"
+        time_for_action: "Время на ход"
+        blind_values: "Значение блайндов"
       game:
         players_count: "Кол-во игроков"
         status: "Состояние"

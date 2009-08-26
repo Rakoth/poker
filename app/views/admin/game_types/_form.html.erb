@@ -40,6 +40,10 @@
       <td><%= form.label :max_level, GameTypes::Base.attr_name("max_level") %></td>
       <td><%= select_tag('game_types_base[max_level]', options_for_select([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], @game_type.max_level)) %></td>
     </tr>
+    <tr>
+      <td><%= form.label :time_for_action, GameTypes::Base.attr_name("time_for_action") %></td>
+      <td><%= form.text_field :time_for_action %></td>
+    </tr>
   </table>
 
   <h3><%=t '.blind_levels' %></h3>

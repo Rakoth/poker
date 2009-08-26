@@ -6,6 +6,7 @@
 		</tr>
 	</thead>
 	<tbody id="winner_prizes">
+    <%-@winner_prizes||=[ WinnerPrize.create :grade => 1,:prize_part => 1 ]-%>
 		<% @winner_prizes.each do |grade| %>
 			<%= render :partial => 'admin/winner_prizes/winner_prize', :locals => {:object => grade} %>
 		<% end %>

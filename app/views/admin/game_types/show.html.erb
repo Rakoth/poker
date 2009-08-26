@@ -1,27 +1,27 @@
 <h3><%=t 'views.game_types.show.title' %></h3>
 <table>
   <tr>
-    <td><%=GameTypes::Base.attr_name :title %></td>
+    <td><%=GameTypes::Base.attr_name('title') %></td>
     <td><%= @game_type.title %></td>
   </tr>
   <tr>
-    <td><%=GameTypes::Base.attr_name :max_players %></td>
+    <td><%=GameTypes::Base.attr_name('max_players') %></td>
     <td><%= @game_type.max_players %></td>
   </tr>
   <tr>
     <td><%=t 'views.game_types.index.pay_for_play' %></td>
-    <td><%= @game_type.start_cash + @game_type.additional_cash %></td>
+    <td><%= @game_type.start_payment * Conf[:drop] %></td>
   </tr>
   <tr>
-    <td><%=GameTypes::Base.attr_name :start_stack %></td>
+    <td><%=GameTypes::Base.attr_name('start_stack') %></td>
     <td><%= @game_type.start_stack %></td>
   </tr>
   <tr>
-    <td><%=GameTypes::Base.attr_name :start_blind %></td>
+    <td><%=GameTypes::Base.attr_name('start_blind') %></td>
     <td><%= @game_type.start_blind %></td>
   </tr>
   <tr>
-    <td><%=GameTypes::Base.attr_name :change_level_time %></td>
+    <td><%=GameTypes::Base.attr_name('change_level_time') %></td>
     <td><%= @game_type.change_level_time %></td>
   </tr>
   <tr>
