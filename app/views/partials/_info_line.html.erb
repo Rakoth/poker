@@ -1,0 +1,11 @@
+<div id="info_line">
+	<%=t '.your_login' %>&nbsp;<span><%= current_user.login %></span>;
+	<%=t '.your_chips_balance' %>&nbsp;
+	<span id="info_line_chips_value">
+		<%= current_user.chips_purse.balance %>
+	</span>;
+	<%=t '.your_money_balance' %>&nbsp;
+	<span id="info_line_money_value">
+		<%= number_to_currency current_user.money_purse.balance %>
+	</span>
+</div>

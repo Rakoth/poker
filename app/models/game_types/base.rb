@@ -1,8 +1,8 @@
 class GameTypes::Base < ActiveRecord::Base
 	set_table_name :game_types
   has_many :games
-  has_many :blind_values, :foreign_key => 'game_type_id'
-	has_many :winner_prizes, :order => 'grade', :foreign_key => 'game_type_id'
+  has_many :blind_values, :foreign_key => 'game_type_id', :dependent => :delete_all
+	has_many :winner_prizes, :order => 'grade', :foreign_key => 'game_type_id', :dependent => :delete_all
 
 	validate :check_start_stack_and_blind
 	validates_presence_of :title, :start_stack, :start_blind

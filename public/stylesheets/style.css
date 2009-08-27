@@ -42,6 +42,17 @@ td{white-space:nowrap;overflow:hidden;text-align:center;}
 	height:83px;
 	background-color:#101010;
 }
+#head img{
+	border:0;
+}
+#info_line{
+	font-size:12px;
+	text-align:center;
+	padding:5px;
+}
+#info_line span{
+	font-weight:bold;
+}
 #under_logo{
 	width:710px;
 }

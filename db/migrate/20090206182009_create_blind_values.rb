@@ -1,6 +1,6 @@
 class CreateBlindValues < ActiveRecord::Migration
   def self.up
-    create_table :blind_values, :id => false do |t|
+    create_table :blind_values do |t|
       t.integer :level
       t.integer :value
       t.integer :ante

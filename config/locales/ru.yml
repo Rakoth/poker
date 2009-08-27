@@ -320,6 +320,10 @@ ru:
       captcha_title: "Символы на картинке"
 
   partials:
+    info_line:
+      your_chips_balance: "У Вас фишек:"
+      your_money_balance: "У Вас денег:"
+      your_login: "Вы залогинились как:"
     menu:
       games: "Игры"
       create_game: "Создать игру"

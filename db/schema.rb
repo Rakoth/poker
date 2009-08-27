@@ -20,7 +20,7 @@ ActiveRecord::Schema.define(:version => 20090820163836) do
     t.datetime "created_at"
   end
 
-  create_table "blind_values", :id => false, :force => true do |t|
+  create_table "blind_values", :force => true do |t|
     t.integer "level"
     t.integer "value"
     t.integer "ante"
@@ -109,7 +109,7 @@ ActiveRecord::Schema.define(:version => 20090820163836) do
   end
 
   create_table "sessions", :force => true do |t|
-    t.string   "session_id", :default => "", :null => false
+    t.string   "session_id", :null => false
     t.text     "data"
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -143,18 +143,18 @@ ActiveRecord::Schema.define(:version => 20090820163836) do
 
   create_table "users", :force => true do |t|
     t.string   "login"
-    t.string   "crypted_password",    :default => "", :null => false
-    t.string   "password_salt",       :default => "", :null => false
+    t.string   "crypted_password",                   :null => false
+    t.string   "password_salt",                      :null => false
     t.string   "type"
     t.string   "email"
     t.string   "locate"
     t.integer  "level",               :default => 0
     t.datetime "refill_chips_at"
-    t.string   "persistence_token",   :default => "", :null => false
-    t.string   "single_access_token", :default => "", :null => false
-    t.string   "perishable_token",    :default => "", :null => false
-    t.integer  "login_count",         :default => 0,  :null => false
-    t.integer  "failed_login_count",  :default => 0,  :null => false
+    t.string   "persistence_token",                  :null => false
+    t.string   "single_access_token",                :null => false
+    t.string   "perishable_token",                   :null => false
+    t.integer  "login_count",         :default => 0, :null => false
+    t.integer  "failed_login_count",  :default => 0, :null => false
     t.datetime "last_request_at"
     t.datetime "current_login_at"
     t.datetime "last_login_at"
@@ -164,7 +164,7 @@ ActiveRecord::Schema.define(:version => 20090820163836) do
     t.datetime "updated_at"
   end
 
-  create_table "winner_prizes", :id => false, :force => true do |t|
+  create_table "winner_prizes", :force => true do |t|
     t.integer "game_type_id"
     t.integer "grade"
     t.decimal "prize_part",   :precision => 10, :scale => 2

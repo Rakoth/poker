@@ -1,2 +1,7 @@
 page[:refill_chips].replace_html :partial => 'refill_info'
+
 page[:chips_balance].replace_html t('purses.index.balance', :value => current_user.chips_purse.balance)
+page[:chips_balance].effect 'shake', :distance => 5
+
+page[:info_line_chips_value].text current_user.chips_purse.balance
+page[:info_line_chips_value].highlight

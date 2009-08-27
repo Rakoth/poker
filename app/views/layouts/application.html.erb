@@ -8,10 +8,11 @@
   </head>
   <body>
     <div id="index">
-			<div id="head"><%= image_tag("main/logo_rubypoker.jpg") %></div>
+			<div id="head"><%= link_to_unless_current image_tag("main/logo_rubypoker.jpg"), root_path %></div>
 			<div id="under_logo">
         <div id="menu"><%= render "partials/menu" %></div>
         <div id="body">
+					<%= render 'partials/info_line' if current_user %>
 					<%= content_tag :h3, (yield :title) if yield :title %>
 
 					<% flash.each do |key, message| %>
