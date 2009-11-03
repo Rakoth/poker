@@ -1195,7 +1195,7 @@ RP_Synchronizers.Base.prototype = {
 
 RP_Synchronizers.Chat = {
   _url: '/log_messages',
-  _period: 10,
+  _period: 5,
   _last_message_id: 0,
   _initialize: function(){
     this._last_message_id = RP_Game.last_message_id || 0;

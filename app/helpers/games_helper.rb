@@ -48,6 +48,6 @@ module GamesHelper
 	def card suit, value
 		suits = {:h => '♥', :c => '♣', :d => '♦', :s => '♠'}
 		red = [:h, :d]
-		content_tag :span, "#{value}#{suits[suit]} ", :style => "color:##{red.include?(suit) ? '631B29' : '666'};"
+		content_tag :span, "#{value}#{suits[suit]} ", :style => "color:#{red.include?(suit) ? '#7E0902' : '#777'};"
 	end
 end

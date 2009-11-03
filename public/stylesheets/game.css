@@ -13,7 +13,9 @@ div{overflow:hidden;}
 #pot, #blinds,#level_time{font-family:monospace;color:orange;}
 #log{background:url("/images/game/back/1.gif");}
 #notes{background:url("/images/game/back/2.gif");}
-#help td{border:1px solid #333;font-size:9px;}
+#help table{width:100%;height:100%;}
+#help td{border:1px solid #333;text-align:center;padding:0;overflow:hidden;white-space:nowrap;}
+#help span{font-size:0.6em;}
 #help, #player_actions{background:#000;}
 #control .block{height:100px;width:200px;}
 #info .block{height:20px;width:500px;}
