@@ -44,4 +44,10 @@ module GamesHelper
 			{:name => 'bet',   :kind => PlayerActions::Base::BET,   :value => true},
 			{:name => 'raise', :kind => PlayerActions::Base::RAISE, :value => true} ]
 	end
+
+	def card suit, value
+		suits = {:h => '♥', :c => '♣', :d => '♦', :s => '♠'}
+		red = [:h, :d]
+		content_tag :span, "#{value}#{suits[suit]} ", :style => "color:##{red.include?(suit) ? '631B29' : '666'};"
+	end
 end

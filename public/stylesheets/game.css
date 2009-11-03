@@ -6,14 +6,14 @@ div{overflow:hidden;}
 #stake_value{height:1.2em;font:11px monospace;}
 #info{height:40px;width:500px;}
 #table{width:500px;height:360px;background:url(/images/game/table/table.gif);}
-#info_line{background:url("/images/game/back/3.gif");}
-#game_info{background:url("/images/game/back/3.gif");color:#0078A3;}
+#info_line, #game_info{background:url("/images/game/back/3.gif");color:#0078A3;text-align:center;}
 #game_info .info_part{float:left;height:20px;text-align:center;}
 #game_info_part{width:200px}
 #blinds_info_part{width:300px}
 #pot, #blinds,#level_time{font-family:monospace;color:orange;}
 #log{background:url("/images/game/back/1.gif");}
 #notes{background:url("/images/game/back/2.gif");}
+#help td{border:1px solid #333;font-size:9px;}
 #help, #player_actions{background:#000;}
 #control .block{height:100px;width:200px;}
 #info .block{height:20px;width:500px;}
