@@ -12,22 +12,10 @@ class Game < ActiveRecord::Base
   aasm_state :on_river, :enter => :deal_river!
   aasm_state :finished, :enter => :give_prize_to_last_winner
 
-  aasm_event :start do
-    transitions :from => :waited, :to => :on_preflop
-  end
-
-	aasm_event :show_flop do
-		transitions :from => :on_preflop, :to => :on_flop
-	end
-
-	aasm_event :show_turn do
-		transitions :from => :on_flop, :to => :on_turn
-	end
-
-	aasm_event :show_river do
-		transitions :from => :on_turn, :to => :on_river
-	end
-
+  aasm_event(:start) { transitions :from => :waited, :to => :on_preflop }
+	aasm_event(:show_flop) { transitions :from => :on_preflop, :to => :on_flop }
+	aasm_event(:show_turn) { transitions :from => :on_flop, :to => :on_turn }
+	aasm_event(:show_river) { transitions :from => :on_turn, :to => :on_river }
 	aasm_event :new_distribution do
 		transitions :from => [:on_preflop, :on_flop, :on_turn, :on_river], :to => :on_preflop, :guard => lambda {|game| 1 < game.players.size	}
 		transitions :from => [:on_preflop, :on_flop, :on_turn, :on_river], :to => :finished
@@ -70,18 +58,15 @@ class Game < ActiveRecord::Base
   
   belongs_to :type, :class_name => 'GameTypes::Base'
 
-  has_many :all_players, :class_name => 'Player'
+  has_many :all_players, :class_name => 'Player', :dependent => :destroy
   has_many :players, :conditions => ['status NOT IN (?)', [Player::STATUS[:lose], Player::STATUS[:leave], Player::STATUS[:leave_now]]]
 	has_many :previous_distribution_players, :class_name => 'Player', :conditions => ['status <> ?', Player::STATUS[:leave]]
 	has_many :leave_now_players, :class_name => 'Player', :conditions => {:status => Player::STATUS[:leave_now]}
 	has_many :lose_players, :class_name => 'Player', :conditions => {:status => Player::STATUS[:lose]}
-
   has_many :users, :through => :players
-
-  has_many :actions, :class_name => 'PlayerActions::Base'
+  has_many :actions, :class_name => 'PlayerActions::Base', :dependent => :destroy
   has_many :current_distribution_actions, :class_name => 'PlayerActions::Base', :conditions => ['deleted = ?', false]
-	
-	has_many :log_messages
+	has_many :log_messages, :dependent => :destroy
 
 	def active_player
 		@active_player ||= players.find active_player_id
