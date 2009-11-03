@@ -1,26 +1,26 @@
 <table>
-	<thead>
-		<tr>
-			<th><%= BlindValue.attr_name('level') %></th>
-			<th><%= BlindValue.attr_name('blind') %></th>
-			<th><%= BlindValue.attr_name('ante') %></th>
-		</tr>
-	</thead>
-	<tbody id="blind_values">
-		<% @blind_values.each do |value| %>
-			<%= render :partial => 'admin/blind_values/blind_value', :locals => {:object => value} %>
-		<% end %>
-	</tbody>
+  <thead>
+    <tr>
+      <th><%= BlindValue.attr_name('level') %></th>
+      <th><%= BlindValue.attr_name('blind') %></th>
+      <th><%= BlindValue.attr_name('ante') %></th>
+    </tr>
+  </thead>
+  <tbody id="blind_values">
+    <% @blind_values.each do |value| %>
+      <%= render :partial => 'admin/blind_values/blind_value', :locals => {:object => value} %>
+    <% end %>
+  </tbody>
 </table>
 
 <script type="text/javascript">
-	var current_level = <%= @blind_values.size %>;
+  var current_level = <%= @blind_values.size %>;
 </script>
 
 <%= link_to_remote t('.add_blind_value'),
-	:url => new_admin_blind_value_path,
-	:method => :get,
-	:condition => "parseInt($('#blind_values tr:last input#blind_value__value').val()) > 0",
-	:with => "'level=' + current_level",
-	:complete => "current_level++"
+  :url => new_admin_blind_value_path,
+  :method => :get,
+  :condition => "parseInt($('#blind_values tr:last input#blind_value__value').val()) > 0",
+  :with => "'level=' + current_level",
+  :complete => "current_level++"
 %>

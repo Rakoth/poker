@@ -8,8 +8,8 @@
   </head>
   <body>
     <div id="index">
-			<div id="head"><%= link_to_unless_current image_tag("main/logo_rubypoker.jpg"), root_path %></div>
-			<div id="under_logo">
+      <div id="head"><%= link_to_unless_current image_tag("main/logo_rubypoker.jpg"), root_path %></div>
+      <div id="under_logo">
         <div id="menu"><%= render "partials/menu" %></div>
         <div id="body">
 					<%= render 'partials/info_line' if current_user %>
@@ -19,9 +19,14 @@
 						<%= content_tag :div, message, :id => key, :class => 'flash' %>
 					<% end %>
 
+					<noscript>
+						<div style="text-align:center;color:red;padding:10px;"><%= t(:enable_js) %></div>
+					</noscript>
+
 					<%= yield %>
 				</div>
-			</div>
+      </div>
     </div>
+		<script type="text/javascript" src="http://reformal.ru/tab.js?title=rubypoker&domain=rubypoker&color=45070B&align=left&charset=utf-8&ltitle=&lfont=&lsize=&waction=0&regime=0"></script>
   </body>
 </html>

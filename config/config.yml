@@ -4,6 +4,7 @@ development: &defaults
   refill_chips_max_value: 100000
   refill_chips_value: 1000
   refill_chips_time: 1800
+  admin_email: rubypoker.contact@gmail.com
 
 test:
   <<: *defaults

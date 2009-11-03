@@ -7,6 +7,7 @@
       <li><%= link_to t('.create_game_type'), new_admin_game_type_path %></li>
       <li><%= link_to t('.game_types_list'), admin_game_types_path %></li>
     <%-end-%>
+		<li><%= link_to t('.about'), :controller => 'home', :action => 'about' %></li>
     <li><%= link_to t(:exit), user_session_path, :method => :delete, :confirm => t(:really_exit) %></li>
   <%- else -%>
     <li><%= link_to t(:entry), login_path %></li>

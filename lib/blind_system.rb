@@ -26,7 +26,6 @@ module BlindSystem
 		end
 	end
 
-	
 	private
 	
 	def next_blind_position

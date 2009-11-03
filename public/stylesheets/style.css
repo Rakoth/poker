@@ -30,6 +30,7 @@ a:active{text-decoration: none;}
 a:hover{text-decoration: underline;}
 a{color:#f93;}
 td{white-space:nowrap;overflow:hidden;text-align:center;}
+img{border:none;}
 #index{
 	width:710px;
 	min-height:500px;

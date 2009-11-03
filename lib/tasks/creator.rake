@@ -8,8 +8,8 @@ namespace :create do
 		GameTypes::Base.delete_all
 
 		user = Admin.new :password => '1111', :password_confirmation => '1111'
-		user.login = "user#{0}"
-		user.email = "user#{0}@mail.ru"
+		user.login = "user0"
+		user.email = "user0@mail.ru"
 		user.save!
 		user.create_chips_purse :balance => 10000
 		user.create_money_purse

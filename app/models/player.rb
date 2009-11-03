@@ -37,9 +37,7 @@ class Player < ActiveRecord::Base
 		absent? and must_call?
 	end
 
-	aasm_event :i_am_allin do
-		transitions :from => [:active, :absent], :to => :allin
-	end
+	aasm_event(:i_am_allin) { transitions :from => [:active, :absent], :to => :allin }
 
 	# восстанавливает состояние по умолчанию перед новой раздачей
 	aasm_event :activate do
@@ -55,31 +53,21 @@ class Player < ActiveRecord::Base
 	end
 	
 	# пасс по таймауту - ставим статус отошел
-	aasm_event :away_on_fold do
-		transitions :from => :active, :to => :pass_away
-	end
+	aasm_event(:away_on_fold) { transitions :from => :active, :to => :pass_away }
 
 	# чек по таймауту - ставим статус отошел
-	aasm_event :away_on_check do
-		transitions :from => :active, :to => :absent
-	end
+	aasm_event(:away_on_check) { transitions :from => :active, :to => :absent }
 
 	aasm_event :back_to_game do
 		transitions :from => :absent, :to => :active
 		transitions :from => :pass_away, :to => :pass
 	end
 
-	aasm_event :lose do
-		transitions :from => :allin , :to => :lose
-	end
+	aasm_event(:lose) { transitions :from => [:allin, :pass_away, :absent], :to => :lose }
 
-	aasm_event :prepare_left_game do
-		transitions :from => :lose , :to => :leave_now
-	end
+	aasm_event(:prepare_left_game) { transitions :from => :lose , :to => :leave_now }
 
-	aasm_event :left_game do
-		transitions :from => :leave_now , :to => :leave
-	end
+	aasm_event(:left_game) { transitions :from => :leave_now , :to => :leave }
 	
 	include SerializeCards
 	serialize_cards :hand
@@ -145,27 +133,46 @@ class Player < ActiveRecord::Base
 
 
 	def auto_check!
-		PlayerActions::Base.execute_auto_action PlayerActions::Base::AUTO_CHECK, :player => self, :game => game
+		execute_auto_action! PlayerActions::Base::AUTO_CHECK
 	end
 
 	def auto_fold!
-		PlayerActions::Base.execute_auto_action PlayerActions::Base::AUTO_FOLD, :player => self, :game => game
+		execute_auto_action! PlayerActions::Base::AUTO_FOLD
 	end
 
 	def fold_on_away!
-		PlayerActions::Base.execute_auto_action PlayerActions::Base::TIMEOUT_FOLD, :player => self, :game => game
+		execute_auto_action! PlayerActions::Base::TIMEOUT_FOLD
 	end
 
 	def check_on_away!
-		PlayerActions::Base.execute_auto_action PlayerActions::Base::TIMEOUT_CHECK, :player => self, :game => game
+		execute_auto_action! PlayerActions::Base::TIMEOUT_CHECK
 	end
 
 	def take_prize
 		update_attribute :place, game.players.count
 		game.type.give_prize_to_winner self
 	end
+
+	def on_blind_with_small_stack?
+		case sit
+		when game.blind_position
+			stack <= game.blind_size
+		when game.small_blind_position
+			stack <= game.small_blind_size
+		else
+			false
+		end
+	end
+
+	def loser?
+		has_empty_stack? or (away? and on_blind_with_small_stack?)
+	end
 	
 	private
+
+	def execute_auto_action! kind
+		PlayerActions::Base.execute_auto_action kind, :player => self, :game => game
+	end
 	
 	def return_user_money
 		game.type.return_payment user

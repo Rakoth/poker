@@ -180,12 +180,13 @@ class Game < ActiveRecord::Base
 	end
 
 	def action_time_left
-		unless current_distribution_actions.empty?
+		time = unless current_distribution_actions.empty?
 			current_distribution_actions.first(:order => 'id DESC').time_left
 		else
 			# начало отсчета - старт игры или новая раздача или отжим паузы
 			(type.time_for_action - (Time.now - updated_at).to_i)
 		end
+		time < 0 ? 0 : time
 	end
 
 	def current_player user_or_user_id
@@ -212,6 +213,7 @@ class Game < ActiveRecord::Base
   private
 
   # Ищет первое не пустое место начиная с sit в направлении :direction
+	# всегда основывается на состоянии игроков в базе данных
   def get_first_player_from sit, params = {}
 		players.reload
     params[:out] ||= :id

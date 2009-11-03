@@ -14,19 +14,19 @@ class PlayerActions::Base < ActiveRecord::Base
 	def self.execute_player_action kind, params = {}
 		action = case kind
 		when FOLD
-			PlayerActions::Fold.new params
+			PlayerActions::Fold
 		when CHECK
-			PlayerActions::Check.new params
+			PlayerActions::Check
 		when CALL
-			PlayerActions::Call.new params
+			PlayerActions::Call
 		when BET
-			PlayerActions::Bet.new params
+			PlayerActions::Bet
 		when RAISE
-			PlayerActions::Raise.new params
+			PlayerActions::Raise
 		else
 			raise 'Unexpected action type in Action#execute_action: "' + kind + '"'
 		end
-		action.execute
+		action.new(params).execute
 	end
 
 	def self.execute_auto_action kind, params = {}

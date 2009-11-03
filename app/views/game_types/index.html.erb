@@ -4,7 +4,9 @@
     <tr>
       <th><%= GameTypes::Base.attr_name "title" %></th>
       <th><%= GameTypes::Base.attr_name "max_players" %></th>
-      <th><%= GameTypes::Base.attr_name "start_payment" %></th>
+			<% if GameTypes::Base::PAID == @type %>
+				<th><%= GameTypes::Base.attr_name "start_payment" %></th>
+			<% end %>
       <th><%= GameTypes::Base.attr_name "start_stack" %></th>
       <th><%= GameTypes::Base.attr_name "start_blind" %></th>
       <th><%= GameTypes::Base.attr_name "change_level_time" %></th>

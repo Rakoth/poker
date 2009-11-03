@@ -180,11 +180,9 @@ RP_Visualizers.Game = {
   update_pot: function(){
     this._pot().text(RP_Game.pot());
   },
-
   _add_zero: function( seconds ){
     return seconds < 10 ? "0" + seconds : seconds ;
   },
-
   _change_timer_value: function(){
     var _time_array = this._level_time().text().split(':').reverse();
     var seconds = _time_array.shift();
@@ -192,25 +190,20 @@ RP_Visualizers.Game = {
     [seconds , minutes] = ( seconds == 0 && 0 < minutes ) ? [ 59 , minutes - 1] : 0 < seconds ? [ seconds -1 , minutes] :  [ 0, 0];
     this._level_time().text(minutes + ":" + this._add_zero(seconds));
   },
-
   _time_convert: function(next_level_time){
-    if(next_level_time != undefined)
-    {
+    if(next_level_time != undefined){
       var minutes = parseInt( next_level_time / 60 ) ;
       var seconds = next_level_time % 60 ;
       return minutes + ":" + this._add_zero(seconds)  ;
-    }
-    else{
+    }else{
       return "0:00";
     }
   },
-
   update_level_time: function(){
     clearTimeout(this._blinds_level_timer);
     this._level_time().text(this._time_convert(RP_Game.next_level_time));
     this._blinds_level_timer = setInterval( this._change_timer_value.bind(this) , this._blinds_level_time_chenging_period);
   },
-
   hide_previous_final: function(){
     clearTimeout(this._previous_final_timer);
     if(!RP_Game.is_finished()){
@@ -300,10 +293,6 @@ RP_Visualizers.Client = {
     });
   }
 };
-RP_Visualizers.Player = function(player){
-  this.player = player;
-  this.sit = player.sit;
-};
 RP_Visualizers.Players = {
   update_all: function(){
     RP_Players.each(function(player){
@@ -325,7 +314,12 @@ RP_Visualizers.Timer = {
 };
 RP_Visualizers.Log = {
 
-  };
+};
+
+RP_Visualizers.Player = function(player){
+  this.player = player;
+  this.sit = player.sit;
+};
 
 RP_Visualizers.Player.prototype = {
   _sit: function(){
@@ -336,9 +330,6 @@ RP_Visualizers.Player.prototype = {
   },
   _stack: function(){
     return this._element('stack');
-  },
-  _away_layer: function(){
-    return this._element('away_layer');
   },
   _hand: function(){
     return [$('#cards_' + this.sit + '_0'), $('#cards_' + this.sit + '_1')];
@@ -381,9 +372,6 @@ RP_Visualizers.Player.prototype = {
     this._sit().show('slow');
     var login = this.player.login;
     this._login().attr('title', login).text(login);
-    // new CardsSet('cards_' + this.id, 'player');
-    // $('#timer_' + this.id);
-    // this._stack(player).text(player.stack);
     this.update_all();
   },
   update_all: function(){
@@ -393,6 +381,7 @@ RP_Visualizers.Player.prototype = {
   },
   leave: function(){
     this._sit().remove();
+    this._away_veil().remove();
   },
   away: function(){
     this._away_veil().show();

@@ -277,6 +277,9 @@ ru:
       last_word_connector: " и "
 
 # дальше вьюшки пошли
+  home:
+    about:
+      title: Добро пожаловать на наш сайт, любители покера и друзья!
   admin:
     game_types:
       form:
@@ -330,6 +333,7 @@ ru:
       balance: "Ваш счет"
       create_game_type: "Создать тип игры"
       game_types_list: "Редактировать типы игр"
+      about: О нас
 
   games:
     game_actions:
@@ -455,3 +459,4 @@ ru:
   send: "Отправить"
   default_title: "Руби в покер!"
   add: "Добавить"
+  enable_js: "Для правильной работы сайта Вам необходимо включить javascript в Вашем браузере."

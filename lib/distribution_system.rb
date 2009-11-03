@@ -40,7 +40,8 @@ module DistributionSystem
 		# сохранить все изменения
     calculate_groups.flatten.each(&:save)
 
-		exclude_losed_players!
+		exclude_losed_players! calculate_groups.flatten.reverse
+		players.reload
 		# переходим к новой раздаче или заканчиваем игру
 	  new_distribution!
   end
@@ -120,7 +121,7 @@ module DistributionSystem
 	def calculate_groups
 		# для каждой группы определить ее выйгрыш
 		# проходя по массиву групп по очереди (от более сильных рук к более слабым)
-    @groups.map do |g|
+    @calculate_groups ||= @groups.map do |g|
       max, chips_sum = g[0], 0
 			# для каждого игрока в каждой группе
       @groups.map! do |group|
@@ -143,10 +144,11 @@ module DistributionSystem
     end
 	end
 
-	def exclude_losed_players!
-		players.reload
-		players.each { |player| player.lose! if player.has_empty_stack? }
-		players.reload
+	def exclude_losed_players! sorted_players
+		# удаляем игроков, которые проиграли или находятся в состоянии away и перейдут в allin при снятии блайндов
+		sorted_players.each do |player|
+			player.lose! if player.loser?
+		end
 	end
 
   def before_distribution
