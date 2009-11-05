@@ -12,10 +12,21 @@ class Player < ActiveRecord::Base
   aasm_state :leave_now
   aasm_state :leave
 	
-	STATUS = {:leave => 'leave', :away => 'absent', :pass_away => 'pass_away', :leave_now => 'leave_now', :pass => 'pass', :lose => 'lose'}
+	STATUS = {
+		:active => 'active',
+		:allin => 'allin',
+		:pass => 'pass',
+		:leave => 'leave',
+		:away => 'absent',
+		:pass_away => 'pass_away',
+		:leave_now => 'leave_now',
+		:lose => 'lose'
+	}
+	LONG_AWAY = 5
 
 	named_scope :want_pause, :conditions => {:want_pause => true}
 	named_scope :away, :conditions => {:status => [STATUS[:away], STATUS[:pass_away]]}
+	named_scope :active, :conditions => {:status => [STATUS[:active], STATUS[:allin], STATUS[:pass]]}
 
 	def fold?
 		pass? or pass_away?
@@ -38,35 +49,27 @@ class Player < ActiveRecord::Base
 	end
 
 	aasm_event(:i_am_allin) { transitions :from => [:active, :absent], :to => :allin }
-
 	# восстанавливает состояние по умолчанию перед новой раздачей
 	aasm_event :activate do
 		transitions :from => [:active, :pass, :allin], :to => :active
 		transitions :from => [:pass_away, :absent], :to => :absent
 	end
-
 	aasm_event :fold do
 		# игрок сам сделал пасс
 		transitions :from => :active, :to => :pass
 		# автопасс для отошедшего ранее игрока
 		transitions :from => :absent, :to => :pass_away
 	end
-	
 	# пасс по таймауту - ставим статус отошел
 	aasm_event(:away_on_fold) { transitions :from => :active, :to => :pass_away }
-
 	# чек по таймауту - ставим статус отошел
 	aasm_event(:away_on_check) { transitions :from => :active, :to => :absent }
-
 	aasm_event :back_to_game do
 		transitions :from => :absent, :to => :active
 		transitions :from => :pass_away, :to => :pass
 	end
-
 	aasm_event(:lose) { transitions :from => [:allin, :pass_away, :absent], :to => :lose }
-
 	aasm_event(:prepare_left_game) { transitions :from => :lose , :to => :leave_now }
-
 	aasm_event(:left_game) { transitions :from => :leave_now , :to => :leave }
 	
 	include SerializeCards
@@ -153,19 +156,17 @@ class Player < ActiveRecord::Base
 		game.type.give_prize_to_winner self
 	end
 
-	def on_blind_with_small_stack?
-		case sit
-		when game.blind_position
-			stack <= game.blind_size
-		when game.small_blind_position
-			stack <= game.small_blind_size
-		else
-			false
-		end
+	def long_away? how_long = nil
+		away_from < Time.now - (how_long.nil? ? LONG_AWAY : how_long).minutes
+	end
+
+	def small_stack?
+		stack <= game.blind_size
 	end
 
 	def loser?
-		has_empty_stack? or (away? and on_blind_with_small_stack?)
+		has_empty_stack? or
+			(away? and (long_away? or small_stack? or (game.one_active_player? and long_away?(2))))
 	end
 	
 	private

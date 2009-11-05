@@ -119,6 +119,10 @@ class Game < ActiveRecord::Base
 		PAUSE_TYPE[:by_request] == paused
 	end
 
+	def one_active_player?
+		1 == players.active.count
+	end
+
 	def pause_by_away!
 		update_attribute :paused, PAUSE_TYPE[:by_away]
 	end

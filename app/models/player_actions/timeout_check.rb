@@ -7,6 +7,7 @@ class PlayerActions::TimeoutCheck < PlayerActions::Check
 
   def player_influence
 		player.away_on_check!
+		player.update_attribute :away_from, Time.now
 		super
   end
 end

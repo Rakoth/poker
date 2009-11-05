@@ -778,7 +778,11 @@ var RP_Client = {
   remove_auto_actions: function(){
     this.view('remove_auto_actions');
     this.auto_action_name = undefined;
-  }
+  },
+	back_to_game_after_pause: function(){
+		RP_Timer.start(this._player());
+		this.view('update_client_actions');
+	}
 };
 
 //=============================================================================

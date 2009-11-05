@@ -26,12 +26,12 @@ class PlayersController < ApplicationController
 
 	def i_am_back
 		player = current_user.players.find params[:id]
-		if(player)
+		unless player.nil?
 			if !player.away?
 				status = :ok
 			elsif player.back_to_game!
+				status = (player.id == player.game.active_player_id ? :no_ommited_actions_will_send : :ok)
 				player.game.resume! player
-				status = :ok
 			else
 				status = :bad_request
 			end

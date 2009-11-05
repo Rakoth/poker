@@ -3,7 +3,7 @@
 function game_window(href){
 	var href_parts = href.split('/');
 	var id = href_parts[href_parts.length - 1];
-	new_window = window.open(href, 'game' + id, "width=701,height=401,menubar=no,location=no,resizable=no,scrollbars=no,status=no");
+	new_window = window.open(href, 'game' + id, "width=702,height=402,menubar=no,location=no,resizable=no,scrollbars=no,status=no");
 	new_window.focus();
 }
 

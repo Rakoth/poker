@@ -26,11 +26,11 @@ module BlindSystem
 		end
 	end
 
-	private
-	
 	def next_blind_position
 		blind_position.nil? ? rand(type.max_players) : get_first_player_from(blind_position, :out => :sit)
 	end
+	
+	private
 
   def player_on_blind
     players.select {|player| player.sit == blind_position}.first

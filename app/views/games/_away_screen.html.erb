@@ -14,19 +14,24 @@
 		},
 		beforeclose: function(event, ui){
 			$.ajax({
-				url:"<%= i_am_back_player_path(@game.current_player(current_user.id)) %>",
-				type:"post",
+				url: "<%= i_am_back_player_path(@game.current_player(current_user.id)) %>",
+				type: "post",
 				async: false,
-				data:{
+				data: {
 					"_method":"put"
 				},
-				success:function(){
+				success: function(){
 					$('#away_screen p').text('<%= t('.away_message')%>');
 					RP_Client.active();
 				},
-				error:function(){
+				error: function(){
 					$('#away_screen p').text('<%= t('.back_failed')%>');
 					RP_AwayDialog.dialog("open");
+				},
+				complete: function(request){
+					if(<%= ActionController::StatusCodes::SYMBOL_TO_STATUS_CODE[:no_ommited_actions_will_send] %> == request.status){
+						RP_Client.back_to_game_after_pause();
+					}
 				}
 			});
 		}
