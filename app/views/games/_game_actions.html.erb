@@ -1,12 +1,14 @@
-<%= link_to_remote(t(:join),
+<%= button_to_remote(t(:join),
 	:url => game_players_path(@game),
 	:method => :post,
 	:success => "game_window('#{game_url(@game)}')",
-	:failure => "alert('#{t('.cant_join_game')}')"
+	:failure => "alert('#{t('.cant_join_game')}')",
+	:complete => "location.href = location.href"
 ) if current_user and @game.waited? and current_user.can_join?(@game) %>
-<%= link_to(
+<%= button_to(
 	t(:leave),
 	leave_game_path(@game),
 	:method => :delete,
-	:confirm => t('.leave_game_confirm', :title => @game.type.title)
+	:confirm => t('.leave_game_confirm', :title => @game.type.title),
+	:complete => "location.href = location.href"
 ) if @game.waited? and @game.users.include?(current_user) %>

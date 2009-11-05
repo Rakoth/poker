@@ -38,7 +38,7 @@ div{overflow:hidden;}
 #log_message_text{background:transparent;height:12px;width:150px;color:#ccc;border:1px solid #996600;font:10px Verdana,monospase;margin-left:5px;}
 .log_message_submit{padding-top:5px;}
 .log_message_submit input{outline:none;}
-.system{color:#444;}
+.system{color:#652;}
 .log_record{white-space:nowrap;font:10px Verdana;}
 .user_log_record .log_message_titile{font-weight:bold;}
 .log_message_text{white-space:normal;font-style:italic;}
@@ -52,6 +52,5 @@ div{overflow:hidden;}
 .cards{height:70px;width:100px;}
 .cards img{margin:10px 0 0 1px;width:34px;height:50px;float:left;}
 .buttons{height:20px;width:50px;}
-.side_block{height:35px;width:50px;}
-.side_block img{width:50px;height:35px;}
+.side_block, .side_block img{width:50px;height:35px;}
 .stack{width:50px;height:15px;margin-top:20px;font:10px monospace;text-align:center;}
