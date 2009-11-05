@@ -47,10 +47,11 @@ img{border:none;}
 #head img{
 	border:0;
 }
-#info_line{
+#info_line, #users_count{
 	font-size:12px;
 	text-align:center;
 	padding:5px;
+	color:#B5894C;
 }
 #info_line span{
 	font-weight:bold;

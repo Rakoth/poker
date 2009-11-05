@@ -460,3 +460,5 @@ ru:
   default_title: "Руби в покер!"
   add: "Добавить"
   enable_js: "Для правильной работы сайта Вам необходимо включить javascript в Вашем браузере."
+  active_users_count: "На сайте: {{count}}"
+  users_count: "Нас уже: {{count}}"
