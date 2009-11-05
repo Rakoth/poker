@@ -10,7 +10,7 @@ class User < ActiveRecord::Base
 	has_one :money_purse, :class_name => 'UserPurses::Money'
 	has_one :chips_purse, :class_name => 'UserPurses::Chips'
 
-	named_scope :active, :conditions => ['last_request_at < ?', 10.minutes.ago]
+	named_scope :active, :conditions => ['last_request_at > ?', 10.minutes.ago]
   
   def can_join? game
     game.waited? and game.type.may_be_created_by?(self) and not game.users.include?(self)
